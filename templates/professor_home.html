@@ -14,10 +14,10 @@
       background-color: #c1f38e;
     }
     .sidebar {
-      width: 200px;
+      width: 240px;
       background: #fff;
       border-right: 2px solid #ccc;
-      padding: 20px 10px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -26,30 +26,31 @@
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat;
-      margin-bottom: 10px;
+      background: url('{{ url_for("static", filename="avatar_professor.png") }}') center/cover no-repeat;
+      margin-bottom: 15px;
     }
     .user-name {
       font-weight: 600;
       font-size: 16px;
       color: #333;
       text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 25px;
     }
-    .sidebar button {
+    .sidebar a.logout {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
+      margin-top: auto;
       background: #a0e76d;
       border: none;
       border-radius: 8px;
       font-weight: 600;
       color: #000;
+      text-decoration: none;
       text-align: center;
       cursor: pointer;
       transition: background 0.3s;
     }
-    .sidebar button:hover {
+    .sidebar a.logout:hover {
       background: #8ad858;
     }
     .content {
@@ -89,15 +90,11 @@
       .sidebar {
         width: 100%;
         flex-direction: row;
-        justify-content: center;
+        justify-content: space-around;
         border-right: none;
         border-bottom: 2px solid #ccc;
       }
-      .avatar {
-        width: 60px;
-        height: 60px;
-      }
-      .user-name {
+      .avatar, .user-name {
         display: none;
       }
     }
@@ -107,7 +104,7 @@
   <div class="sidebar">
     <div class="avatar"></div>
     <div class="user-name">{{ session['nome'] }}</div>
-    <button onclick="location.href='/alterar_senha'">Alterar Senha</button>
+    <a href="/logout" class="logout">Sair</a>
   </div>
 
   <div class="content">
