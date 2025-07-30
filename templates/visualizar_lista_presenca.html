@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Presença – {{ curso.nome }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Poppins',sans-serif; background:#c1f38e; margin:0; }
+    .box { background:#fff; max-width:600px; margin:40px auto; padding:30px; border-radius:12px; }
+    h2 { text-align:center; margin-bottom:20px; }
+    .info { font-size:14px; margin:6px 0; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th,td { border:1px solid #ccc; padding:8px; text-align:left; }
+    th { background:#f0f0f0; }
+    .assinou { color:green; font-weight:bold; }
+    .pendente { color:red; font-weight:bold; }
+    .btn { display:inline-block; margin-top:20px; background:#a0e76d; padding:10px 20px;
+           color:#000; text-decoration:none; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Lista de Presença</h2>
+
+    <p class="info"><strong>Curso:</strong> {{ curso.nome }}</p>
+    <p class="info"><strong>Carga Horária:</strong> {{ carga_horaria }}</p>
+    <p class="info"><strong>NRT:</strong> {{ nrt }}</p>
+    <p class="info"><strong>Instrutor:</strong> {{ instrutor }}</p>
+    <p class="info"><strong>Data:</strong> {{ data }} 
+    
+    <table>
+      <thead>
+        <tr><th>Aluno</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for nome_aluno, assinado in presencas.items() %}
+        <tr>
+          <td>{{ nome_aluno }}</td>
+          <td>
+            {% if assinado %}
+              <span class="assinou">✔️ Assinado</span>
+            {% else %}
+              <span class="pendente">⬜ Pendente</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="{{ url_for('acompanhamento') }}" class="btn">← Voltar</a>
+  </div>
+</body>
+</html>

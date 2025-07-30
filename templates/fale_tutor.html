@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fale com o Tutor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      background-color: #c1f38e;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #ffffff;
+      padding: 20px;
+      border-right: 2px solid #ccc;
+      height: 100vh;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      background-color: #a0e76d;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .logout {
+      display: block;
+      margin-top: 30px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .content {
+      flex: 1;
+      padding: 30px;
+      text-align: left;
+    }
+
+    .contact-box {
+      background-color: #fff;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 500px;
+    }
+
+    .contact-box h3 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Menu</h2>
+    <button onclick="window.location.href='/fale-tutor'">Fale com o Tutor</button>
+    <button onclick="window.location.href='/central-aluno'">Central do Aluno</button>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
+
+  <div class="content">
+    <h2>Fale com o Tutor</h2>
+    <div class="contact-box">
+      <h3>Contatos Disponíveis</h3>
+      <p><strong>E-mails:</strong></p>
+      <ul>
+        <li>carlos.lopes@ambipar.com</li>
+        <li>tuany.oliveira@ambipar.com</li>
+      </ul>
+      <p><strong>Telefones:</strong></p>
+      <ul>
+        <li>(21) 99529-9351</li>
+        <li>(22) 98179-0886</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

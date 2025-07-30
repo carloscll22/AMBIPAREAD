@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cursos Cadastrados</title>
+  <style>
+    body {
+      background-color: #c1f38e;
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+
+    .container {
+      background: white;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    a.botao {
+      background-color: #0d6efd;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a.botao:hover {
+      background-color: #084298;
+    }
+
+    .voltar {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .voltar a {
+      text-decoration: none;
+      color: #006400;
+      font-weight: bold;
+    }
+
+    .voltar a:hover {
+      text-decoration: underline;
+    }
+
+    .alunos-lista {
+      margin-top: 5px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Cursos Cadastrados</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Tipo</th>
+          <th>Carga Horária</th>
+          <th>NRT</th>
+          <th>Alunos Matriculados</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for curso in cursos %}
+        <tr>
+          <td>{{ curso.nome }}</td>
+          <td>{{ curso.tipo }}</td>
+          <td>{{ curso.carga_horaria }}</td>
+          <td>{{ curso.nrt }}</td>
+          <td>
+            <div class="alunos-lista">
+              {% for matricula in matriculas %}
+                {% if matricula.curso == curso.nome %}
+                  <form method="POST" action="{{ url_for('remover_matricula') }}" style="display:inline;">
+                    <input type="hidden" name="curso" value="{{ curso.nome }}">
+                    <input type="hidden" name="aluno" value="{{ matricula.aluno }}">
+                    {{ usuarios[matricula.aluno].nome }}
+                    <button type="submit" title="Remover aluno" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
+                  </form><br>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </td>
+          <td>
+            <a href="{{ url_for('editar_curso_nome', nome=curso.nome) }}" class="botao">Editar</a>
+
+            <form method="POST" action="{{ url_for('remover_curso') }}" onsubmit="return confirm('Tem certeza que deseja excluir este curso?');" style="margin-top: 8px;">
+              <input type="hidden" name="curso" value="{{ curso.nome }}">
+              <button type="submit" class="botao" style="background-color: #dc3545; border-radius: 6px; display: block; width: 100%; margin-top: 4px;">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+
+    </table>
+
+    <div class="voltar">
+      <a href="/">← Voltar à Home</a>
+    </div>
+  </div>
+</body>
+</html>

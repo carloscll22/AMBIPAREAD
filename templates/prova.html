@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Prova - {{ curso.nome }}</title>
+  <style>
+    body { background-color: #c1f38e; font-family: Arial, sans-serif; padding: 20px; }
+    .box { background: white; padding: 20px; border-radius: 8px; max-width: 700px; margin: auto; }
+    .pergunta { margin-bottom: 20px; }
+    .resultado, .mensagem { text-align: center; margin-top: 20px; font-weight: bold; }
+    .botao-certificado {
+      display: block;
+      margin: 20px auto 0 auto;
+      padding: 12px 20px;
+      background-color: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #333;
+      transition: background-color 0.3s ease;
+      text-decoration: none;
+      width: 200px;
+    }
+    .botao-certificado:hover {
+      background-color: #8dd24a;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Prova do Curso: {{ curso.nome }}</h2>
+
+    {% if enviado %}
+      <div class="resultado">
+        Você acertou {{ acertos }} de {{ total }} perguntas ({{ porcentagem }}%).
+      </div>
+
+      {% if aprovado %}
+        <div class="mensagem">
+          Parabéns, você concluiu o curso! Deseja emitir o certificado?
+        </div>
+        <form method="get" action="{{ url_for('gerar_certificado', aluno=session['usuario'], curso=curso.nome) }}">
+          <button type="submit" class="botao-certificado">Emitir Certificado</button>
+        </form>
+      {% else %}
+        <div class="mensagem" style="color: red;">
+          Você não atingiu a nota mínima de 70%. Por favor, tente novamente.
+        </div>
+        <form method="get" action="{{ url_for('prova', nome=curso.nome) }}">
+          <button type="submit" class="botao-certificado">Refazer Prova</button>
+        </form>
+      {% endif %}
+
+    {% else %}
+      <form method="post">
+        {% for i, pergunta in enumerate(curso.prova) %}
+          <div class="pergunta">
+            <p><strong>Pergunta {{ i + 1 }}:</strong> {{ pergunta.enunciado }}</p>
+            <label><input type="radio" name="pergunta_{{ i }}" value="a" required> a) {{ pergunta.a }}</label><br>
+            <label><input type="radio" name="pergunta_{{ i }}" value="b"> b) {{ pergunta.b }}</label><br>
+            <label><input type="radio" name="pergunta_{{ i }}" value="c"> c) {{ pergunta.c }}</label><br>
+            <label><input type="radio" name="pergunta_{{ i }}" value="d"> d) {{ pergunta.d }}</label><br>
+          </div>
+        {% endfor %}
+        <button type="submit">Enviar Respostas</button>
+      </form>
+    {% endif %}
+  </div>
+</body>
+</html>

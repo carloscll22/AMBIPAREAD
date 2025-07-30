@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Confirmação de Certificado</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #c1f38e;
+      text-align: center;
+      padding: 60px;
+      margin: 0;
+    }
+    .box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 40px 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      font-weight: 600;
+      color: #1602f1;
+      margin-bottom: 25px;
+    }
+    p {
+      font-size: 18px;
+      margin-bottom: 35px;
+    }
+    button {
+      background-color: #1602f1;
+      color: white;
+      border: none;
+      padding: 15px 35px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0b00a8;
+    }
+    a.cancelar {
+      display: inline-block;
+      margin-top: 20px;
+      color: #333;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    a.cancelar:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Parabéns, {{ aluno_nome }}!</h2>
+    <p>Você concluiu o curso <strong>{{ curso }}</strong> com aproveitamento suficiente para emissão do certificado.</p>
+    <form method="post" action="{{ url_for('emitir_certificado', aluno=aluno_email, curso=curso) }}">
+      <button type="submit">Emitir Certificado</button>
+    </form>
+    <a href="{{ url_for('home') }}" class="cancelar">Voltar ao início</a>
+  </div>
+</body>
+</html>

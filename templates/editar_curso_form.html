@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Curso</title>
+  <style>
+    body {
+      background-color: #c1f38e;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      background-color: white;
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .readonly {
+      background-color: #f0f0f0;
+      border: none;
+      font-weight: bold;
+    }
+
+    button {
+      margin-top: 25px;
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #084298;
+    }
+
+    .voltar {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .voltar a {
+      text-decoration: none;
+      color: #006400;
+      font-weight: bold;
+    }
+
+    .voltar a:hover {
+      text-decoration: underline;
+    }
+
+    .arquivo-atual {
+      font-size: 14px;
+      color: #444;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Editar Curso: {{ curso.nome }}</h2>
+    <form method="post" enctype="multipart/form-data">
+      
+      <label for="nome">Nome do Curso</label>
+      <input type="text" id="nome" name="nome" value="{{ curso.nome }}" class="readonly" readonly>
+
+      <label for="carga_horaria">Carga Horária</label>
+      <input type="text" id="carga_horaria" name="carga_horaria" value="{{ curso.carga_horaria }}" required>
+
+      <label for="tipo">Tipo</label>
+      <select id="tipo" name="tipo">
+        <option value="Inicial" {% if curso.tipo == 'Inicial' %}selected{% endif %}>Inicial</option>
+        <option value="Periódico" {% if curso.tipo == 'Periódico' %}selected{% endif %}>Periódico</option>
+      </select>
+
+      <label for="data_realizacao">Data de Realização</label>
+      <input type="date" id="data_realizacao" name="data_realizacao" value="{{ curso.data_realizacao }}" required>
+
+      <label for="nrt">Número da NRT</label>
+      <input type="text" id="nrt" name="nrt" value="{{ curso.nrt }}">
+
+      <label for="conteudo">Conteúdo</label>
+      <textarea id="conteudo" name="conteudo" rows="5">{{ curso.conteudo }}</textarea>
+
+      <label for="arquivo">Arquivo de Conteúdo (opcional)</label>
+      {% if curso.arquivo %}
+        <div class="arquivo-atual">Arquivo atual: {{ curso.arquivo }}</div>
+      {% endif %}
+      <input type="file" id="arquivo" name="arquivo">
+
+      <button type="submit">Salvar Alterações</button>
+    </form>
+
+    <div class="voltar">
+      <a href="{{ url_for('lista_cursos_para_editar') }}">← Voltar</a>
+    </div>
+  </div>
+</body>
+</html>

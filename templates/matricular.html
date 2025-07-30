@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Matricular Aluno</title>
+  <style>
+    body {
+      background-color: #c1f38e;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      padding-top: 40px;
+    }
+    .box {
+      background-color: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      width: 360px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #444;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    input[type="submit"] {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      transition: background-color 0.3s ease;
+    }
+    input[type="submit"]:hover {
+      background-color: #8dd24a;
+    }
+    .link-voltar {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+    .link-voltar:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Matricular Aluno em Curso</h2>
+    <form method="post">
+      <label for="aluno">Aluno:</label>
+      <select name="aluno" id="aluno" required>
+        {% for aluno in alunos %}
+          <option value="{{ aluno.email }}">{{ aluno.nome }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="curso">Curso:</label>
+      <select name="curso" id="curso">
+        {% for curso in cursos %}
+          <option value="{{ curso.nome }}">{{ curso.nome }}</option>
+        {% endfor %}
+      </select>
+
+
+      <label for="professor">Professor:</label>
+      <select name="professor" id="professor" required>
+        {% for prof in professores %}
+          <option value="{{ prof }}">{{ prof }}</option>
+        {% endfor %}
+      </select>
+
+        
+        {% for prof in professores %}
+          
+        {% endfor %}
+      </select>
+      
+      <label for="data_inicio">Data Início:</label>
+      <input type="date" id="data_inicio" name="data_inicio" required>
+
+      <label for="data_fim">Data Fim:</label>
+      <input type="date" id="data_fim" name="data_fim" required>
+
+      <input type="submit" value="Matricular" />
+    </form>
+    <a href="/" class="link-voltar">Voltar</a>
+  </div>
+</body>
+</html>

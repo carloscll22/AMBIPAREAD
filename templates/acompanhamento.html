@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Alunos Matriculados</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background-color: #c1f38e; display: flex; }
+    .sidebar {
+      width: 220px; background: #fff; padding: 20px; border-right: 2px solid #ccc;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    }
+    .sidebar h2 { font-size: 18px; margin-bottom: 20px; color: #333; }
+    .sidebar button {
+      width: 100%; margin-bottom: 15px; padding: 10px; background: #a0e76d;
+      border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar button:hover { background: #8ad858; }
+    .sidebar .logout { margin-top: auto; text-decoration: none; color: #333; font-weight: bold; }
+
+    .content {
+      flex: 1; padding: 30px; background-color: #f5ffe6;
+    }
+    .content h2 { margin-bottom: 20px; color: #333; }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .filter-bar select,
+    .filter-bar input[type="text"] {
+      padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: 14px; flex: 1;
+    }
+
+    table {
+      width: 100%; border-collapse: separate; border-spacing: 0 8px;
+    }
+    thead th {
+      background: #fff; padding: 12px; text-align: left; font-weight: 600;
+      border-bottom: 2px solid #ccc;
+    }
+    tbody tr { background: #fff; }
+    tbody td {
+      padding: 12px; border-bottom: 1px solid #e0e0e0; vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #e8f5d7; }
+
+    .actions a {
+      display: inline-block; margin-right: 8px; padding: 6px 10px;
+      background: #a0e76d; color: #000; border-radius: 6px;
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: background 0.3s;
+    }
+    .actions a:hover { background: #8ad858; }
+
+    @media (max-width: 800px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%; flex-direction: row; justify-content: space-around;
+        border-right: none; border-bottom: 2px solid #ccc;
+      }
+      .sidebar h2, .sidebar .logout { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Professor</h2>
+    <button onclick="location.href='/'">Central</button>
+    <button onclick="location.href='/acompanhamento'">Relatórios</button>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
+
+  <div class="content">
+    <h2>Relatório de Alunos Matriculados</h2>
+    <div class="filter-bar">
+      <select id="filter-type">
+        <option value="0">Curso</option>
+        <option value="1">NRT</option>
+        <option value="2">Aluno</option>
+        <option value="3">Status</option>
+      </select>
+      <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
+    </div>
+
+    <table id="tabela-acompanhamento">
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>NRT</th>
+          <th>Aluno</th>
+          <th>Tempo (min)</th>
+          <th>Status</th>
+          <th>Nota</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {# Itera sobre a lista criada em app.py #}
+        {% for e in enrollments %}
+          <tr>
+            <td>{{ e.curso.nome }}</td>
+            <td>{{ e.curso.nrt or '---' }}</td>
+            <td>{{ e.aluno }}</td>
+            <td>{{ e.tempo }}</td>
+            <td>
+              {% if e.concluido %}
+                Concluído
+              {% else %}
+                Em andamento
+              {% endif %}
+            </td>
+            <td>{{ e.nota }}</td>
+            <td class="actions">
+              {% if e.concluido %}
+                <a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
+                  Certificado
+                </a>
+                <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
+                  Lista Presença
+                </a>
+              {% else %}
+                ---
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function filtrarTabela() {
+      const tipo = +document.getElementById('filter-type').value;
+      const termo = document.getElementById('filter-input').value.toLowerCase();
+      document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row => {
+        const cell = row.querySelectorAll('td')[tipo]?.textContent.toLowerCase() || '';
+        row.style.display = cell.includes(termo) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

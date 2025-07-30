@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Área do Professor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #c1f38e;
+    }
+    .sidebar {
+      width: 240px;
+      background: #fff;
+      border-right: 2px solid #ccc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: url('{{ url_for("static", filename="avatar_professor.png") }}') center/cover no-repeat;
+      margin-bottom: 15px;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .sidebar button,
+    .sidebar a.logout {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      color: #000;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar button:hover,
+    .sidebar a.logout:hover {
+      background: #8ad858;
+    }
+    .content {
+      flex: 1;
+      padding: 40px;
+      background-color: #f5ffe6;
+    }
+    .content h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .actions a.card-btn {
+      display: block;
+      background: #fff;
+      border-left: 5px solid #a0e76d;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      text-decoration: none;
+      color: #000;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .actions a.card-btn:hover {
+      background: #e8f5d7;
+    }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+        border-right: none;
+        border-bottom: 2px solid #ccc;
+      }
+      .sidebar .avatar, .sidebar .user-name { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="avatar"></div>
+        <button onclick="location.href='/cadastrar_curso'">Cadastrar Curso</button>
+    <button onclick="location.href='/matricular'">Matricular Aluno</button>
+    <button onclick="location.href='/acompanhamento'">Acompanhamento</button>
+    <button onclick="location.href='/editar_curso'">Editar Curso</button>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
+
+  <div class="content">
+    <h2>Bem‑vindo
+    <div class="actions">
+      <a href="/cadastrar_curso" class="card-btn">📚 Cadastrar Novo Curso</a>
+      <a href="/matricular" class="card-btn">👥 Matricular Aluno</a>
+      <a href="/acompanhamento" class="card-btn">📊 Relatório de Matrículas</a>
+      <a href="/editar_curso" class="card-btn">✏️ Editar Curso</a>
+    </div>
+  </div>
+</body>
+</html>
