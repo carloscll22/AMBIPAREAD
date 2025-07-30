@@ -163,21 +163,28 @@
 
     {% for curso in cursos %}
     <div class="curso-card">
-      <h3>{{ curso.nome }}</h3>
-      <p><strong>Carga Horária:</strong> {{ curso.carga_horaria }}</p>
-      <p><strong>Vencimento:</strong> {{ vencimentos[curso.nome] }}</p>
-      <p class="status">
-        <strong>Status:</strong>
-        {% if progresso[curso.nome].concluido %}
-          <span class="concluido">✅ Concluído</span>
-        {% else %}
-          <span class="nao-concluido">⏳ Em andamento</span>
-        {% endif %}
-      </p>
-      <form action="/ver_material/{{ curso.nome }}">
-        <button type="submit">Acessar Curso</button>
-      </form>
-    </div>
+  <h3>{{ curso.nome }}</h3>
+  <p><strong>Carga Horária:</strong> {{ curso.carga_horaria }}</p>
+  <p><strong>Vencimento:</strong> {{ vencimentos[curso.nome] }}</p>
+  <p class="status">
+    <strong>Status:</strong>
+    {% if progresso[curso.nome].concluido %}
+      <span class="concluido">✅ Concluído</span>
+    {% else %}
+      <span class="nao-concluido">⏳ Em andamento</span>
+    {% endif %}
+  </p>
+
+  <form action="/ver_material/{{ curso.nome }}">
+    <button type="submit">Acessar Curso</button>
+  </form>
+
+  {% if progresso[curso.nome].concluido %}
+    <form action="/certificado/{{ curso.nome }}">
+      <button type="submit" style="margin-left: 10px;">📄 Baixar Certificado</button>
+    </form>
+  {% endif %}
+</div>
 
     {% endfor %}
   </div>
