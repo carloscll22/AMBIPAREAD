@@ -14,7 +14,7 @@
       background-color: #c1f38e;
     }
     .sidebar {
-      width: 100px;
+      width: 200px;
       background: #fff;
       border-right: 2px solid #ccc;
       padding: 20px 10px;
@@ -27,6 +27,30 @@
       height: 80px;
       border-radius: 50%;
       background: url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat;
+      margin-bottom: 10px;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar button:hover {
+      background: #8ad858;
     }
     .content {
       flex: 1;
@@ -73,12 +97,17 @@
         width: 60px;
         height: 60px;
       }
+      .user-name {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <div class="avatar"></div>
+    <div class="user-name">Professor Fulano</div>
+    <button onclick="location.href='/alterar_senha'">Alterar Senha</button>
   </div>
 
   <div class="content">
