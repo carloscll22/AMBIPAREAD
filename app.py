@@ -130,11 +130,17 @@ def login():
         email = request.form["nome"].strip().lower()
         senha = request.form["senha"]
         user  = usuarios.get(email)
+
         if user and user["senha"] == senha:
-        session["usuario"] = email
-        session["tipo"]    = user["tipo"]
-        session["nome"]    = user["nome"]  # <- Aqui você adiciona o nome na sessão
-        return redirect("/")
+            session["usuario"] = email
+            session["tipo"]    = user["tipo"]
+            session["nome"]    = user["nome"]  # <- Aqui agora está corretamente indentado
+            return redirect("/")
+
+        return "Usuário ou senha incorretos"
+
+    return render_template("login.html")
+
 
 
 
