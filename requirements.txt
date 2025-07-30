@@ -1,2 +1,5 @@
 flask
 gunicorn
+pytz
+flask_sqlalchemy
+werkzeug
