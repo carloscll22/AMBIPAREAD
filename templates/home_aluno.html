@@ -180,9 +180,10 @@
   </form>
 
   {% if progresso[curso.nome].concluido %}
-    <form action="/certificado/{{ curso.nome }}">
-      <button type="submit" style="margin-left: 10px;">📄 Baixar Certificado</button>
-    </form>
+    <form action="/emitir_certificado/{{ session['usuario'] }}/{{ curso.nome }}">
+  <button type="submit" style="margin-left: 10px;">📄 Baixar Certificado</button>
+</form>
+
   {% endif %}
 </div>
 
