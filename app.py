@@ -154,6 +154,22 @@ def logout():
 def cadastro_bloqueado():
     return redirect("/login")
 
+@app.route("/alterar_senha", methods=["GET", "POST"])
+def alterar_senha_professor():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    email = session["usuario"]
+
+    if request.method == "POST":
+        nova_senha = request.form.get("senha")
+        if nova_senha:
+            usuarios[email]["senha"] = nova_senha
+            # Salvar em arquivo se necessário, ex: salvar_usuarios(usuarios)
+        return redirect("/")
+
+    return render_template("perfil_aluno.html", usuario=usuarios[email])
+
 
 # ======================================================================
 #                       ROTAS (PROFESSOR)
