@@ -498,23 +498,39 @@ def perfil_aluno():
 
 @app.route("/prova/<nome>", methods=["GET", "POST"])
 def prova(nome):
-    if session.get("tipo") != "aluno":
+    if "usuario" not in session or session.get("tipo") != "aluno":
         return redirect("/login")
 
-    aluno_email = session["usuario"]
-    curso       = next((c for c in cursos if c["nome"] == nome), None)
-    if not curso:
+    aluno = session["usuario"]
+    curso_obj = next((c for c in cursos if c["nome"] == nome), None)
+    if not curso_obj:
         return "Curso não encontrado", 404
 
-    if request.method == "POST":
-        acertos = sum(1 for i, p in enumerate(curso["prova"]) if request.form.get(f"pergunta_{i}") == p["correta"])
-        total   = len(curso["prova"])
-        curso.setdefault("resultados", {})[aluno_email] = {"acertos": acertos, "total": total}
-        if acertos >= 0.7 * total:
-            return redirect(url_for("certificado_confirmacao", aluno=aluno_email, curso=nome))
-        return f"Você acertou {acertos} de {total}. Necessário ≥ {int(0.7*total)} acertos."
+    perguntas = curso_obj.get("perguntas", [])
+    if not perguntas:
+        return "Prova não cadastrada."
 
-    return render_template("prova.html", curso=curso, enumerate=enumerate)
+    curso_obj.setdefault("resultados", {})
+    resultado = curso_obj["resultados"].get(aluno)
+
+    # ✅ Impede refazer a prova caso tenha sido aprovado
+    if resultado and resultado["acertos"] >= 0.7 * resultado["total"]:
+        return "Você já foi aprovado neste curso. A prova não pode ser refeita.", 403
+
+    if request.method == "POST":
+        respostas = request.form
+        acertos = sum(1 for p in perguntas if respostas.get(p["pergunta"]) == p["resposta"])
+        total = len(perguntas)
+
+        curso_obj["resultados"][aluno] = {
+            "acertos": acertos,
+            "total": total,
+            "data": datetime.now().strftime("%d/%m/%Y")
+        }
+
+        return redirect("/")
+
+    return render_template("prova.html", perguntas=perguntas, curso=nome)
 
 
 @app.route("/certificado_confirmacao/<aluno>/<curso>")
