@@ -131,11 +131,11 @@ def login():
         senha = request.form["senha"]
         user  = usuarios.get(email)
         if user and user["senha"] == senha:
-            session["usuario"] = email
-            session["tipo"]    = user["tipo"]
-            return redirect("/")
-        return "Usuário ou senha incorretos"
-    return render_template("login.html")
+        session["usuario"] = email
+        session["tipo"]    = user["tipo"]
+        session["nome"]    = user["nome"]  # <- Aqui você adiciona o nome na sessão
+        return redirect("/")
+
 
 
 @app.route("/logout")
