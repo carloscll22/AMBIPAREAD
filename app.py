@@ -174,8 +174,8 @@ def alterar_senha_professor():
 # ======================================================================
 #                       ROTAS (PROFESSOR)
 # ======================================================================
-@app.route("/cadastrar_curso", methods=["GET", "POST"])
-def cadastrar_curso():
+@app.route("/cadastro_curso", methods=["GET", "POST"])
+def cadastro_curso():
     if session.get("tipo") != "professor":
         return redirect("/")
 
@@ -238,7 +238,7 @@ usuario_sessao = session.get("usuario")
         cursos.append(curso)
         return redirect("/")
 
-    return render_template("cadastrar_curso.html")
+    return render_template("cadastro_curso.html")
 
 
 
