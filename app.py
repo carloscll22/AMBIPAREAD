@@ -213,7 +213,7 @@ def cadastrar_curso():
             "tipo":            request.form["tipo"],
             "modulos":         modulos,  # << agora usa módulos
             "instrutor":       request.form.get("instrutor", usuarios[session["usuario"]]["nome"]),
-            "conteudo":        request.form["conteudo"],
+            "conteudo":        request.form.get("conteudo",""),
             "data_realizacao": request.form["data_realizacao"],
             "nrt":             request.form["nrt"],
             "prova":           perguntas,
