@@ -63,7 +63,8 @@
   <div class="sidebar">
     <h3>Módulos</h3>
     <ul>
-      {% for idx, mod in enumerate(curso.modulos) %}
+      {% for idx in range(curso.modulos|length) %}
+        {% set mod = curso.modulos[idx] %}
         <li>
           <a href="?modulo={{ idx }}" class="{% if idx == modulo_atual %}active{% endif %}">
             Módulo {{ idx + 1 }} - {{ mod.titulo }}
