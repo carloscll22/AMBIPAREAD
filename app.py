@@ -199,9 +199,13 @@ def cadastrar_curso():
         # -------- PROVA MULTIPLA ESCOLHA --------
         perguntas: list[dict] = []
         for key, val in request.form.items():
-            if key.startswith("perguntas["):
-                idx   = int(key.split("[")[1].split("]")[0])
-                campo = key.split("][")[1][:-1]
+    if key and key.startswith("perguntas[") and "][" in key:
+        try:
+            idx   = int(key.split("[")[1].split("]")[0])
+            campo = key.split("][")[1][:-1]
+        except (IndexError, ValueError):
+            continue  # ignora campos malformados
+
                 while len(perguntas) <= idx:
                     perguntas.append({"enunciado": "", "a": "", "b": "", "c": "", "d": "", "correta": ""})
                 perguntas[idx][campo] = val
