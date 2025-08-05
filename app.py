@@ -220,7 +220,7 @@ if request.method == "POST":
             perguntas[idx][campo] = val
             
 usuario_sessao = session.get("usuario")
-    # -------- CRIA O CURSO --------
+    # -------- CRIA O CURSO -------
     curso = {
         "nome":            request.form["nome"],
         "carga_horaria":   request.form["carga_horaria"],
