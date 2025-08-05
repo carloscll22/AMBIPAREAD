@@ -180,16 +180,23 @@ def cadastrar_curso():
         return redirect("/")
 
     if request.method == "POST":
-        # ---- arquivo (opcional) --------------------------------------
-        filename = ""
-        arquivo = request.files.get("arquivo")
-        if arquivo and arquivo.filename:
-            filename = arquivo.filename
-            caminho  = os.path.join("static", filename)
-            os.makedirs(os.path.dirname(caminho), exist_ok=True)
-            arquivo.save(caminho)
+        # -------- MÓDULOS MULTI-ARQUIVO --------
+        modulos = []
+        index = 0
+        while True:
+            titulo = request.form.get(f'modulos[{index}][titulo]')
+            arquivo = request.files.get(f'modulos[{index}][arquivo]')
+            if not titulo or not arquivo:
+                break
+            if allowed_file(arquivo.filename):
+                filename = secure_filename(arquivo.filename)
+                caminho = os.path.join("static", "conteudos", filename)
+                os.makedirs(os.path.dirname(caminho), exist_ok=True)
+                arquivo.save(caminho)
+                modulos.append({"titulo": titulo, "arquivo": f"conteudos/{filename}"})
+            index += 1
 
-        # ---- prova ----------------------------------------------------
+        # -------- PROVA MULTIPLA ESCOLHA --------
         perguntas: list[dict] = []
         for key, val in request.form.items():
             if key.startswith("perguntas["):
@@ -199,21 +206,24 @@ def cadastrar_curso():
                     perguntas.append({"enunciado": "", "a": "", "b": "", "c": "", "d": "", "correta": ""})
                 perguntas[idx][campo] = val
 
+        # -------- CRIA O CURSO --------
         curso = {
             "nome":            request.form["nome"],
             "carga_horaria":   request.form["carga_horaria"],
             "tipo":            request.form["tipo"],
-            "arquivo":         filename,
+            "modulos":         modulos,  # << agora usa módulos
             "instrutor":       request.form.get("instrutor", usuarios[session["usuario"]]["nome"]),
             "conteudo":        request.form["conteudo"],
             "data_realizacao": request.form["data_realizacao"],
             "nrt":             request.form["nrt"],
             "prova":           perguntas,
         }
+
         cursos.append(curso)
         return redirect("/")
 
-    return render_template("cadastrar_curso.html")
+    return render_template("cadastro_curso.html")
+
 
 @app.route("/matricular", methods=["GET", "POST"])
 def matricular():
