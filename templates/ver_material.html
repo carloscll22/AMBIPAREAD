@@ -117,17 +117,18 @@
     <h2>{{ curso.nome }}</h2>
 
     <div class="pdf-viewer" id="pdf-container">
-      {% if curso.arquivo %}
-        {% if curso.arquivo.endswith('.pdf') %}
-          <canvas id="pdf-canvas"></canvas>
-        {% else %}
-          <p>Arquivo enviado: <strong>{{ curso.arquivo }}</strong><br>
-          <a href="{{ url_for('static', filename=curso.arquivo) }}" target="_blank">Clique aqui para abrir ou baixar</a></p>
-        {% endif %}
-      {% else %}
-        <p>Nenhum conteúdo foi anexado a este curso.</p>
-      {% endif %}
+      {% if curso.modulos %}
+  {% for modulo in curso.modulos %}
+    <h3>{{ modulo.titulo }}</h3>
+    <div class="pdf-viewer">
+      <iframe src="{{ url_for('static', filename=modulo.arquivo) }}" width="100%" height="600px"></iframe>
     </div>
+    <br>
+  {% endfor %}
+{% else %}
+  <p>Nenhum módulo cadastrado.</p>
+{% endif %}
+
 
     {% if curso.arquivo and curso.arquivo.endswith('.pdf') %}
     <div class="controls">
