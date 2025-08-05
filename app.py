@@ -343,19 +343,26 @@ def remover_curso():
 # ======================================================================
 #                       ROTAS (ALUNO)
 # ======================================================================
-@app.route("/ver_material/<nome>")
-def ver_material(nome):
-    if session.get("tipo") != "aluno":
+@app.route("/ver_material/<curso>")
+def ver_material(curso):
+    if "usuario" not in session:
         return redirect("/login")
 
-    curso = next((c for c in cursos if c["nome"] == nome), None)
-    if not curso:
+    aluno = session["usuario"]
+    curso_obj = next((c for c in cursos if c["nome"] == curso), None)
+    if not curso_obj:
         return "Curso não encontrado", 404
 
-    session["start_time"]        = datetime.now().isoformat()
-    session["curso_visualizado"] = nome
-    return render_template("ver_material.html", curso=curso)
+    modulo_atual = int(request.args.get("modulo", 0))
+    total_modulos = len(curso_obj["modulos"])
 
+    progresso = int((modulo_atual + 1) / total_modulos * 100)
+
+    return render_template("ver_material.html",
+        curso=curso_obj,
+        modulo_atual=modulo_atual,
+        progresso=progresso
+    )
 
 @app.route("/concluir/<nome>", methods=["POST"])
 def concluir(nome):
