@@ -238,7 +238,7 @@ usuario_sessao = session.get("usuario")
         cursos.append(curso)
         return redirect("/")
 
-    return render_template("cadastro_curso.html")
+    return render_template("cadastrar_curso.html")
 
 
 
