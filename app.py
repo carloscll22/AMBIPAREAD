@@ -372,7 +372,10 @@ def ver_material(curso):
     modulo_atual = int(request.args.get("modulo", 0))
     total_modulos = len(curso_obj["modulos"])
 
-    progresso = int((modulo_atual + 1) / total_modulos * 100)
+    if total_modulos == 0:
+        progresso = 0
+    else:
+        progresso = int((modulo_atual + 1) / total_modulos * 100)
 
     return render_template("ver_material.html",
         curso=curso_obj,
