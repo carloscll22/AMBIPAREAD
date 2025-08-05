@@ -218,17 +218,17 @@ def cadastrar_curso():
                     })
 
                 perguntas[idx][campo] = val
-                
-usuario_sessao = session.get("usuario")
+
         # -------- CRIA O CURSO --------
+        usuario_sessao = session.get("usuario")
+        instrutor_nome = usuarios[usuario_sessao]["nome"] if usuario_sessao and usuario_sessao in usuarios else "Desconhecido"
+
         curso = {
             "nome":            request.form["nome"],
             "carga_horaria":   request.form["carga_horaria"],
             "tipo":            request.form["tipo"],
             "modulos":         modulos,
-            
-            instrutor_nome = usuarios[usuario_sessao]["nome"] if usuario_sessao and usuario_sessao in usuarios else "Desconhecido"
-            "instrutor": request.form.get("instrutor", instrutor_nome),
+            "instrutor":       request.form.get("instrutor", instrutor_nome),
             "conteudo":        request.form.get("conteudo", ""),
             "data_realizacao": request.form["data_realizacao"],
             "nrt":             request.form["nrt"],
@@ -239,8 +239,6 @@ usuario_sessao = session.get("usuario")
         return redirect("/")
 
     return render_template("cadastrar_curso.html")
-
-
 
 
 @app.route("/matricular", methods=["GET", "POST"])
