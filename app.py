@@ -225,7 +225,9 @@ def cadastrar_curso():
             "carga_horaria":   request.form["carga_horaria"],
             "tipo":            request.form["tipo"],
             "modulos":         modulos,
-            "instrutor":       request.form.get("instrutor", usuarios[session["usuario"]]["nome"]),
+            usuario_sessao = session.get("usuario")
+            instrutor_nome = usuarios[usuario_sessao]["nome"] if usuario_sessao and usuario_sessao in usuarios else "Desconhecido"
+            "instrutor": request.form.get("instrutor", instrutor_nome),
             "conteudo":        request.form.get("conteudo", ""),
             "data_realizacao": request.form["data_realizacao"],
             "nrt":             request.form["nrt"],
