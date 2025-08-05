@@ -203,12 +203,12 @@ def cadastrar_curso():
         try:
             idx   = int(key.split("[")[1].split("]")[0])
             campo = key.split("][")[1][:-1]
+            while len(perguntas) <= idx:
+                perguntas.append({"enunciado": "", "a": "", "b": "", "c": "", "d": "", "correta": ""})
+            perguntas[idx][campo] = val
         except (IndexError, ValueError):
             continue  # ignora campos malformados
 
-                while len(perguntas) <= idx:
-                    perguntas.append({"enunciado": "", "a": "", "b": "", "c": "", "d": "", "correta": ""})
-                perguntas[idx][campo] = val
 
         # -------- CRIA O CURSO --------
         curso = {
