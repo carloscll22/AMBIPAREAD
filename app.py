@@ -496,23 +496,22 @@ def lista_presenca(curso):
 
     carga_horaria = curso_obj.get("carga_horaria", "")
 
-    # quando o aluno clica em “Assinar”
     if request.method == "POST":
         matricula["presenca_assinada"] = True
-        return render_template("lista_presenca.html",
-                               curso=curso_obj,
-                               aluno=usuarios[email]["nome"],
-                               instrutor=matricula["professor"],
-                               nrt=curso_obj.get("nrt",""),
-                               carga_horaria=carga_horaria,
-                               data=data,
-                               hora=hora,
-                               ip=ip,
-                               presenca=True)
+        # Após assinar, redireciona direto para o certificado
+        return redirect(url_for("gerar_certificado", aluno=email, curso=curso))
 
-    # GET inicial: mostra se já assinou ou não
-    return redirect(url_for("prova", nome=curso))
-
+    # GET inicial: mostra a tela da lista de presença
+    return render_template("lista_presenca.html",
+                           curso=curso_obj,
+                           aluno=usuarios[email]["nome"],
+                           instrutor=matricula["professor"],
+                           nrt=curso_obj.get("nrt",""),
+                           carga_horaria=carga_horaria,
+                           data=data,
+                           hora=hora,
+                           ip=ip,
+                           presenca=matricula["presenca_assinada"])
 
 @app.route("/central-aluno")
 def central_aluno():
