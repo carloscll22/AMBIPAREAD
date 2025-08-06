@@ -42,7 +42,7 @@
         </div>
     
         {% if presenca_assinada %}
-  <form method="get" action="{{ url_for('gerar_certificado', aluno=session['usuario'], curso=curso.nome) }}">
+  <form method="get" action="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}">
     <button type="submit" class="botao-certificado">Emitir Certificado</button>
   </form>
 {% else %}
@@ -78,4 +78,5 @@
   </div>
 </body>
 </html>
+
 
