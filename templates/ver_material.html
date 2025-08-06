@@ -144,7 +144,7 @@
 
     {% if modulo_atual + 1 == curso.modulos|length and progresso == 100 %}
     <div class="concluir">
-      <form method="post" action="/concluir/{{ curso.nome }}?modulo={{ modulo_atual }}">
+      <form method="post" action="/concluir/{{ curso.nome }}">
   <button id="concluirBtn" type="submit">Concluído</button>
 </form>
     </div>
