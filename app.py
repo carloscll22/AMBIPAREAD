@@ -511,8 +511,7 @@ def lista_presenca(curso):
                                presenca=True)
 
     # GET inicial: mostra se já assinou ou não
-    return redirect(url_for("prova", curso=curso))
-
+    return redirect(url_for("prova", nome=curso))
 
 
 @app.route("/central-aluno")
