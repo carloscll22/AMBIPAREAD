@@ -17,6 +17,10 @@ from random import randint
 from werkzeug.utils import secure_filename  
 from datetime import datetime
 
+def salvar_dados(caminho, dados):
+    with open(caminho, "w", encoding="utf-8") as f:
+        json.dump(dados, f, indent=2, ensure_ascii=False)
+
 def salvar_usuarios():
     with open("usuarios.json", "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
