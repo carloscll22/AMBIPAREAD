@@ -114,11 +114,13 @@
 <div class="container">
   <div class="menu-lateral">
     <ul>
-      {% for idx, mod in curso.modulos %}
-        <li>
-          <a href="?modulo={{ idx }}">Módulo {{ idx + 1 }} - {{ mod.titulo }}</a>
-        </li>
-      {% endfor %}
+      {% for idx in range(curso.modulos | length) %}
+  {% set mod = curso.modulos[idx] %}
+  <li>
+    <a href="?modulo={{ idx }}">Módulo {{ idx + 1 }} - {{ mod.titulo }}</a>
+  </li>
+{% endfor %}
+
     </ul>
   </div>
 
