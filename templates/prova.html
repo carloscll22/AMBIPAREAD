@@ -40,9 +40,18 @@
         <div class="mensagem">
           Parabéns, você concluiu o curso! Deseja emitir o certificado?
         </div>
-        <form method="get" action="{{ url_for('gerar_certificado', aluno=session['usuario'], curso=curso.nome) }}">
-          <button type="submit" class="botao-certificado">Emitir Certificado</button>
-        </form>
+    
+        {% if presenca_assinada %}
+  <form method="get" action="{{ url_for('gerar_certificado', aluno=session['usuario'], curso=curso.nome) }}">
+    <button type="submit" class="botao-certificado">Emitir Certificado</button>
+  </form>
+{% else %}
+  <div class="mensagem" style="color: #333; margin-top: 20px;">
+    Para emitir o certificado, assine a lista de presença:
+  </div>
+  <a href="{{ url_for('lista_presenca', curso=curso.nome) }}" class="botao-certificado">Assinar Lista de Presença</a>
+{% endif %}
+
       {% else %}
         <div class="mensagem" style="color: red;">
           Você não atingiu a nota mínima de 70%. Por favor, tente novamente.
@@ -69,3 +78,4 @@
   </div>
 </body>
 </html>
+
