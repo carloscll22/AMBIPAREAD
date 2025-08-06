@@ -497,16 +497,8 @@ def lista_presenca(curso):
                                presenca=True)
 
     # GET inicial: mostra se já assinou ou não
-    return render_template("lista_presenca.html",
-                           curso=curso_obj,
-                           aluno=usuarios[email]["nome"],
-                           instrutor=matricula["professor"],
-                           nrt=curso_obj.get("nrt",""),
-                           carga_horaria=carga_horaria,
-                           data=data,
-                           hora=hora,
-                           ip=ip,
-                           presenca=matricula["presenca_assinada"])
+    return redirect(url_for("prova", curso=curso))
+
 
 
 @app.route("/central-aluno")
