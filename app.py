@@ -393,17 +393,27 @@ def concluir(nome):
     if session.get("tipo") != "aluno":
         return redirect("/login")
 
-    aluno_email       = session["usuario"]
-    start_iso         = session.pop("start_time", None)
-    curso_visualizado = session.pop("curso_visualizado", None)
+    aluno_email = session["usuario"]
+    start_iso = session.get("start_time")
+    curso_visualizado = session.get("curso_visualizado")
+
     if not (start_iso and curso_visualizado == nome):
-        return redirect("/")
+        return redirect("/")  # valida antes de apagar
+
+    # agora sim, remove os dados da sessão
+    session.pop("start_time", None)
+    session.pop("curso_visualizado", None)
 
     elapsed = (datetime.now() - datetime.fromisoformat(start_iso)).total_seconds() / 60
-    curso   = next((c for c in cursos if c["nome"] == nome), None)
+    curso = next((c for c in cursos if c["nome"] == nome), None)
+
     if curso:
-        curso.setdefault("progresso", {})[aluno_email] = {"tempo": round(elapsed, 2), "concluido": True}
-        return redirect(url_for("lista_presenca", curso=nome))
+        curso.setdefault("progresso", {})[aluno_email] = {
+            "tempo": round(elapsed, 2),
+            "concluido": True
+        }
+        return redirect(url_for("lista_presenca", curso=nome))  # <- irá pra lista de presença
+
 
 @app.route("/ver_lista_presenca/<aluno>/<curso>")
 def ver_lista_presenca(aluno, curso):
