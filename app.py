@@ -483,25 +483,19 @@ def lista_presenca(curso):
     if not (curso_obj and matricula):
         return "Curso ou matrícula não encontrado", 404
 
-    # inicializa o campo de presença, se ainda não existir
     if "presenca_assinada" not in matricula:
         matricula["presenca_assinada"] = False
 
-    # metadata de data/hora/ip
     fuso_sp = pytz.timezone("America/Sao_Paulo")
     agora   = datetime.now(fuso_sp)
     data    = agora.strftime("%d/%m/%Y")
     hora    = agora.strftime("%H:%M")
     ip      = gerar_ip_falso()
-
     carga_horaria = curso_obj.get("carga_horaria", "")
 
     if request.method == "POST":
         matricula["presenca_assinada"] = True
-        # Após assinar, redireciona direto para o certificado
-        return redirect(url_for("gerar_certificado", aluno=email, curso=curso))
 
-    # GET inicial: mostra a tela da lista de presença
     return render_template("lista_presenca.html",
                            curso=curso_obj,
                            aluno=usuarios[email]["nome"],
