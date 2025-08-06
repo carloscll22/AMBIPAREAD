@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from random import randint
 import pytz
-
+progresso_por_aluno = {}
 def gerar_ip():
     return ".".join(str(randint(0, 225)) for _ in range(4))
     
@@ -359,7 +359,7 @@ def remover_curso():
 # ======================================================================
 #                       ROTAS (ALUNO)
 # ======================================================================
-@app.route("/ver_material/<curso>")
+@app.route("/ver_material/<curso>", methods=["GET", "POST"])
 def ver_material(curso):
     if "usuario" not in session:
         return redirect("/login")
@@ -372,16 +372,21 @@ def ver_material(curso):
     modulo_atual = int(request.args.get("modulo", 0))
     total_modulos = len(curso_obj["modulos"])
 
-    if total_modulos == 0:
-        progresso = 0
-    else:
-        progresso = int((modulo_atual + 1) / total_modulos * 100)
+    if aluno not in progresso_por_aluno:
+        progresso_por_aluno[aluno] = {}
+
+    progresso_individual = progresso_por_aluno[aluno].get(curso, [0] * total_modulos)
+    progresso_individual[modulo_atual] = 100
+    progresso_por_aluno[aluno][curso] = progresso_individual
+
+    progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100)
 
     return render_template("ver_material.html",
         curso=curso_obj,
         modulo_atual=modulo_atual,
-        progresso=progresso
+        progresso=progresso_total
     )
+
 
 @app.route("/concluir/<nome>", methods=["POST"])
 def concluir(nome):
