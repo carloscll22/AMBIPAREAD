@@ -5,88 +5,150 @@
   <title>{{ curso.nome }}</title>
   <style>
     body {
+      font-family: Poppins, sans-serif;
       margin: 0;
-      font-family: Arial, sans-serif;
+      padding: 0;
+      background: #eafcd4;
+    }
+
+    .top-bar {
       display: flex;
-      height: 100vh;
-      background-color: #eafcd4;
+      justify-content: space-between;
+      padding: 15px 30px;
+      background: #c1f38e;
+      align-items: center;
     }
 
-    .sidebar {
-      width: 250px;
-      background-color: #c1f38e;
+    .top-bar h2 {
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+    }
+
+    .menu-lateral {
+      width: 25%;
       padding: 20px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      background-color: #d8f3a7;
+      height: 100vh;
     }
 
-    .sidebar h3 {
-      margin-top: 0;
-    }
-
-    .sidebar ul {
+    .menu-lateral ul {
       list-style: none;
       padding: 0;
     }
 
-    .sidebar li {
-      margin: 10px 0;
+    .menu-lateral li {
+      margin-bottom: 10px;
     }
 
-    .sidebar a {
+    .menu-lateral a {
       text-decoration: none;
       color: #333;
       font-weight: bold;
     }
 
-    .sidebar a.active {
-      color: #4CAF50;
-    }
-
-    .content {
-      flex: 1;
-      padding: 30px;
+    .conteudo {
+      width: 75%;
+      padding: 20px;
     }
 
     iframe {
       width: 100%;
-      height: 80vh;
-      border: 2px solid #000;
+      height: 600px;
+      border: 2px solid #888;
       border-radius: 10px;
     }
 
-    .footer {
-      margin-top: 15px;
+    .progress {
+      margin-top: 20px;
+      background-color: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: {{ progresso }}%;
+      background-color: #4CAF50;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      transition: width 0.4s;
+    }
+
+    .nav-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .nav-buttons button {
+      padding: 10px 20px;
+      background-color: #a0e76d;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .nav-buttons button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .concluir {
+      margin-top: 20px;
+      text-align: right;
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h3>Módulos</h3>
+
+<div class="top-bar">
+  <h2>{{ curso.nome }}</h2>
+</div>
+
+<div class="container">
+  <div class="menu-lateral">
     <ul>
-      {% for idx in range(curso.modulos|length) %}
-        {% set mod = curso.modulos[idx] %}
+      {% for idx, mod in curso.modulos %}
         <li>
-          <a href="?modulo={{ idx }}" class="{% if idx == modulo_atual %}active{% endif %}">
-            Módulo {{ idx + 1 }} - {{ mod.titulo }}
-          </a>
+          <a href="?modulo={{ idx }}">Módulo {{ idx + 1 }} - {{ mod.titulo }}</a>
         </li>
       {% endfor %}
     </ul>
   </div>
 
-  <div class="content">
-    <h2>{{ curso.nome }}</h2>
-    {% if curso.modulos %}
-      <iframe src="/static/{{ curso.modulos[modulo_atual].arquivo }}" frameborder="0"></iframe>
-    {% else %}
-      <p>Nenhum módulo disponível.</p>
-    {% endif %}
+  <div class="conteudo">
+    <iframe src="/static/{{ curso.modulos[modulo_atual].arquivo }}" frameborder="0"></iframe>
 
-    <div class="footer">
-      <form method="post" action="/concluir/{{ curso.nome }}">
-        <button type="submit">Concluir Curso</button>
+    <div class="progress">
+      <div class="progress-bar">{{ progresso }}%</div>
+    </div>
+
+    <div class="nav-buttons">
+      <form method="get">
+        <input type="hidden" name="modulo" value="{{ modulo_atual - 1 }}">
+        <button type="submit" {% if modulo_atual == 0 %}disabled{% endif %}>← Anterior</button>
+      </form>
+      <form method="get">
+        <input type="hidden" name="modulo" value="{{ modulo_atual + 1 }}">
+        <button type="submit" {% if modulo_atual + 1 == curso.modulos|length %}disabled{% endif %}>Próximo →</button>
       </form>
     </div>
+
+    {% if modulo_atual + 1 == curso.modulos|length and progresso == 100 %}
+    <div class="concluir">
+      <form method="post" action="/concluir/{{ curso.nome }}">
+        <button type="submit">✔ Concluído</button>
+      </form>
+    </div>
+    {% endif %}
   </div>
+</div>
+
 </body>
 </html>
