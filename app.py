@@ -372,6 +372,10 @@ def ver_material(curso):
     modulo_atual = int(request.args.get("modulo", 0))
     total_modulos = len(curso_obj["modulos"])
 
+    # ⬇️ Salva início da visualização
+    session["start_time"] = datetime.now().isoformat()
+    session["curso_visualizado"] = curso
+
     if aluno not in progresso_por_aluno:
         progresso_por_aluno[aluno] = {}
 
