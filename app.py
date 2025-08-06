@@ -548,19 +548,39 @@ def prova(nome):
         return redirect("/login")
 
     aluno_email = session["usuario"]
-    curso       = next((c for c in cursos if c["nome"] == nome), None)
+    curso = next((c for c in cursos if c["nome"] == nome), None)
     if not curso:
         return "Curso não encontrado", 404
+
+    matricula = next((m for m in matriculas if m["aluno"] == aluno_email and m["curso"] == nome), None)
+    presenca_assinada = matricula.get("presenca_assinada", False) if matricula else False
 
     if request.method == "POST":
         acertos = sum(1 for i, p in enumerate(curso["prova"]) if request.form.get(f"pergunta_{i}") == p["correta"])
         total   = len(curso["prova"])
-        curso.setdefault("resultados", {})[aluno_email] = {"acertos": acertos, "total": total}
-        if acertos >= 0.7 * total:
-            return redirect(url_for("certificado_confirmacao", aluno=aluno_email, curso=nome))
-        return f"Você acertou {acertos} de {total}. Necessário ≥ {int(0.7*total)} acertos."
+        aprovado = acertos >= 0.7 * total
 
-    return render_template("prova.html", curso=curso, enumerate=enumerate)
+        curso.setdefault("resultados", {})[aluno_email] = {"acertos": acertos, "total": total}
+
+        return render_template(
+            "prova.html",
+            curso=curso,
+            enumerate=enumerate,
+            enviado=True,
+            acertos=acertos,
+            total=total,
+            porcentagem=int(acertos / total * 100),
+            aprovado=aprovado,
+            presenca_assinada=presenca_assinada
+        )
+
+    return render_template(
+        "prova.html",
+        curso=curso,
+        enumerate=enumerate,
+        presenca_assinada=presenca_assinada
+    )
+
 
 @app.route("/certificado_confirmacao/<aluno>/<curso>")
 def certificado_confirmacao(aluno, curso):
