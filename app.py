@@ -7,10 +7,29 @@ def gerar_ip():
     
 import os
 import json
+CAMINHO_USUARIOS = "/mnt/data/usuarios.json"
+CAMINHO_CURSOS = "/mnt/data/cursos.json"
+CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
+CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
+
+       
 from random import randint
 from werkzeug.utils import secure_filename  
 from datetime import datetime
 
+def salvar_usuarios():
+    with open("usuarios.json", "w", encoding="utf-8") as f:
+        json.dump(usuarios, f, indent=2, ensure_ascii=False)
+
+def carregar_dados(caminho, padrao):
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return padrao
+
+def salvar_usuarios():
+    with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
+        json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
 UPLOAD_FOLDER = 'static/conteudos'
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx', 'jpg', 'jpeg', 'png', 'mp4', 'mp3', 'zip', 'rar', 'txt', 'csv'}
@@ -165,7 +184,7 @@ def alterar_senha_professor():
         nova_senha = request.form.get("senha")
         if nova_senha:
             usuarios[email]["senha"] = nova_senha
-            # Salvar em arquivo se necessário, ex: salvar_usuarios(usuarios)
+            salvar_usuarios()
         return redirect("/")
 
     return render_template("perfil_aluno.html", usuario=usuarios[email])
@@ -236,6 +255,7 @@ def cadastrar_curso():
         }
 
         cursos.append(curso)
+        salvar_dados(CAMINHO_CURSOS, cursos)  # Salva o curso novo no disco
         return redirect("/")
 
     return render_template("cadastrar_curso.html")
@@ -257,6 +277,8 @@ def matricular():
                         "curso":    curso_nome,
                         "professor": professor
                     })
+                    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+
                 return redirect("/matricular")
 
             alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
@@ -281,10 +303,7 @@ def matricular():
                                    alunos=alunos,
                                    cursos=cursos,     # aqui cursos é lista de dicts com campo "nome"
                                    professores=professores)
-
-                
-   
-
+                  
 @app.route("/editar_curso/<nome>", methods=["GET", "POST"])
 def editar_curso_nome(nome):
     if session.get("tipo") != "professor":
@@ -301,6 +320,7 @@ def editar_curso_nome(nome):
         curso["data_realizacao"] = request.form["data_realizacao"]
         curso["nrt"] = request.form["nrt"]
         curso["conteudo"] = request.form["conteudo"]
+        salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect("/editar_curso")
 
     if 'arquivo' in request.files:
@@ -310,10 +330,9 @@ def editar_curso_nome(nome):
             caminho = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(caminho)
             curso["arquivo"] = filename
+            salvar_dados(CAMINHO_CURSOS, cursos)
             return redirect("/editar_curso")
 
-    return render_template("editar_curso_form.html", curso=curso)
-    
     alunos_matriculados = [
         usuarios[m["aluno"]]["nome"]
         for m in matriculas
@@ -325,6 +344,7 @@ def editar_curso_nome(nome):
         curso=curso,
         alunos_matriculados=alunos_matriculados
     )
+
 
 @app.route("/editar_curso", endpoint="lista_cursos_para_editar")
 def lista_cursos_para_editar():
@@ -341,13 +361,16 @@ def lista_cursos_para_editar():
 
 @app.route("/remover_matricula", methods=["POST"])
 def remover_matricula():
-        curso_nome = request.form["curso"]
-        aluno_id = request.form["aluno"]
+    curso_nome = request.form["curso"]
+    aluno_id = request.form["aluno"]
 
-        global matriculas
-        matriculas = [m for m in matriculas if not (m["curso"] == curso_nome and m["aluno"] == aluno_id)]
+    global matriculas
+    matriculas = [m for m in matriculas if not (m["curso"] == curso_nome and m["aluno"] == aluno_id)]
 
-        return redirect(url_for("lista_cursos_para_editar"))
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)  # <- salvando a alteração no disco
+
+    return redirect(url_for("lista_cursos_para_editar"))
+
     
 @app.route("/remover_curso", methods=["POST"])
 def remover_curso():
@@ -355,7 +378,12 @@ def remover_curso():
     global cursos, matriculas
     cursos = [c for c in cursos if c["nome"] != nome]
     matriculas = [m for m in matriculas if m["curso"] != nome]
+
+    salvar_dados(CAMINHO_CURSOS, cursos)
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+
     return redirect(url_for("lista_cursos_para_editar"))
+
 # ======================================================================
 #                       ROTAS (ALUNO)
 # ======================================================================
@@ -372,7 +400,6 @@ def ver_material(curso):
     modulo_atual = int(request.args.get("modulo", 0))
     total_modulos = len(curso_obj["modulos"])
 
-    # ⬇️ Salva início da visualização
     session["start_time"] = datetime.now().isoformat()
     session["curso_visualizado"] = curso
 
@@ -383,6 +410,9 @@ def ver_material(curso):
     progresso_individual[modulo_atual] = 100
     progresso_por_aluno[aluno][curso] = progresso_individual
 
+    # ✅ SALVA o progresso no disco
+    salvar_dados(CAMINHO_PROGRESSO, progresso_por_aluno)
+
     progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100)
 
     return render_template("ver_material.html",
@@ -390,6 +420,7 @@ def ver_material(curso):
         modulo_atual=modulo_atual,
         progresso=progresso_total
     )
+
 
 
 @app.route("/concluir/<nome>", methods=["POST"])
@@ -404,7 +435,6 @@ def concluir(nome):
     if not (start_iso and curso_visualizado == nome):
         return redirect("/")  # valida antes de apagar
 
-    # agora sim, remove os dados da sessão
     session.pop("start_time", None)
     session.pop("curso_visualizado", None)
 
@@ -416,7 +446,11 @@ def concluir(nome):
             "tempo": round(elapsed, 2),
             "concluido": True
         }
-        return redirect(url_for("lista_presenca", curso=nome))  # <- irá pra lista de presença
+
+        # ✅ salva progresso no disco
+        salvar_dados(CAMINHO_CURSOS, cursos)
+
+        return redirect(url_for("lista_presenca", curso=nome))
 
 
 @app.route("/ver_lista_presenca/<aluno>/<curso>")
@@ -495,6 +529,7 @@ def lista_presenca(curso):
 
     if request.method == "POST":
         matricula["presenca_assinada"] = True
+        salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
     return render_template("lista_presenca.html",
                            curso=curso_obj,
@@ -506,6 +541,7 @@ def lista_presenca(curso):
                            hora=hora,
                            ip=ip,
                            presenca=matricula["presenca_assinada"])
+
 
 @app.route("/central-aluno")
 def central_aluno():
@@ -530,6 +566,7 @@ def perfil_aluno():
         nova_senha = request.form.get("senha")
         if nova_senha:
             usuarios[email]["senha"] = nova_senha
+            salvar_dados(CAMINHO_USUARIOS, usuarios)  # ⬅️ Salva a nova senha no disco
         return redirect("/perfil")
 
     return render_template("perfil_aluno.html", usuario=usuarios[email])
@@ -554,6 +591,7 @@ def prova(nome):
         aprovado = acertos >= 0.7 * total
 
         curso.setdefault("resultados", {})[aluno_email] = {"acertos": acertos, "total": total}
+        salvar_dados(CAMINHO_CURSOS, cursos)  # ⬅️ Salva os resultados da prova
 
         return render_template(
             "prova.html",
@@ -573,6 +611,7 @@ def prova(nome):
         enumerate=enumerate,
         presenca_assinada=presenca_assinada
     )
+
 
 
 @app.route("/certificado_confirmacao/<aluno>/<curso>")
@@ -639,7 +678,15 @@ def emitir_certificado(aluno, curso):
     conteudo  = curso_obj.get("conteudo", "")
     aluno_nome = usuarios[aluno]["nome"]
 
-    return render_template(        "certificado.html",
+    # (Opcional) Registrar que o certificado foi emitido
+    curso_obj.setdefault("certificados_emitidos", {})[aluno] = {
+        "data": data_assinatura_instrutor,
+        "hora": hora_assinatura_instrutor,
+        "ip": gerar_ip()
+    }
+    salvar_dados(CAMINHO_CURSOS, cursos)
+
+    return render_template("certificado.html",
         aluno_nome=aluno_nome,
         curso=curso,
         carga=carga,
@@ -655,59 +702,43 @@ def emitir_certificado(aluno, curso):
     )
 
 
-
-
-    if request.method == "POST":
-        curso["nome"]            = request.form["nome"]
-        curso["carga_horaria"]   = request.form["carga_horaria"]
-        curso["tipo"]            = request.form["tipo"]
-        curso["instrutor"]       = request.form["instrutor"]
-        curso["data_realizacao"] = request.form["data_realizacao"]
-        curso["nrt"]             = request.form["nrt"]
-        curso["conteudo"]        = request.form["conteudo"]
-        return redirect("/editar_curso")
-
-    return render_template("editar_curso_form.html", curso=curso)
-
-  
-
 # ======================================================================
 #                       RELATÓRIOS / UTIL
 # ======================================================================
 
 @app.route("/acompanhamento")
 def acompanhamento():
-            if session.get("tipo") != "professor":
-                return redirect("/login")
+    if session.get("tipo") != "professor":
+        return redirect("/login")
 
-            # debug (opcional)
-            print(">>> CURSOS:", cursos)
-            print(">>> MATRÍCULAS:", matriculas)
+    # monta lista de matrículas detalhadas
+    enrollments = []
+    for m in matriculas:
+        curso_nome = m.get("curso")
+        if not curso_nome:
+            continue
+        curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
+        if not curso_obj:
+            continue
 
-            # monta lista de matrículas detalhadas
-            enrollments = []
-            for m in matriculas:
-                curso_nome = m.get("curso")
-                if not curso_nome:
-                    continue
-                curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
-                if not curso_obj:
-                    continue
+        prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
+        res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
+        nota = f"{round((res['acertos']/res['total']*100),1)}%" if res["total"] > 0 else "---"
 
-                prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
-                res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
-                nota = f"{round((res['acertos']/res['total']*100),1)}%" if res["total"] > 0 else "---"
+        enrollments.append({
+            "curso":     curso_obj,
+            "aluno":     usuarios[m["aluno"]]["nome"],
+            "email":     m["aluno"],
+            "tempo":     prog["tempo"],
+            "concluido": prog["concluido"],
+            "nota":      nota
+        })
 
-                enrollments.append({
-                    "curso":     curso_obj,
-                    "aluno":     usuarios[m["aluno"]]["nome"],
-                    "email":     m["aluno"],
-                    "tempo":     prog["tempo"],
-                    "concluido": prog["concluido"],
-                    "nota":      nota
-                })
+    # salva progresso e resultados no disco para não perder dados
+    salvar_dados(CAMINHO_CURSOS, cursos)
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
-            return render_template("acompanhamento.html", enrollments=enrollments)
+    return render_template("acompanhamento.html", enrollments=enrollments)
 
 
 
