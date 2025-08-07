@@ -1,0 +1,10 @@
+{
+  "aluno@email.com": {
+    "nome": "Aluno de Teste",
+    "tipo": "aluno"
+  },
+  "professor@email.com": {
+    "nome": "Professor de Teste",
+    "tipo": "professor"
+  }
+}
