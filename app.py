@@ -143,10 +143,17 @@ def home():
             curso["data_fim"] = matricula.get("data_fim") if matricula else None
             vencimentos[curso["nome"]] = curso["data_fim"] or "Não Definida"
 
-            # Disponibiliza botão de certificado se aluno for aprovado
+            # Verifica se certificado está disponível
             resultado = curso.get("resultados", {}).get(email)
             if resultado and resultado.get("acertos", 0) >= 0.7 * resultado.get("total", 1):
                 curso["certificado_disponivel"] = True
+                # Força conclusão no progresso
+                if curso.get("progresso") is None:
+                    curso["progresso"] = {}
+                if email not in curso["progresso"]:
+                    curso["progresso"][email] = {}
+                curso["progresso"][email]["concluido"] = True
+                progresso[curso["nome"]]["concluido"] = True
             else:
                 curso["certificado_disponivel"] = False
 
