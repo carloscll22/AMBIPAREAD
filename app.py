@@ -379,46 +379,37 @@ def ver_material(curso):
         return "Curso não encontrado", 404
 
     modulo_atual = int(request.args.get("modulo", 0))
-    total_modulos = len(curso_obj["modulos"])
+    total_modulos = len(curso_obj.get("modulos", []))
 
     session["start_time"] = datetime.now().isoformat()
     session["curso_visualizado"] = curso
 
-    # ---------- PROGRESSO EM progresso_por_aluno ----------
     if aluno not in progresso_por_aluno:
         progresso_por_aluno[aluno] = {}
 
-    progresso_individual = progresso_por_aluno[aluno].get(curso, [])
-    while len(progresso_individual) < total_modulos:
-        progresso_individual.append(0)
+    # Garante que a lista tenha o tamanho certo
+    progresso_individual = progresso_por_aluno[aluno].get(curso, [0] * total_modulos)
+    if len(progresso_individual) < total_modulos:
+        progresso_individual = (progresso_individual + [0] * total_modulos)[:total_modulos]
 
-    progresso_individual[modulo_atual] = 100
+    # Marca módulo como 100% concluído
+    if 0 <= modulo_atual < total_modulos:
+        progresso_individual[modulo_atual] = 100
+
     progresso_por_aluno[aluno][curso] = progresso_individual
 
-    # ---------- PROGRESSO DENTRO DO curso_obj["progresso"] ----------
-    if "progresso" not in curso_obj:
-        curso_obj["progresso"] = {}
-    if aluno not in curso_obj["progresso"]:
-        curso_obj["progresso"][aluno] = {"tempo": 0, "concluido": False, "modulos": [0] * total_modulos}
-
-    curso_obj["progresso"][aluno]["modulos"][modulo_atual] = 100
-
-    # Atualiza status de conclusão se todos módulos = 100
-    if all(p == 100 for p in curso_obj["progresso"][aluno]["modulos"]):
-        curso_obj["progresso"][aluno]["concluido"] = True
-
-    # ---------- SALVA NOS JSON ----------
+    # Salva o progresso no disco
     salvar_dados(CAMINHO_PROGRESSO, progresso_por_aluno)
     salvar_dados(CAMINHO_CURSOS, cursos)
 
-    progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100)
+    progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100) if total_modulos > 0 else 0
 
-    return render_template(
-        "ver_material.html",
+    return render_template("ver_material.html",
         curso=curso_obj,
         modulo_atual=modulo_atual,
         progresso=progresso_total
     )
+
 
 @app.route("/concluir/<nome>", methods=["POST"])
 def concluir(nome):
