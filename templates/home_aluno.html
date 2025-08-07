@@ -77,18 +77,29 @@
             border-radius: 12px;
         }
 
-        .btn-ver {
-            margin-top: 10px;
+        .btn {
+            display: inline-block;
+            margin: 10px 5px 0;
             background-color: #8ee446;
             padding: 10px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            text-decoration: none;
+            color: black;
         }
 
-        .btn-ver:hover {
+        .btn:hover {
             background-color: #7cd13a;
+        }
+
+        .btn-certificado {
+            background-color: #e4be46;
+        }
+
+        .btn-certificado:hover {
+            background-color: #d3ad36;
         }
     </style>
 </head>
@@ -106,20 +117,24 @@
     </header>
 
     <main>
-        <div class="curso-card">
-  <h3>{{ curso.nome }}</h3>
-  <p>Data limite: {{ curso.data_fim or "Sem data definida" }}</p>
-  <p>Progresso: {% if curso.progresso.concluido %}Concluído{% else %}Em andamento{% endif %}</p>
+        <div class="card">
+            <h2>Bem-vindo, {{ usuario }}</h2>
 
-  <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn">Ver Módulos</a>
+            {% if cursos %}
+                {% for curso in cursos %}
+                    <div class="curso-box">
+                        <h3>{{ curso.nome }}</h3>
+                        <p>Data limite: {{ curso.data_fim or "Sem data definida" }}</p>
+                        <p>Progresso: {% if curso.progresso.concluido %}Concluído{% else %}Em andamento{% endif %}</p>
 
-  {% if curso.certificado_disponivel %}
-    <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="btn btn-certificado">
-      📄 Baixar Certificado
-    </a>
-  {% endif %}
-</div>
+                        <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn">Ver Módulos</a>
 
+                        {% if curso.certificado_disponivel %}
+                            <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="btn btn-certificado">
+                                📄 Baixar Certificado
+                            </a>
+                        {% endif %}
+                    </div>
                 {% endfor %}
             {% else %}
                 <p>Você ainda não está matriculado em nenhum curso.</p>
