@@ -378,8 +378,20 @@ def ver_material(curso):
     if not curso_obj:
         return "Curso não encontrado", 404
 
-    modulo_atual = int(request.args.get("modulo", 0))
-    total_modulos = len(curso_obj.get("modulos", []))
+    # Pega a lista de módulos (ou lista vazia)
+    modulos = curso_obj.get("modulos", [])
+    total_modulos = len(modulos)
+
+    # Sanitiza o índice do módulo
+    try:
+        modulo_atual = int(request.args.get("modulo", 0))
+    except (TypeError, ValueError):
+        modulo_atual = 0
+
+    if total_modulos > 0:
+        modulo_atual = max(0, min(modulo_atual, total_modulos - 1))
+    else:
+        modulo_atual = None  # não há módulos
 
     session["start_time"] = datetime.now().isoformat()
     session["curso_visualizado"] = curso
@@ -387,13 +399,13 @@ def ver_material(curso):
     if aluno not in progresso_por_aluno:
         progresso_por_aluno[aluno] = {}
 
-    # Garante que a lista tenha o tamanho certo
+    # Garante que a lista de progresso tenha o tamanho certo
     progresso_individual = progresso_por_aluno[aluno].get(curso, [0] * total_modulos)
     if len(progresso_individual) < total_modulos:
         progresso_individual = (progresso_individual + [0] * total_modulos)[:total_modulos]
 
-    # Marca módulo como 100% concluído
-    if 0 <= modulo_atual < total_modulos:
+    # Marca módulo como 100% concluído (se existir módulo)
+    if modulo_atual is not None and 0 <= modulo_atual < total_modulos:
         progresso_individual[modulo_atual] = 100
 
     progresso_por_aluno[aluno][curso] = progresso_individual
@@ -404,7 +416,8 @@ def ver_material(curso):
 
     progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100) if total_modulos > 0 else 0
 
-    return render_template("ver_material.html",
+    return render_template(
+        "ver_material.html",
         curso=curso_obj,
         modulo_atual=modulo_atual,
         progresso=progresso_total
