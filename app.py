@@ -387,22 +387,28 @@ def ver_material(curso):
     if aluno not in progresso_por_aluno:
         progresso_por_aluno[aluno] = {}
 
-    progresso_individual = progresso_por_aluno[aluno].get(curso, [0] * total_modulos)
+    # Recupera progresso existente ou cria lista zerada
+    progresso_individual = progresso_por_aluno[aluno].get(curso, [])
+
+    # 🔹 Garante que a lista tenha o tamanho exato dos módulos
+    while len(progresso_individual) < total_modulos:
+        progresso_individual.append(0)
+
+    # Atualiza o progresso do módulo atual
     progresso_individual[modulo_atual] = 100
     progresso_por_aluno[aluno][curso] = progresso_individual
 
-    # ✅ SALVA o progresso no disco
+    # ✅ Salva no disco para não perder
     salvar_dados(CAMINHO_PROGRESSO, progresso_por_aluno)
 
     progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100)
 
-    return render_template("ver_material.html",
+    return render_template(
+        "ver_material.html",
         curso=curso_obj,
         modulo_atual=modulo_atual,
         progresso=progresso_total
     )
-
-
 
 @app.route("/concluir/<nome>", methods=["POST"])
 def concluir(nome):
