@@ -1,28 +1,34 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from random import randint
+from werkzeug.utils import secure_filename  
+from datetime import datetime
 import pytz
-progresso_por_aluno = {}
-def gerar_ip():
-    return ".".join(str(randint(0, 225)) for _ in range(4))
-    
+import shutil    
 import os
 import json
+
 CAMINHO_USUARIOS = "/mnt/data/usuarios.json"
 CAMINHO_CURSOS = "/mnt/data/cursos.json"
 CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
 CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
 
-       
-from random import randint
-from werkzeug.utils import secure_filename  
-from datetime import datetime
+def gerar_ip():
+    return ".".join(str(randint(0, 225)) for _ in range(4))
+
+def inicializar_dados():
+    arquivos = ["usuarios.json", "cursos.json", "matriculas.json", "progresso.json"]
+    for nome in arquivos:
+        origem = os.path.join("data", nome)  # pasta do repositório
+        destino = os.path.join("/mnt/data", nome)
+        if not os.path.exists(destino):
+            shutil.copyfile(origem, destino)
 
 def salvar_dados(caminho, dados):
     with open(caminho, "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=2, ensure_ascii=False)
 
 def salvar_usuarios():
-    with open("usuarios.json", "w", encoding="utf-8") as f:
+    with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
 def carregar_dados(caminho, padrao):
@@ -31,9 +37,11 @@ def carregar_dados(caminho, padrao):
             return json.load(f)
     return padrao
 
-def salvar_usuarios():
-    with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
-        json.dump(usuarios, f, indent=2, ensure_ascii=False)
+# AGORA SIM: chama a função depois que ela foi declarada
+inicializar_dados()
+
+# variável global opcional
+progresso_por_aluno = {}
 
 UPLOAD_FOLDER = 'static/conteudos'
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx', 'jpg', 'jpeg', 'png', 'mp4', 'mp3', 'zip', 'rar', 'txt', 'csv'}
