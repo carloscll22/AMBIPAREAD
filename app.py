@@ -384,22 +384,32 @@ def ver_material(curso):
     session["start_time"] = datetime.now().isoformat()
     session["curso_visualizado"] = curso
 
+    # ---------- PROGRESSO EM progresso_por_aluno ----------
     if aluno not in progresso_por_aluno:
         progresso_por_aluno[aluno] = {}
 
-    # Recupera progresso existente ou cria lista zerada
     progresso_individual = progresso_por_aluno[aluno].get(curso, [])
-
-    # 🔹 Garante que a lista tenha o tamanho exato dos módulos
     while len(progresso_individual) < total_modulos:
         progresso_individual.append(0)
 
-    # Atualiza o progresso do módulo atual
     progresso_individual[modulo_atual] = 100
     progresso_por_aluno[aluno][curso] = progresso_individual
 
-    # ✅ Salva no disco para não perder
+    # ---------- PROGRESSO DENTRO DO curso_obj["progresso"] ----------
+    if "progresso" not in curso_obj:
+        curso_obj["progresso"] = {}
+    if aluno not in curso_obj["progresso"]:
+        curso_obj["progresso"][aluno] = {"tempo": 0, "concluido": False, "modulos": [0] * total_modulos}
+
+    curso_obj["progresso"][aluno]["modulos"][modulo_atual] = 100
+
+    # Atualiza status de conclusão se todos módulos = 100
+    if all(p == 100 for p in curso_obj["progresso"][aluno]["modulos"]):
+        curso_obj["progresso"][aluno]["concluido"] = True
+
+    # ---------- SALVA NOS JSON ----------
     salvar_dados(CAMINHO_PROGRESSO, progresso_por_aluno)
+    salvar_dados(CAMINHO_CURSOS, cursos)
 
     progresso_total = int(sum(progresso_individual) / (100 * total_modulos) * 100)
 
