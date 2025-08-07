@@ -26,16 +26,26 @@ def inicializar_dados():
 def salvar_dados(caminho, dados):
     with open(caminho, "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=2, ensure_ascii=False)
-
-def salvar_usuarios():
-    with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
-        json.dump(usuarios, f, indent=2, ensure_ascii=False)
-
+        
 def carregar_dados(caminho, padrao):
     if os.path.exists(caminho):
         with open(caminho, "r", encoding="utf-8") as f:
             return json.load(f)
     return padrao
+    
+inicializar_dados()
+progresso_por_aluno = {}
+
+usuarios    = carregar_dados(CAMINHO_USUARIOS, {})
+cursos      = carregar_dados(CAMINHO_CURSOS, [])
+matriculas  = carregar_dados(CAMINHO_MATRICULAS, [])
+progresso   = carregar_dados(CAMINHO_PROGRESSO, {})
+
+def salvar_usuarios():
+    with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
+        json.dump(usuarios, f, indent=2, ensure_ascii=False)
+
+
 
 # variável global opcional
 progresso_por_aluno = {}
