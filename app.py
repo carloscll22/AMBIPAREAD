@@ -40,6 +40,8 @@ usuarios    = carregar_dados(CAMINHO_USUARIOS, {})
 cursos      = carregar_dados(CAMINHO_CURSOS, [])
 matriculas  = carregar_dados(CAMINHO_MATRICULAS, [])
 progresso   = carregar_dados(CAMINHO_PROGRESSO, {})
+print("DEBUG USUÁRIOS:", usuarios)
+
 
 def salvar_usuarios():
     with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
