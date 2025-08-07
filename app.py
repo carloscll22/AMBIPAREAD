@@ -553,11 +553,37 @@ def central_aluno():
         return redirect("/login")
 
     email = session["usuario"]
-    cursos_idx  = [m["curso_idx"] for m in matriculas if m["aluno"] == email]
-    cursos_disp = [c for i, c in enumerate(cursos) if i in cursos_idx]
-    progresso    = {c["nome"]: c.get("progresso", {}).get(email, {"concluido": False}) for c in cursos_disp}
 
-    return render_template("home_aluno.html", usuario=usuarios[email]["nome"], cursos=cursos_disp, progresso=progresso, vencimentos=vencimentos)
+    # Pega as matrículas do aluno
+    minhas_matriculas = [m for m in matriculas if m["aluno"] == email]
+
+    cursos_disp = []
+    for m in minhas_matriculas:
+        curso = next((c for c in cursos if c["nome"] == m["curso"]), None)
+        if not curso:
+            continue
+
+        progresso = curso.get("progresso", {}).get(email, {"concluido": False})
+        resultado = curso.get("resultados", {}).get(email)
+        presenca_ok = m.get("presenca_assinada", False)
+
+        aprovado = resultado and resultado["acertos"] >= 0.7 * resultado["total"]
+        pode_emitir_certificado = progresso["concluido"] and presenca_ok and aprovado
+
+        cursos_disp.append({
+            "nome": curso["nome"],
+            "modulos": curso.get("modulos", []),
+            "progresso": progresso,
+            "data_fim": m.get("data_fim"),
+            "certificado_disponivel": pode_emitir_certificado
+        })
+
+    return render_template(
+        "home_aluno.html",
+        usuario=usuarios[email]["nome"],
+        cursos=cursos_disp
+    )
+
     
 @app.route("/perfil", methods=["GET", "POST"])
 def perfil_aluno():
