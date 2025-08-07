@@ -129,21 +129,35 @@ def home():
         # Aluno
         email = session["usuario"]
         cursos_aluno = [m["curso"] for m in matriculas if m["aluno"] == email]
-        cursos_disp  = [c for c in cursos if c["nome"] in cursos_aluno]
+        cursos_disp = [c for c in cursos if c["nome"] in cursos_aluno]
         progresso = {}
         vencimentos = {}
+
         for curso in cursos_disp:
+            # Progresso
             prog = curso.get("progresso", {}).get(email)
             progresso[curso["nome"]] = prog if prog else {"tempo": 0, "concluido": False}
-            vencimentos[curso["nome"]] = curso.get("data_realizacao", "Não Definida")
+
+            # Data limite da matrícula
+            matricula = next((m for m in matriculas if m["aluno"] == email and m["curso"] == curso["nome"]), None)
+            curso["data_fim"] = matricula.get("data_fim") if matricula else None
+            vencimentos[curso["nome"]] = curso["data_fim"] or "Não Definida"
+
+            # Disponibiliza botão de certificado se aluno for aprovado
+            resultado = curso.get("resultados", {}).get(email)
+            if resultado and resultado.get("acertos", 0) >= 0.7 * resultado.get("total", 1):
+                curso["certificado_disponivel"] = True
+            else:
+                curso["certificado_disponivel"] = False
 
         return render_template("home_aluno.html",
                                usuario=usuarios[email]["nome"],
                                cursos=cursos_disp,
                                progresso=progresso,
-                              vencimentos=vencimentos)
+                               vencimentos=vencimentos)
 
     return redirect("/login")
+
 
 
 # ----------------------------- LOGIN ----------------------------------
@@ -267,46 +281,54 @@ def cadastrar_curso():
 
 @app.route("/matricular", methods=["GET", "POST"])
 def matricular():
-            if session.get("tipo") != "professor":
-                return redirect("/")
+    if session.get("tipo") != "professor":
+        return redirect("/")
 
-            if request.method == "POST":
-                aluno_email = request.form["aluno"]
-                curso_nome  = request.form["curso"]        # volta a usar o nome
-                professor   = request.form["professor"]
-                # só adiciona se ainda não existe
-                if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
-                    matriculas.append({
-                        "aluno":    aluno_email,
-                        "curso":    curso_nome,
-                        "professor": professor
-                    })
-                    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+    if request.method == "POST":
+        aluno_email = request.form["aluno"]
+        curso_nome  = request.form["curso"]
+        professor   = request.form["professor"]
+        data_inicio = request.form.get("data_inicio")
+        data_fim    = request.form.get("data_fim")
 
-                return redirect("/matricular")
+        # só adiciona se ainda não existe
+        if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
+            matriculas.append({
+                "aluno":      aluno_email,
+                "curso":      curso_nome,
+                "professor":  professor,
+                "data_inicio": data_inicio,
+                "data_fim":    data_fim
+            })
+            salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
-            alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-            professores = [ "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
-                "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
-                "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
-                "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
-                "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
-                "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
-                "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
-                "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
-                "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
-                "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
-                "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
-                "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
-                "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
-                "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
-                "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
-                "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima" ]
+        return redirect("/matricular")
 
-            return render_template("matricular.html",
-                                   alunos=alunos,
-                                   cursos=cursos,     # aqui cursos é lista de dicts com campo "nome"
-                                   professores=professores)
+    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+    professores = [ 
+        "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
+        "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
+        "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
+        "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
+        "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
+        "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
+        "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
+        "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
+        "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
+        "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
+        "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
+        "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
+        "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
+        "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
+        "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
+        "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima" 
+    ]
+
+    return render_template("matricular.html",
+                           alunos=alunos,
+                           cursos=cursos,
+                           professores=professores)
+
                   
 @app.route("/editar_curso/<nome>", methods=["GET", "POST"])
 def editar_curso_nome(nome):
