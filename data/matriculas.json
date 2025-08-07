@@ -1,1 +1,10 @@
-
+[
+  {
+    "aluno": "aluno@email.com",
+    "curso": "Curso de Teste",
+    "professor": "Professor de Teste",
+    "data_inicio": "2025-08-01",
+    "data_fim": "2025-08-31",
+    "nrt": "123"
+  }
+]
