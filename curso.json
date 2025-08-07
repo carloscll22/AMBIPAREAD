@@ -1,0 +1,12 @@
+[
+  {
+    "nome": "Curso de Teste",
+    "tipo": "Inicial",
+    "carga_horaria": "4h",
+    "instrutor": "Professor de Teste",
+    "modulos": [],
+    "provas": [],
+    "resultados": {},
+    "progresso": {}
+  }
+]
