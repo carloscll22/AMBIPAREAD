@@ -124,12 +124,13 @@
             <h3>{{ curso.nome }}</h3>
             <p>Data limite: {{ curso.data_fim or "Sem data definida" }}</p>
             <p>Progresso:
-              {% if curso.progresso is defined and curso.progresso.get('concluido') %}
-                Concluído
+              {% if progresso[curso.nome]['concluido'] %}
+                  Concluído
               {% else %}
-                Em andamento
+                  Em andamento
               {% endif %}
             </p>
+
 
             <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn-ver">📘 Assistir Aula</a>
 
