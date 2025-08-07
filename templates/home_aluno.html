@@ -5,29 +5,58 @@
     <title>Central do Aluno</title>
     <style>
         body {
-            background-color: #c1f38e;
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            text-align: center;
+            background-color: #c1f38e;
+            font-family: Arial, sans-serif;
+        }
+        .topo {
+            background-color: #fff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .topo .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+            display: flex;
+            align-items: center;
+        }
+        .topo .logo img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+        .topo .acoes a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: #000;
+            font-weight: bold;
         }
         .container {
-            margin: 60px auto;
-            max-width: 600px;
+            max-width: 900px;
+            margin: 40px auto;
             background: #fff;
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
         }
         .curso {
-            margin-bottom: 25px;
+            background-color: #e6ffe6;
+            border: 1px solid #a5d6a7;
+            border-radius: 10px;
             padding: 20px;
-            background-color: #f1f1f1;
-            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .curso h3 {
+            margin-top: 0;
         }
         .botao {
             padding: 10px 20px;
-            background-color: #86e261;
+            background-color: #7cd35c;
             color: black;
             font-weight: bold;
             border: none;
@@ -37,19 +66,30 @@
             margin-top: 10px;
         }
         .botao:hover {
-            background-color: #76cc55;
+            background-color: #66bb4b;
         }
     </style>
 </head>
 <body>
+    <div class="topo">
+        <div class="logo">
+            <img src="/static/logo_padrao.png" alt="Logo">
+            EAD • Aluno
+        </div>
+        <div class="acoes">
+            <a href="/perfil">Alterar Senha</a>
+            <a href="/logout">Sair</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>Central do Aluno</h1>
-        <h3>Bem-vindo, {{ usuario }}</h3>
+        <h2>Bem-vindo, {{ usuario }}</h2>
+
         {% if cursos %}
             {% for curso in cursos %}
                 <div class="curso">
                     <h3>{{ curso.nome }}</h3>
-                    <p><strong>Progresso:</strong> 
+                    <p><strong>Progresso:</strong>
                         {% if progresso[curso.nome]["concluido"] %}
                             Concluído ✔️
                         {% else %}
