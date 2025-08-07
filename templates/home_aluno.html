@@ -65,6 +65,21 @@
             display: inline-block;
             margin-top: 10px;
         }
+        .logo-img {
+            height: 40px;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .avatar {
+            height: 38px;
+            width: 38px;
+            border-radius: 50%;
+            margin-left: 15px;
+            object-fit: cover;
+            border: 2px solid #ccc;
+      
+        }
         .botao:hover {
             background-color: #66bb4b;
         }
@@ -72,15 +87,17 @@
 </head>
 <body>
     <div class="topo">
-        <div class="logo">
-            <img src="/static/loggo.png" alt="Logo">
-            EAD • Aluno
-        </div>
-        <div class="acoes">
-            <a href="/perfil">Alterar Senha</a>
-            <a href="/logout">Sair</a>
-        </div>
+    <div class="logo">
+        <img src="/static/loggo.png" alt="Logo" class="logo-img">
+        <span>EAD • Aluno</span>
     </div>
+    <div class="acoes">
+        <a href="/perfil">Alterar Senha</a>
+        <a href="/logout">Sair</a>
+        <img src="/static/avatar_padrao.png" alt="Avatar" class="avatar">
+    </div>
+</div>
+
 
     <div class="container">
         <h2>Bem-vindo, {{ usuario }}</h2>
