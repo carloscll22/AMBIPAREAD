@@ -106,21 +106,20 @@
     </header>
 
     <main>
-        <div class="card">
-            <h2>Bem-vindo, {{ usuario }}</h2>
-            {% if cursos %}
-                {% for curso in cursos %}
-                    <div class="curso-box">
-                        <h3>{{ curso.nome }}</h3>
-                        {% if progresso[curso.nome].concluido %}
-                            <p><strong>Status:</strong> Concluído</p>
-                        {% else %}
-                            <p><strong>Status:</strong> Em andamento</p>
-                        {% endif %}
-                        <form action="{{ url_for('ver_material', curso=curso.nome) }}">
-                            <button class="btn-ver">Ver Módulos</button>
-                        </form>
-                    </div>
+        <div class="curso-card">
+  <h3>{{ curso.nome }}</h3>
+  <p>Data limite: {{ curso.data_fim or "Sem data definida" }}</p>
+  <p>Progresso: {% if curso.progresso.concluido %}Concluído{% else %}Em andamento{% endif %}</p>
+
+  <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn">Ver Módulos</a>
+
+  {% if curso.certificado_disponivel %}
+    <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="btn btn-certificado">
+      📄 Baixar Certificado
+    </a>
+  {% endif %}
+</div>
+
                 {% endfor %}
             {% else %}
                 <p>Você ainda não está matriculado em nenhum curso.</p>
