@@ -1,133 +1,67 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Central do Aluno</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #c1f38e;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .titulo {
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 30px;
-    }
-
-    .curso-box {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-    }
-
-    .curso-box:hover {
-      transform: scale(1.02);
-    }
-
-    .curso-titulo {
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    .progresso {
-      background-color: #eee;
-      border-radius: 20px;
-      overflow: hidden;
-      height: 20px;
-      margin-bottom: 15px;
-    }
-
-    .progresso-barra {
-      background-color: #86dc52;
-      height: 100%;
-      width: 0%;
-      text-align: center;
-      color: #000;
-      font-size: 12px;
-      line-height: 20px;
-      font-weight: bold;
-    }
-
-    .botoes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .botao {
-      background-color: #86dc52;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #000;
-      text-decoration: none;
-      text-align: center;
-      flex: 1;
-    }
-
-    @media (max-width: 600px) {
-      .titulo {
-        font-size: 20px;
-      }
-
-      .botao {
-        flex: 100%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Central do Aluno</title>
+    <style>
+        body {
+            background-color: #c1f38e;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            margin: 60px auto;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .curso {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-radius: 12px;
+        }
+        .botao {
+            padding: 10px 20px;
+            background-color: #86e261;
+            color: black;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .botao:hover {
+            background-color: #76cc55;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="titulo">Central do Aluno</div>
-
-    {% for curso in cursos %}
-    <div class="curso-box">
-      <div class="curso-titulo">{{ curso.nome }}</div>
-
-      <div class="progresso">
-        <div class="progresso-barra" style="width: {{ curso.progresso }}%">
-          {{ curso.progresso }}%
-        </div>
-      </div>
-
-      <div class="botoes">
-        <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="botao">Ver Módulos</a>
-
-        {% if curso.progresso == 100 and curso.aprovado != True %}
-          <a href="{{ url_for('prova', nome=curso.nome) }}" class="botao">Fazer Prova</a>
+    <div class="container">
+        <h1>Central do Aluno</h1>
+        <h3>Bem-vindo, {{ usuario }}</h3>
+        {% if cursos %}
+            {% for curso in cursos %}
+                <div class="curso">
+                    <h3>{{ curso.nome }}</h3>
+                    <p><strong>Progresso:</strong> 
+                        {% if progresso[curso.nome]["concluido"] %}
+                            Concluído ✔️
+                        {% else %}
+                            Em andamento ⏳
+                        {% endif %}
+                    </p>
+                    <a class="botao" href="{{ url_for('ver_material', curso=curso.nome) }}">Ver Módulos</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Você ainda não está matriculado em nenhum curso.</p>
         {% endif %}
-
-        {% if curso.aprovado and not curso.presenca_assinada %}
-          <a href="{{ url_for('lista_presenca', curso=curso.nome) }}" class="botao">Assinar Presença</a>
-        {% endif %}
-
-        {% if curso.presenca_assinada %}
-          <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="botao">Emitir Certificado</a>
-        {% endif %}
-      </div>
     </div>
-    {% endfor %}
-  </div>
 </body>
 </html>
