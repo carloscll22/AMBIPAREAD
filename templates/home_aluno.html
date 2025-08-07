@@ -5,120 +5,127 @@
     <title>Central do Aluno</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
             background-color: #c1f38e;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .topo {
+
+        header {
             background-color: #fff;
-            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            padding: 10px 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-        .topo .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: #000;
+
+        .logo {
             display: flex;
             align-items: center;
         }
-        .topo .logo img {
-            width: 30px;
-            height: 30px;
-            margin-right: 10px;
-        }
-        .topo .acoes a {
-            margin-left: 15px;
-            text-decoration: none;
-            color: #000;
-            font-weight: bold;
-        }
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-        }
-        .curso {
-            background-color: #e6ffe6;
-            border: 1px solid #a5d6a7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .curso h3 {
-            margin-top: 0;
-        }
-        .botao {
-            padding: 10px 20px;
-            background-color: #7cd35c;
-            color: black;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .logo-img {
-            height: 40px;
+
+        .logo img {
+            height: 50px;
             width: auto;
-            margin-right: 10px;
+            margin-right: 12px;
         }
 
-        .avatar {
-            height: 38px;
-            width: 38px;
-            border-radius: 50%;
-            margin-left: 15px;
-            object-fit: cover;
-            border: 2px solid #ccc;
-      
+        .logo span {
+            font-size: 20px;
+            font-weight: bold;
         }
-        .botao:hover {
-            background-color: #66bb4b;
+
+        .perfil {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .perfil a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        .perfil img {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .curso-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f3f3f3;
+            border-radius: 12px;
+        }
+
+        .btn-ver {
+            margin-top: 10px;
+            background-color: #8ee446;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-ver:hover {
+            background-color: #7cd13a;
         }
     </style>
 </head>
 <body>
-    <div class="topo">
-    <div class="logo">
-        <img src="/static/loggo.png" alt="Logo" class="logo-img">
-        <span>EAD • Aluno</span>
-    </div>
-    <div class="acoes">
-        <a href="/perfil">Alterar Senha</a>
-        <a href="/logout">Sair</a>
-        <img src="/static/avatar_padrao.png" alt="Avatar" class="avatar">
-    </div>
-</div>
+    <header>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Ambipar">
+            <span>EAD • Aluno</span>
+        </div>
+        <div class="perfil">
+            <a href="/perfil">Alterar Senha</a>
+            <a href="/logout">Sair</a>
+            <img src="{{ url_for('static', filename='avatar_padrao.png') }}" alt="Avatar">
+        </div>
+    </header>
 
-
-    <div class="container">
-        <h2>Bem-vindo, {{ usuario }}</h2>
-
-        {% if cursos %}
-            {% for curso in cursos %}
-                <div class="curso">
-                    <h3>{{ curso.nome }}</h3>
-                    <p><strong>Progresso:</strong>
-                        {% if progresso[curso.nome]["concluido"] %}
-                            Concluído ✔️
+    <main>
+        <div class="card">
+            <h2>Bem-vindo, {{ usuario }}</h2>
+            {% if cursos %}
+                {% for curso in cursos %}
+                    <div class="curso-box">
+                        <h3>{{ curso.nome }}</h3>
+                        {% if progresso[curso.nome].concluido %}
+                            <p><strong>Status:</strong> Concluído</p>
                         {% else %}
-                            Em andamento ⏳
+                            <p><strong>Status:</strong> Em andamento</p>
                         {% endif %}
-                    </p>
-                    <a class="botao" href="{{ url_for('ver_material', curso=curso.nome) }}">Ver Módulos</a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>Você ainda não está matriculado em nenhum curso.</p>
-        {% endif %}
-    </div>
+                        <form action="{{ url_for('ver_material', curso=curso.nome) }}">
+                            <button class="btn-ver">Ver Módulos</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Você ainda não está matriculado em nenhum curso.</p>
+            {% endif %}
+        </div>
+    </main>
 </body>
 </html>
