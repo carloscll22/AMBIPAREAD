@@ -37,9 +37,6 @@ def carregar_dados(caminho, padrao):
             return json.load(f)
     return padrao
 
-# AGORA SIM: chama a função depois que ela foi declarada
-inicializar_dados()
-
 # variável global opcional
 progresso_por_aluno = {}
 
