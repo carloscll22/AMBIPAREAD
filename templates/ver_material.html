@@ -103,6 +103,14 @@
       margin-top: 20px;
       text-align: right;
     }
+
+    .alert {
+      padding: 16px;
+      background: #fff3cd;
+      border: 1px solid #ffe69c;
+      border-radius: 8px;
+      color: #664d03;
+    }
   </style>
 </head>
 <body>
@@ -114,18 +122,27 @@
 <div class="container">
   <div class="menu-lateral">
     <ul>
-      {% for idx in range(curso.modulos | length) %}
-  {% set mod = curso.modulos[idx] %}
-  <li>
-    <a href="?modulo={{ idx }}">Módulo {{ idx + 1 }} - {{ mod.titulo }}</a>
-  </li>
-{% endfor %}
-
+      {% if curso.modulos %}
+        {% for idx in range(curso.modulos | length) %}
+          {% set mod = curso.modulos[idx] %}
+          <li>
+            <a href="?modulo={{ idx }}">Módulo {{ idx + 1 }} - {{ mod.titulo }}</a>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li><em>Este curso ainda não possui módulos.</em></li>
+      {% endif %}
     </ul>
   </div>
 
   <div class="conteudo">
-    <iframe src="/static/{{ curso.modulos[modulo_atual].arquivo }}" frameborder="0"></iframe>
+    {% if curso.modulos and modulo_atual is not none and 0 <= modulo_atual < (curso.modulos|length) %}
+      <iframe src="{{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}" frameborder="0"></iframe>
+    {% else %}
+      <div class="alert">
+        Nenhum módulo disponível ou módulo inválido selecionado.
+      </div>
+    {% endif %}
 
     <div class="progress">
       <div class="progress-bar">{{ progresso }}%</div>
@@ -133,21 +150,29 @@
 
     <div class="nav-buttons">
       <form method="get">
-        <input type="hidden" name="modulo" value="{{ modulo_atual - 1 }}">
-        <button type="submit" {% if modulo_atual == 0 %}disabled{% endif %}>← Anterior</button>
+        <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
+        <button type="submit"
+          {% if not curso.modulos or modulo_atual is none or modulo_atual <= 0 %}disabled{% endif %}>
+          ← Anterior
+        </button>
       </form>
       <form method="get">
-        <input type="hidden" name="modulo" value="{{ modulo_atual + 1 }}">
-        <button type="submit" {% if modulo_atual + 1 == curso.modulos|length %}disabled{% endif %}>Próximo →</button>
+        <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
+        <button type="submit"
+          {% if not curso.modulos or modulo_atual is none or (modulo_atual + 1) >= (curso.modulos|length) %}disabled{% endif %}>
+          Próximo →
+        </button>
       </form>
     </div>
 
-    {% if modulo_atual + 1 == curso.modulos|length and progresso == 100 %}
-    <div class="concluir">
-      <form method="post" action="/concluir/{{ curso.nome }}">
-  <button id="concluirBtn" type="submit">Concluído</button>
-</form>
-    </div>
+    {% if curso.modulos and modulo_atual is not none
+          and (modulo_atual + 1) == (curso.modulos|length)
+          and progresso == 100 %}
+      <div class="concluir">
+        <form method="post" action="/concluir/{{ curso.nome }}">
+          <button id="concluirBtn" type="submit">Concluído</button>
+        </form>
+      </div>
     {% endif %}
   </div>
 </div>
