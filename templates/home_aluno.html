@@ -1,146 +1,149 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Central do Aluno</title>
-    <style>
-        body {
-            background-color: #c1f38e;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <title>Central do Aluno</title>
+  <style>
+    body {
+      background-color: #c1f38e;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
-        header {
-            background-color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 30px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+    header {
+      background-color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
 
-        .logo img {
-            height: 50px;
-            width: auto;
-            margin-right: 12px;
-        }
+    .logo img {
+      height: 50px;
+      width: auto;
+      margin-right: 12px;
+    }
 
-        .logo span {
-            font-size: 20px;
-            font-weight: bold;
-        }
+    .logo span {
+      font-size: 20px;
+      font-weight: bold;
+    }
 
-        .perfil {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+    .perfil {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
 
-        .perfil a {
-            text-decoration: none;
-            color: black;
-            font-weight: bold;
-        }
+    .perfil a {
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+    }
 
-        .perfil img {
-            height: 36px;
-            width: 36px;
-            border-radius: 50%;
-        }
+    .perfil img {
+      height: 36px;
+      width: 36px;
+      border-radius: 50%;
+    }
 
-        main {
-            display: flex;
-            justify-content: center;
-            margin-top: 50px;
-        }
+    main {
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+    }
 
-        .card {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            width: 80%;
-            max-width: 800px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+    .card {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 80%;
+      max-width: 800px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
 
-        .curso-box {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f3f3f3;
-            border-radius: 12px;
-        }
+    .curso-box {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f3f3f3;
+      border-radius: 12px;
+    }
 
-        .btn {
-            display: inline-block;
-            margin: 10px 5px 0;
-            background-color: #8ee446;
-            padding: 10px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            color: black;
-        }
+    .btn-ver, .btn-certificado {
+      display: inline-block;
+      margin-top: 10px;
+      background-color: #8ee446;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      color: black;
+    }
 
-        .btn:hover {
-            background-color: #7cd13a;
-        }
+    .btn-ver:hover, .btn-certificado:hover {
+      background-color: #7cd13a;
+    }
 
-        .btn-certificado {
-            background-color: #e4be46;
-        }
-
-        .btn-certificado:hover {
-            background-color: #d3ad36;
-        }
-    </style>
+    .sem-curso {
+      font-size: 18px;
+      margin-top: 40px;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="{{ url_for('static', filename='loggo.png') }}" alt="Logo Ambipar">
-            <span>EAD • Aluno</span>
-        </div>
-        <div class="perfil">
-            <a href="/perfil">Alterar Senha</a>
-            <a href="/logout">Sair</a>
-            <img src="{{ url_for('static', filename='avatar_padrao.png') }}" alt="Avatar">
-        </div>
-    </header>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Logo Ambipar">
+      <span>EAD • Aluno</span>
+    </div>
+    <div class="perfil">
+      <a href="/perfil">Alterar Senha</a>
+      <a href="/logout">Sair</a>
+      <img src="{{ url_for('static', filename='avatar_padrao.png') }}" alt="Avatar">
+    </div>
+  </header>
 
-    <main>
-        <div class="card">
-            <h2>Bem-vindo, {{ usuario }}</h2>
+  <main>
+    <div class="card">
+      <h2>Bem-vindo, {{ usuario }}!</h2>
 
-            {% if cursos %}
-    {% for curso in cursos %}
-        <div class="curso-box">
+      {% if cursos %}
+        {% for curso in cursos %}
+          <div class="curso-box">
             <h3>{{ curso.nome }}</h3>
             <p>Data limite: {{ curso.data_fim or "Sem data definida" }}</p>
-            <p>Progresso: {% if curso.progresso.concluido %}Concluído{% else %}Em andamento{% endif %}</p>
+            <p>Progresso:
+              {% if curso.progresso is defined and curso.progresso.get('concluido') %}
+                Concluído
+              {% else %}
+                Em andamento
+              {% endif %}
+            </p>
 
-            <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn">Ver Módulos</a>
+            <a href="{{ url_for('ver_material', curso=curso.nome) }}" class="btn-ver">📘 Ver Módulos</a>
 
             {% if curso.certificado_disponivel %}
-                <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="btn btn-certificado">
-                    📄 Baixar Certificado
-                </a>
+              <a href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=curso.nome) }}" class="btn-certificado">
+                📄 Baixar Certificado
+              </a>
             {% endif %}
-        </div>
-    {% endfor %}
-{% else %}
-    <p>Você ainda não está matriculado em nenhum curso.</p>
-{% endif %}
-
-        </div>
-    </main>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="sem-curso">Você ainda não está matriculado em nenhum curso.</p>
+      {% endif %}
+    </div>
+  </main>
 </body>
 </html>
