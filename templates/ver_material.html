@@ -138,6 +138,9 @@
   <div class="conteudo">
     {% if curso.modulos and modulo_atual is not none and 0 <= modulo_atual < (curso.modulos|length) %}
       <iframe src="{{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}" frameborder="0"></iframe>
+      <small style="opacity:.6">
+  URL DEBUG: {{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}
+</small>
     {% else %}
       <div class="alert">
         Nenhum módulo disponível ou módulo inválido selecionado.
