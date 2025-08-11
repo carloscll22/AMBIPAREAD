@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, url_for
+from flask import send_from_directory
 from random import randint
 from werkzeug.utils import secure_filename  
 from datetime import datetime
@@ -12,6 +13,9 @@ CAMINHO_CURSOS = "/mnt/data/cursos.json"
 CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
 CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "mnt", "data", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def gerar_ip():
     return ".".join(str(randint(0, 225)) for _ in range(4))
 
@@ -68,6 +72,10 @@ def allowed_file(filename):
 # ======================================================================
 #                             ROTAS GERAIS
 # ======================================================================
+@app.route("/uploads/<path:filename>")
+def uploads(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
 @app.route("/")
 def home():
     if "usuario" in session:
