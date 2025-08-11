@@ -36,6 +36,21 @@
       text-align: center;
       margin-bottom: 25px;
     }
+    /* Botões padrão da sidebar */
+    .sidebar .btn {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar .btn:hover { background: #8ad858; }
     .sidebar a.logout {
       width: 100%;
       padding: 10px;
@@ -102,17 +117,15 @@
 </head>
 <body>
   <div class="sidebar">
-  <div class="avatar"></div>
-  <div class="user-name">{{ session['nome'] }}</div>
+    <div class="avatar"></div>
+    <div class="user-name">{{ session['nome'] }}</div>
 
- 
-  <button onclick="location.href='/alterar_senha'">Alterar Senha</button>
-
-  <a href="/logout" class="logout">Sair</a>
-</div>
+    <button type="button" class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
 
   <div class="content">
-    <h2>Bem‑vindo Professor</h2>
+    <h2>Bem-vindo Professor</h2>
     <div class="actions">
       <a href="/cadastrar_curso" class="card-btn">📚 Cadastrar Novo Curso</a>
       <a href="/matricular" class="card-btn">👥 Matricular Aluno</a>
