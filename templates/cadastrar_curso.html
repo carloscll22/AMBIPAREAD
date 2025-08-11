@@ -15,32 +15,6 @@
       padding: 40px 0;
       min-height: 100vh;
     }
-    .actions {
-      margin-top: 25px;
-      display: flex;
-      gap: 12px;
-    }
-
-    /* estilo para ambos os botões */
-    .actions button,
-    .actions input[type="submit"] {
-      flex: 1;
-      padding: 12px;
-      background-color: #a0e76d;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;
-      color: #333;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    /* hover */
-    .actions button:hover,
-    .actions input[type="submit"]:hover {
-      background-color: #8dd24a;
-    }
     .container {
       background-color: #fff;
       border-radius: 12px;
@@ -82,9 +56,31 @@
       resize: vertical;
       min-height: 100px;
     }
-    .prova-section {
-      margin-top: 30px;
+
+    /* ====== Botões padronizados ====== */
+    .btn {
+      display: inline-block;
+      padding: 12px 16px;
+      background-color: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
+    .btn:hover { background-color: #8dd24a; }
+
+    .actions {
+      margin-top: 25px;
+      display: flex;
+      gap: 12px;
+    }
+    .actions .btn { flex: 1; }
+
+    /* Cartões de perguntas */
+    .prova-section { margin-top: 30px; }
     .prova-section h3 {
       margin-bottom: 15px;
       font-size: 18px;
@@ -105,37 +101,6 @@
       font-size: 14px;
       color: #222;
     }
-    .btn-add {
-      display: inline-block;
-      background-color: #a0e76d;
-      color: #333;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .btn-add:hover {
-      background-color: #8dd24a;
-    }
-    .btn-submit {
-      width: 100%;
-      margin-top: 25px;
-      background-color: #a0e76d;
-      color: #333;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .btn-submit:hover {
-      background-color: #8dd24a;
-    }
   </style>
 </head>
 <body>
@@ -146,98 +111,95 @@
         <label for="nome">Nome do Curso</label>
         <select id="nome" name="nome" required onchange="preencherConteudo()">
           <option value="">-- Selecione --</option>
-        <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
-        <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
-        <option value="Inicial - Emergências Gerais">Inicial - Emergências Gerais</option>
-        <option value="Periódico - Emergências Gerais">Periódico - Emergências Gerais</option>
-        <option value="Inicial - SGSO">Inicial - SGSO</option>
-        <option value="Periódico - SGSO">Periódico - SGSO</option>
-        <option value="Inicial - Sobrevivência na Selva">Inicial - Sobrevivência na Selva</option>
-        <option value="Inicial - Instrutor de Voo">Inicial - Instrutor de Voo</option>
-        <option value="Inicial - Examinador">Inicial - Examinador</option>
-        <option value="Inicial - BELL 206-B06">Inicial - BELL 206-B06</option>
-        <option value="Periódico - BELL 206-B06">Periódico - BELL 206-B06</option>
-        <option value="Inicial - AS350 SERIES-B,BA,B2,AS50">Inicial - AS350 SERIES-B,BA,B2,AS50</option>
-        <option value="Periódico - AS350 SERIES-B,BA,B2-AS50">Periódico - AS350 SERIES-B,BA,B2,AS50</option>
-        <option value="Inicial - AS 365 SERIES (N,N1,N2)/AS65">Inicial - AS 365 SERIES-N,N1,N2-AS65</option>
-        <option value="Periódico - AS 365 SERIES (N,N1,N2)/AS65">Periódico - AS 365 SERIES-N,N1,N2-AS65</option>
-        <option value="Inicial - AS 355 SERIES (F,F1,F2,NP)/AS55">Inicial - AS 355 SERIES-F,F1,F2,NP-AS55</option>
-        <option value="Periódico - AS 355 SERIES-F,F1,F2,NP-AS55">Periódico - AS 355 SERIES-F,F1,F2,NP-AS55</option>
-        <option value="Inicial - AS330J">Inicial - AS330J</option>
-        <option value="Periódico - AS330J">Periódico - AS330J</option>
-      </select>
+          <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
+          <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+          <option value="Inicial - Emergências Gerais">Inicial - Emergências Gerais</option>
+          <option value="Periódico - Emergências Gerais">Periódico - Emergências Gerais</option>
+          <option value="Inicial - SGSO">Inicial - SGSO</option>
+          <option value="Periódico - SGSO">Periódico - SGSO</option>
+          <option value="Inicial - Sobrevivência na Selva">Inicial - Sobrevivência na Selva</option>
+          <option value="Inicial - Instrutor de Voo">Inicial - Instrutor de Voo</option>
+          <option value="Inicial - Examinador">Inicial - Examinador</option>
+          <option value="Inicial - BELL 206-B06">Inicial - BELL 206-B06</option>
+          <option value="Periódico - BELL 206-B06">Periódico - BELL 206-B06</option>
+          <option value="Inicial - AS350 SERIES-B,BA,B2,AS50">Inicial - AS350 SERIES-B,BA,B2,AS50</option>
+          <option value="Periódico - AS350 SERIES-B,BA,B2-AS50">Periódico - AS350 SERIES-B,BA,B2,AS50</option>
+          <option value="Inicial - AS 365 SERIES (N,N1,N2)/AS65">Inicial - AS 365 SERIES-N,N1,N2-AS65</option>
+          <option value="Periódico - AS 365 SERIES (N,N1,N2)/AS65">Periódico - AS 365 SERIES-N,N1,N2-AS65</option>
+          <option value="Inicial - AS 355 SERIES (F,F1,F2,NP)/AS55">Inicial - AS 355 SERIES-F,F1,F2,NP-AS55</option>
+          <option value="Periódico - AS 355 SERIES-F,F1,F2,NP-AS55">Periódico - AS 355 SERIES-F,F1,F2,NP-AS55</option>
+          <option value="Inicial - AS330J">Inicial - AS330J</option>
+          <option value="Periódico - AS330J">Periódico - AS330J</option>
+        </select>
 
-      <label for="carga_horaria">Carga Horária:</label>
-      <input type="text" id="carga_horaria" name="carga_horaria" required>
+        <label for="carga_horaria">Carga Horária:</label>
+        <input type="text" id="carga_horaria" name="carga_horaria" required>
 
-      <label for="nrt">Número da NRT:</label>
-      <input type="text" id="nrt" name="nrt" required>
+        <label for="nrt">Número da NRT:</label>
+        <input type="text" id="nrt" name="nrt" required>
 
-      <label for="tipo">Tipo de Curso:</label>
-      <select id="tipo" name="tipo" required>
-        <option value="Inicial">Inicial</option>
-        <option value="Periódico">Periódico</option>
-      </select>
+        <label for="tipo">Tipo de Curso:</label>
+        <select id="tipo" name="tipo" required>
+          <option value="Inicial">Inicial</option>
+          <option value="Periódico">Periódico</option>
+        </select>
 
-      <label for="data_realizacao">Data de Realização:</label>
-      <input type="date" id="data_realizacao" name="data_realizacao" required>
+        <label for="data_realizacao">Data de Realização:</label>
+        <input type="date" id="data_realizacao" name="data_realizacao" required>
 
-      <label for="conteudo">Conteúdo Programático:</label>
-      <textarea id="conteudo" name="conteudo" required></textarea>
+        <label for="conteudo">Conteúdo Programático:</label>
+        <textarea id="conteudo" name="conteudo" required></textarea>
+      </div>
 
       <h3>Módulos do Curso</h3>
-<div id="modulos"></div>
-<button type="button" onclick="adicionarModulo()">Adicionar Módulo</button>
+      <div id="modulos"></div>
+      <button type="button" class="btn" onclick="adicionarModulo()">Adicionar Módulo</button>
 
-<script>
-  let indexModulo = 0;
-  function adicionarModulo() {
-    const container = document.getElementById("modulos");
-    const div = document.createElement("div");
-    div.classList.add("modulo");
-    div.innerHTML = `
-      <label>Título do Módulo:</label>
-      <input type="text" name="modulos[${indexModulo}][titulo]" required>
-      <label>Arquivo (PDF):</label>
-      <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
-      <hr><br>
-    `;
-    container.appendChild(div);
-    indexModulo++;
-  }
-</script>
-
-
-      
       <div class="prova-section">
         <h3>Avaliação</h3>
-        <!-- container vazio onde as perguntas serão inseridas -->
         <div id="perguntas"></div>
       </div>
 
-      <!-- botões -->
       <div class="actions">
-        <button type="button" id="adicionarPergunta">Adicionar Pergunta</button>
-        <input type="submit" class="btn-submit" value="Cadastrar Curso">
+        <button type="button" id="adicionarPergunta" class="btn">Adicionar Pergunta</button>
+        <input type="submit" class="btn" value="Cadastrar Curso">
       </div>
+    </form>
+  </div>
 
   <script>
     const conteudos = {
       "Doutrinamento Básico de Solo": `(1) Atribuições e responsabilidades do tripulante, conforme aplicável;\n(2) As apropriadas provisões deste regulamento;\n(3) Conteúdo do certificado e das especificações operativas;\n(4) Apropriadas partes do manual geral da empresa do detentor de certificado;\n(5) O transporte seguro de artigos perigosos por via aérea, em conformidade com os requisitos do RBAC N° 175;\n(6) O SGSO;\n(7) Segurança da aviação civil (AVSEC); \n(8) Fatores humanos e CRM`,
       "Conhecimentos Gerais": `(1) Procedimentos do detentor de certificado para liberação e localização de voos;\n(2) Princípios e métodos para determinar peso e balanceamento e limitações de pista para decolagem pouso;\n(3)princípios e métodos para determinar peso e balanceamento e limitações de pista para decolagem e pouso\n(4)sistemas de controle de tráfego aéreo, procedimentos e fraseologia;\n(5)navegação e uso de auxílios à navegação, incluindo procedimentos de aproximação por instrumentos;\n(6)procedimentos de comunicações normais e de emergência;\n(7) familiarização com referências visuais antes e durante a descida abaixo da altitude de decisão ou da altitude mínima de descida em aproximação por instrumento;\n(8)reconhecer e evitar condições atmosféricas severas;\n(9) livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadvertidamente, incluindo, para aviões, tesouras de vento em baixa altitude;\n(10) operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento(inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas e planejamento de voo.`,
-      "Inicial - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação\n(2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:\n(i) equipamentos utilizados em pousos na água e em evacuação de emergência;\n(ii) equipamentos de primeiros socorros e sua apropriada utilização;e\n(iii) extintores de incêndio portáteis, com ênfase no tipo de agente extintor a ser utilizado nas diferentes classes de fogos;\n(3) Instruções sobre procedimentos em emergência, incluindo:\n(i) Descompressão rápida;\n(ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;\n(iii) Pouso na água e evacuação;\n(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e\n(v) Interferência ilícita e outras situações não usuais;e\n(4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;\n(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:\n(i) Pouso na água, se aplicável;\n(ii) Evacuação em emergência;\n(iii) Extinção de fogo e controle de fumação;\n(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;\n(v) Uso do oxigênio para tripulantes e passageiros;\n(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulantes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
-      "Periódico - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação\n(2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:\n(i) equipamentos utilizados em pousos na água e em evacuação de emergência;\n(ii) equipamentos de primeiros socorros e sua apropriada utilização;e\n(iii) extintores de incêndio portáteis, com ênfase no tipo de agente extintor a ser utilizado nas diferentes classes de fogos;\n(3) Instruções sobre procedimentos em emergência, incluindo:\n(i) Descompressão rápida;\n(ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;\n(iii) Pouso na água e evacuação;\n(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e\n(v) Interferência ilícita e outras situações não usuais;e\n(4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;\n(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:\n(i) Pouso na água, se aplicável;\n(ii) Evacuação em emergência;\n(iii) Extinção de fogo e controle de fumação;\n(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;\n(v) Uso do oxigênio para tripulantes e passageiros;\n(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulantes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
+      "Inicial - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação\n(2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:\n(i) equipamentos utilizados em pousos na água e em evacuação de emergência;\n(ii) equipamentos de primeiros socorros e sua apropriada utilização;e\n(iii) extintores de incêndio portáteis, com ênfase no tipo de agente extintor a ser utilizado nas diferentes classes de fogos;\n(3) Instruções sobre procedimentos em emergência, incluindo:\n(i) Descompressão rápida;\n(ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;\n(iii) Pouso na água e evacuação;\n(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e\n(v) Interferência ilícita e outras situações não usuais;e\n(4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;\n(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:\n(i) Pouso na água, se aplicável;\n(ii) Evacuação em emergência;\n(iii) Extinção de fogo e controle de fumação;\n(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;\n(v) Uso do oxigênio para tripulantes e passageiros;\n(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulentes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
+      "Periódico - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação\n(2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:\n(i) equipamentos utilizados em pousos na água e em evacuação de emergência;\n(ii) equipamentos de primeiros socorros e sua apropriada utilização;e\n(iii) extintores de incêndio portáteis, com ênfase no tipo de agente extintor a ser utilizado nas diferentes classes de fogos;\n(3) Instruções sobre procedimentos em emergência, incluindo:\n(i) Descompressão rápida;\n(ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;\n(iii) Pouso na água e evacuação;\n(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e\n(v) Interferência ilícita e outras situações não usuais;e\n(4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;\n(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:\n(i) Pouso na água, se aplicável;\n(ii) Evacuação em emergência;\n(iii) Extinção de fogo e controle de fumação;\n(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;\n(v) Uso do oxigênio para tripulantes e passageiros;\n(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulentes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
       "Inicial - SGSO": `(1) Princípios básicos de Gerenciamento de Segurança Operacional;\n(2) Filosofia, política e cultura de segurança operacional da AMBIPAR FLYONE;\n(3) Processo de identificação de perigos;\n(4) Processos de avaliação e mitigação de riscos;\n(5) Canais de comunicação para os fins da segurança operacional, com enfoque nos repostes - RELPREV;\n(6) Estudos de casos de SGSO em organizações, voltando à área de atuação do público-alvo;\n(7) Plano de Resposta a Emergências;\n(8) Programa de Prevenção de Substâncias Psicoativas.`,
       "Periódico - SGSO": `(1) Princípios básicos de Gerenciamento de Segurança Operacional;\n(2) Filosofia, política e cultura de segurança operacional da AMBIPAR FLYONE;\n(3) Processo de identificação de perigos;\n(4) Processos de avaliação e mitigação de riscos;\n(5) Canais de comunicação para os fins da segurança operacional, com enfoque nos repostes - RELPREV;\n(6) Estudos de casos de SGSO em organizações, voltando à área de atuação do público-alvo;\n(7) Plano de Resposta a Emergências;\n(8) Programa de Prevenção de Substâncias Psicoativas.`,
       "Inicial - Sobrevivência na Selva": `(1) Objetivo dos primeiros socorros / Respiração de emergência / RCP\n(2) Curativos e bandagens / Ferimentos e Hemorragias / Amputação;\n(3) Queimaduras e Escaldos / Estado de choque / Contusão;\n(4) Luxação / Fraturas / Técnicas para Improvisação de Transporte de Feridos e Doentes;\n(5) Animais Peçonhentos e Venenosos.\n(6) Regra Básica de Sobrevivência na Selva / Prioridades / Regras de Liderança;\n(7) Cuidados com a Saúde / A Vida na Selva / Área de Estacionamento ou Abrigo;\n(8) Importância na Limpeza do Local / Balizamento / Despojo de Detritos;\n(9) Importância da Obtenção do Fogo / Construção e Classificação de Abrigos / Meios de Obtenção de Agua e Alimentos;\n(10) Meios de Orientação na Mata / Meios de Sinalização\n(11) A vida na Selva / Meios de Orientação na Selva / Área de Estacionamento ou Abrigo\n(12) Importância da Limpeza do Local / Balizamento / Despojo de Detritos;\n(13) Importância da Obtenção do fogo / Construção de Abrigos;\n(14) Meios de Obtenção de Agua e Alimentos / Uso do Purificador de Agua / Utilização dos Meios de Sinalização`,
       "Inicial - Instrutor de Voo": `(1) Atividades, funções e responsabilidades do instrutor de voo;\n(2) Os regulamentos e normas aplicáveis e as políticas e procedimentos do detentor do certificado;\n(3) Os métodos, procedimentos e técnicas aplicáveis na condução da instrução de voo;\n(4) Avaliação apropriada do desempenho do aluno, incluindo a identificação de:\n (i) Treinamento impróprio e insuficiente;e\n (ii) Características pessoais de um candidato que possam afetar adversamente a segurança;\n(5) As ações corretivas no caso de progresso insatisfatório do treinamento;\n(6) Os métodos, procedimentos e limitações aprovados para desempenhar os procedimentos normais, anormais e de emergência requeridos na aeronave;e\n(7) Exceto para detentores de habilitação de instrutor de voo:\n(i) Os princípios fundamentais do processo de ensino-aprendizado;\n(ii) Métodos e procedimentos de ensino;e\n(iii) O relacionemtno instrutor-aluno.`,
       "Inicial - Examinador": `(1) Atribuições, responsabilidades e funçõesde um piloto examinador;\n(2) As aplicáveis provisões deste regulamento, dos regulamentos aeronáuticos e das políticas e procedimentos do detentor de certificado;\n(3) Os apropriados métodos, procedimentos e técnicas para conduzir os exames requeridos;\n(4) A adequada avaliação do desempenho de um piloto, incluindo a identificação de:\n(i) Treinamento inadequado ou insuficiente;e\n(ii) Características pessoais de um requerente que possam afetar adversamente a segurança;\n(5) As ações corretivas no caso de exames insatisfatórios;e\n(6) Os métodos, procedimentos e limitações aprovados para a execução dos procedimentos normais, anormais e de emergência da aeronave.`,
-      "Inicial - BELL 206/B06": `(1) Descrição Geral;\n(2) Características de desempenho;\n(3) Sistema motopropulsor;\n(4) Componentes principais;\n(5) Sistemas principais da aeronave (controle de voo, elétrico, hidráulico etc.), outros sistemas se aplicável, princípios de operação normal, anormal e de emergência e procedimentos e limitações apropriadas;\n(6) Conhecimentos e procedimentosd para:\n(i) Reconhecer e evitar condições atmosféricas severas;\n(ii) Livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadverdidamente;\n(iii) Operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento (inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas;e\n(iv) Operar aeronaves durante condições de gelo no solo (ou seja, a qualquer tempo em que as condições`,
+      "Inicial - BELL 206/B06": `(1) Descrição Geral;\n(2) Características de desempenho;\n(3) Sistema motopropulsor;\n(4) Componentes principais;\n(5) Sistemas principais da aeronave (controle de voo, elétrico, hidráulico etc.), outros sistemas se aplicável, princípios de operação normal, anormal e de emergência e procedimentos e limitações apropriadas;\n(6) Conhecimentos e procedimentosd para:\n(i) Reconhecer e evitar condições atmosféricas severas;\n(ii) Livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadverdidamente;\n(iii) Operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento (inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas;e\n(iv) Operar aeronaves durante condições de gelo no solo (ou seja, a qualquer tempo em que as condições`
     };
 
     function preencherConteudo() {
       const nome = document.getElementById('nome').value;
       document.getElementById('conteudo').value = conteudos[nome] || '';
+    }
+
+    let indexModulo = 0;
+    function adicionarModulo() {
+      const container = document.getElementById("modulos");
+      const div = document.createElement("div");
+      div.classList.add("modulo");
+      div.innerHTML = `
+        <label>Título do Módulo:</label>
+        <input type="text" name="modulos[${indexModulo}][titulo]" required>
+        <label>Arquivo (PDF):</label>
+        <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
+        <hr><br>
+      `;
+      container.appendChild(div);
+      indexModulo++;
     }
 
     let indicePergunta = 0;
