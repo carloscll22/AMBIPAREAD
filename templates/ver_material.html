@@ -137,15 +137,17 @@
 
   <div class="conteudo">
     {% if curso.modulos and modulo_atual is not none and 0 <= modulo_atual < (curso.modulos|length) %}
-      <iframe src="{{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}" frameborder="0"></iframe>
+      {% set fname = (curso.modulos[modulo_atual].arquivo or '').replace('static/','').replace('conteudos/','').lstrip('/') %}
+      <iframe src="{{ url_for('uploads', filename=fname) }}" frameborder="0"></iframe>
       <small style="opacity:.6">
-  URL DEBUG: {{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}
-</small>
+        URL DEBUG: {{ url_for('uploads', filename=fname) }}
+      </small>
     {% else %}
       <div class="alert">
         Nenhum módulo disponível ou módulo inválido selecionado.
       </div>
     {% endif %}
+
 
     <div class="progress">
       <div class="progress-bar">{{ progresso }}%</div>
