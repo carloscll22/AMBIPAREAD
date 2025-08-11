@@ -378,6 +378,8 @@ def ver_material(curso):
     if not curso_obj:
         return "Curso não encontrado", 404
 
+    print("DEBUG ARQUIVO:", curso_obj["modulos"][0]["arquivo"] if curso_obj.get("modulos") else "SEM MODULOS")
+
     # Pega a lista de módulos (ou lista vazia)
     modulos = curso_obj.get("modulos", [])
     total_modulos = len(modulos)
