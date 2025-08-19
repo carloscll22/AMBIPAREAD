@@ -109,8 +109,16 @@
     <!-- Conteúdo -->
     <div class="conteudo">
       {% if curso.modulos and modulo_atual is not none %}
-        {% set fname = (curso.modulos[modulo_atual].arquivo or '').replace('static/','').replace('conteudos/','').lstrip('/') %}
-        <iframe src="{{ url_for('uploads', filename=fname) }}"></iframe>
+        {# pega o valor salvo #}
+        {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
+        {# remove static/ e conteudos/ e barra inicial #}
+        {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
+        {# mantém só o nome do arquivo (sem subpastas) #}
+        {% set parts = cleaned.split('/') %}
+        {% set fname = parts[-1] %}
+
+        <iframe src="{{ url_for('uploads', filename=fname) }}" frameborder="0"></iframe>
+        <small style="opacity:.6">URL DEBUG: {{ url_for('uploads', filename=fname) }}</small>
 
         <!-- Barra de progresso -->
         <div class="progress" data-label="{{ progresso }}%">
