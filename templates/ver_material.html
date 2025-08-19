@@ -111,9 +111,7 @@
       {% if curso.modulos and modulo_atual is not none %}
         {# pega o valor salvo #}
         {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
-        {# remove static/ e conteudos/ e barra inicial #}
         {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
-        {# mantém só o nome do arquivo (sem subpastas) #}
         {% set parts = cleaned.split('/') %}
         {% set fname = parts[-1] %}
 
@@ -142,6 +140,18 @@
             </button>
           </form>
         </div>
+
+        <!-- Botão Concluir (último módulo + 100%) -->
+        {% if curso.modulos and modulo_atual is not none
+              and (modulo_atual + 1) == (curso.modulos|length)
+              and (progresso|int) >= 100 %}
+          <div class="concluir" style="margin-top:16px; text-align:right;">
+            <form method="post" action="/concluir/{{ curso.nome }}">
+              <button id="concluirBtn" type="submit" class="btn">Concluído</button>
+            </form>
+          </div>
+        {% endif %}
+
       {% else %}
         <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
       {% endif %}
@@ -149,7 +159,7 @@
 
   </div>
 
-  <!-- Atalhos de teclado (← / →) -->
+  <!-- Atalhos de teclado -->
   <script>
     document.addEventListener("keydown", function(event) {
       if (event.key === "ArrowLeft") {
