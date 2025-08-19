@@ -94,7 +94,8 @@
     <!-- Menu lateral -->
     <div class="menu-lateral">
       <ul>
-        {% for idx, mod in enumerate(curso.modulos) %}
+        {% for mod in curso.modulos %}
+          {% set idx = loop.index0 %}
           <li>
             <a href="?modulo={{ idx }}" class="{{ 'is-active' if modulo_atual==idx else '' }}">
               Módulo {{ idx + 1 }} - {{ mod.titulo }}
@@ -108,7 +109,8 @@
     <!-- Conteúdo -->
     <div class="conteudo">
       {% if curso.modulos and modulo_atual is not none %}
-        <iframe src="{{ url_for('static', filename=curso.modulos[modulo_atual].arquivo) }}"></iframe>
+        {% set fname = (curso.modulos[modulo_atual].arquivo or '').replace('static/','').replace('conteudos/','').lstrip('/') %}
+        <iframe src="{{ url_for('uploads', filename=fname) }}"></iframe>
 
         <!-- Barra de progresso -->
         <div class="progress" data-label="{{ progresso }}%">
@@ -139,7 +141,7 @@
 
   </div>
 
-  <!-- Script de atalho de teclado -->
+  <!-- Atalhos de teclado (← / →) -->
   <script>
     document.addEventListener("keydown", function(event) {
       if (event.key === "ArrowLeft") {
