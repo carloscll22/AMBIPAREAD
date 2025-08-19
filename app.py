@@ -18,7 +18,7 @@ CAMINHO_CERTIFICADOS = "/mnt/data/certificados.json"
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "mnt", "data", "uploads")
+UPLOAD_FOLDER = "/mnt/data/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def gerar_ip():
     return ".".join(str(randint(0, 225)) for _ in range(4))
@@ -81,7 +81,6 @@ def salvar_usuarios():
 
 progresso_por_aluno = {}
 
-UPLOAD_FOLDER = 'static/conteudos'
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx', 'jpg', 'jpeg', 'png', 'mp4', 'mp3', 'zip', 'rar', 'txt', 'csv'}
 
 app = Flask(__name__)
@@ -215,10 +214,10 @@ def cadastrar_curso():
                 break
             if allowed_file(arquivo.filename):
                 filename = secure_filename(arquivo.filename)
-                caminho = os.path.join("static", "conteudos", filename)
+                caminho = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 os.makedirs(os.path.dirname(caminho), exist_ok=True)
                 arquivo.save(caminho)
-                modulos.append({"titulo": titulo, "arquivo": f"conteudos/{filename}"})
+                modulos.append({"titulo": titulo, "arquivo": filename})
             index += 1
 
         # -------- PROVA MULTIPLA ESCOLHA --------
