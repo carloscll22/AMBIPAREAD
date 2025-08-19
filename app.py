@@ -8,10 +8,14 @@ import shutil
 import os
 import json
 
+TZ = pytz.timezone("America/Sao_Paulo")
+
 CAMINHO_USUARIOS = "/mnt/data/usuarios.json"
 CAMINHO_CURSOS = "/mnt/data/cursos.json"
 CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
 CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
+CAMINHO_CERTIFICADOS = "/mnt/data/certificados.json"
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "mnt", "data", "uploads")
@@ -44,7 +48,30 @@ usuarios    = carregar_dados(CAMINHO_USUARIOS, {})
 cursos      = carregar_dados(CAMINHO_CURSOS, [])
 matriculas  = carregar_dados(CAMINHO_MATRICULAS, [])
 progresso   = carregar_dados(CAMINHO_PROGRESSO, {})
-print("DEBUG USUÁRIOS:", usuarios)
+certificados = carregar_dados(CAMINHO_CERTIFICADOS, {})
+
+def obter_data_certificado_fixa(aluno: str, curso: str):
+    """
+    Retorna um dict com a data/hora fixa da 1ª emissão do certificado para (aluno, curso).
+    Se ainda não existir, cria agora, salva em /mnt/data/certificados.json e retorna.
+    """
+    chave = f"{aluno}||{curso}"
+
+    # Se já existe registro, reutiliza
+    reg = certificados.get(chave)
+    if reg and "emitido_em" in reg:
+        return reg["emitido_em"]  # {'iso':..., 'data':..., 'hora':...}
+
+    # Não existe ainda -> cria agora e persiste
+    agora = datetime.now(TZ)
+    emitido_em = {
+        "iso":  agora.isoformat(),
+        "data": agora.strftime("%d/%m/%Y"),
+        "hora": agora.strftime("%H:%M"),
+    }
+    certificados[chave] = {"emitido_em": emitido_em}
+    salvar_dados(CAMINHO_CERTIFICADOS, certificados)
+    return emitido_em
 
 
 def salvar_usuarios():
@@ -52,8 +79,6 @@ def salvar_usuarios():
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
 
-
-# variável global opcional
 progresso_por_aluno = {}
 
 UPLOAD_FOLDER = 'static/conteudos'
@@ -702,14 +727,13 @@ def emitir_certificado(aluno, curso):
     matricula = next((m for m in matriculas if m["aluno"] == aluno and m["curso"] == curso), None)
     professor_assinante = matricula["professor"] if matricula else curso_obj["instrutor"]
 
-    import pytz
-    fuso_sp = pytz.timezone("America/Sao_Paulo")
-    agora = datetime.now(fuso_sp)
+    emitido_em = obter_data_certificado_fixa(aluno=aluno, curso=curso)
 
-    data_assinatura_instrutor = agora.strftime("%d/%m/%Y")
-    hora_assinatura_instrutor = agora.strftime("%H:%M")
-    data_assinatura_aluno     = data_assinatura_instrutor
-    hora_assinatura_aluno     = hora_assinatura_instrutor
+    data_assinatura_instrutor = emitido_em["data"]
+    hora_assinatura_instrutor = emitido_em["hora"]
+    data_assinatura_aluno     = emitido_em["data"]
+    hora_assinatura_aluno     = emitido_em["hora"]
+
 
     carga     = curso_obj.get("carga_horaria", "")
     conteudo  = curso_obj.get("conteudo", "")
