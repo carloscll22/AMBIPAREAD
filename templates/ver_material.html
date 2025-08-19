@@ -6,7 +6,27 @@
   <style>
     body { background:#f5ffe6; font-family: Arial, sans-serif; margin:0; }
 
-    .top-bar { background:#c1f38e; padding:16px 24px; font-weight:bold; font-size:20px; }
+    .top-bar {
+      background:#c1f38e;
+      padding:16px 24px;
+      font-weight:bold;
+      font-size:20px;
+      position: relative; /* permite posicionar o botão à direita */
+    }
+    .btn-back {
+      position:absolute;
+      right:24px;
+      top:50%;
+      transform: translateY(-50%);
+      background:#a0e76d;
+      color:#1b1b1b;
+      padding:8px 14px;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:700;
+      box-shadow:0 2px 5px rgba(0,0,0,.1);
+    }
+    .btn-back:hover { background:#8dd24a; }
 
     .container {
       display:grid;
@@ -87,6 +107,8 @@
 
   <div class="top-bar">
     Inicial - {{ curso.nome }}
+    <!-- Botão Voltar (home do aluno) -->
+    <a class="btn-back" href="{{ url_for('home') }}">⬅ Voltar</a>
   </div>
 
   <div class="container">
