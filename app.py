@@ -62,7 +62,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'docx', 'pptx', 'jpg', 'jpeg', 'png', 'mp4', 'mp3',
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = "chave_secreta"
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
+app.config["MAX_CONTENT_LENGTH"] = 140 * 1024 * 1024  # 16 MB
 def gerar_ip_falso() -> str:
     """Gera um IP v4 aleatório tipo '87.142.233.19'."""
     return ".".join(str(randint(10, 254)) for _ in range(4))
