@@ -100,7 +100,7 @@
         {% for e in enrollments %}
           <tr>
             <td>{{ e.curso.nome }}</td>
-            <td>{{ e.curso.nrt or '---' }}</td>
+            <td>{{ e.nrt }}</td>
             <td>{{ e.aluno }}</td>
             <td>{{ e.tempo }}</td>
             <td>
