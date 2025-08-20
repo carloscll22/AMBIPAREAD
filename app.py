@@ -527,7 +527,7 @@ def ver_lista_presenca(aluno, curso):
     hora = agora.strftime("%H:%M")
     ip = gerar_ip_falso()  
 
-   turma_nrt = matriculas_do_curso[0].get("nrt", "---") if matriculas_do_curso else "---"  # ⬅️ NOVO
+turma_nrt = matriculas_do_curso[0].get("nrt", "---") if matriculas_do_curso else "---"  # ⬅️ NOVO
 
 return render_template(
     "visualizar_lista_presenca.html",
