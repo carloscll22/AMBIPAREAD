@@ -793,7 +793,7 @@ def acompanhamento():
             "tempo":     prog["tempo"],
             "concluido": prog["concluido"],
             "nota":      nota
-            "nrt":       turma_nrt,
+            "nrt":       turma_nrt
         })
 
     # salva progresso e resultados no disco para não perder dados
