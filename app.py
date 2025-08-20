@@ -792,7 +792,7 @@ def acompanhamento():
             "email":     m["aluno"],
             "tempo":     prog["tempo"],
             "concluido": prog["concluido"],
-            "nota":      nota
+            "nota":      nota,
             "nrt":       turma_nrt
         })
 
