@@ -33,7 +33,7 @@
       font-weight: bold;
       color: #444;
     }
-    select {
+    select, input[type="text"], input[type="date"] {
       width: 100%;
       padding: 8px;
       margin-top: 6px;
@@ -89,7 +89,6 @@
         {% endfor %}
       </select>
 
-
       <label for="professor">Professor:</label>
       <select name="professor" id="professor" required>
         {% for prof in professores %}
@@ -97,12 +96,10 @@
         {% endfor %}
       </select>
 
-        
-        {% for prof in professores %}
-          
-        {% endfor %}
-      </select>
-      
+      <!-- Novo campo: NRT -->
+      <label for="nrt">NRT da Turma:</label>
+      <input type="text" id="nrt" name="nrt" placeholder="Ex: NRT-2025-01" required>
+
       <label for="data_inicio">Data Início:</label>
       <input type="date" id="data_inicio" name="data_inicio" required>
 
