@@ -254,7 +254,6 @@ def cadastrar_curso():
             "modulos":         modulos,
             "instrutor":       request.form.get("instrutor", instrutor_nome),
             "conteudo":        request.form.get("conteudo", ""),
-            "data_realizacao": request.form["data_realizacao"],
             "prova":           perguntas,
         }
 
@@ -331,7 +330,6 @@ def editar_curso_nome(nome):
         curso["nome"] = request.form["nome"]
         curso["carga_horaria"] = request.form["carga_horaria"]
         curso["tipo"] = request.form["tipo"]
-        curso["data_realizacao"] = request.form["data_realizacao"]
         curso["conteudo"] = request.form["conteudo"]
         salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect("/editar_curso")
