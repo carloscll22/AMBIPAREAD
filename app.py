@@ -780,7 +780,8 @@ def acompanhamento():
         curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
         if not curso_obj:
             continue
-
+        turma_nrt = m.get("nrt", "---")
+        
         prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
         res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
         nota = f"{round((res['acertos']/res['total']*100),1)}%" if res["total"] > 0 else "---"
@@ -792,6 +793,7 @@ def acompanhamento():
             "tempo":     prog["tempo"],
             "concluido": prog["concluido"],
             "nota":      nota
+            "nrt":       turma_nrt,
         })
 
     # salva progresso e resultados no disco para não perder dados
