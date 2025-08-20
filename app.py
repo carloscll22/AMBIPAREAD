@@ -255,7 +255,6 @@ def cadastrar_curso():
             "instrutor":       request.form.get("instrutor", instrutor_nome),
             "conteudo":        request.form.get("conteudo", ""),
             "data_realizacao": request.form["data_realizacao"],
-            "nrt":             request.form["nrt"],
             "prova":           perguntas,
         }
 
@@ -275,6 +274,7 @@ def matricular():
         aluno_email = request.form["aluno"]
         curso_nome  = request.form["curso"]
         professor   = request.form["professor"]
+        nrt_turma   = request.form.get("nrt")
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
 
@@ -284,6 +284,7 @@ def matricular():
                 "aluno":      aluno_email,
                 "curso":      curso_nome,
                 "professor":  professor,
+                "nrt":        nrt_turma,
                 "data_inicio": data_inicio,
                 "data_fim":    data_fim
             })
@@ -331,7 +332,6 @@ def editar_curso_nome(nome):
         curso["carga_horaria"] = request.form["carga_horaria"]
         curso["tipo"] = request.form["tipo"]
         curso["data_realizacao"] = request.form["data_realizacao"]
-        curso["nrt"] = request.form["nrt"]
         curso["conteudo"] = request.form["conteudo"]
         salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect("/editar_curso")
@@ -527,17 +527,19 @@ def ver_lista_presenca(aluno, curso):
     hora = agora.strftime("%H:%M")
     ip = gerar_ip_falso()  
 
-    return render_template(
-        "visualizar_lista_presenca.html",
-        curso=curso_obj,
-        nrt=curso_obj.get("nrt", "---"),
-        carga_horaria=carga_horaria,
-        instrutor=instrutor_matricula,
-        data=data,
-        hora=hora,
-        ip=ip,
-        presencas=presencas    
-    )
+   turma_nrt = matriculas_do_curso[0].get("nrt", "---") if matriculas_do_curso else "---"  # ⬅️ NOVO
+
+return render_template(
+    "visualizar_lista_presenca.html",
+    curso=curso_obj,
+    nrt=turma_nrt,                 # ⬅️ USA A NRT DA TURMA (MATRÍCULA)
+    carga_horaria=carga_horaria,
+    instrutor=instrutor_matricula,
+    data=data,
+    hora=hora,
+    ip=ip,
+    presencas=presencas    
+)
 
 
 # Página de lista de presença
@@ -570,7 +572,7 @@ def lista_presenca(curso):
                            curso=curso_obj,
                            aluno=usuarios[email]["nome"],
                            instrutor=matricula["professor"],
-                           nrt=curso_obj.get("nrt",""),
+                           nrt=matricula.get("nrt", ""),
                            carga_horaria=carga_horaria,
                            data=data,
                            hora=hora,
