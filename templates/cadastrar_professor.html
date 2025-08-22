@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastrar Professor</title>
+  <style>
+    body { background:#c1f38e; margin:0; font-family:Arial, sans-serif; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; padding:40px 16px; }
+    .box { background:#fff; width:360px; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    h2 { margin:0 0 16px; }
+    label { display:block; font-weight:bold; margin-top:12px; }
+    input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-top:6px; box-sizing:border-box; }
+    .btn { margin-top:18px; width:100%; padding:12px; background:#a0e76d; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+    .btn:hover { background:#8dd24a; }
+    .erro { margin-top:10px; background:#ffe9e9; color:#8a1f1f; border:1px solid #ffcbcb; padding:10px; border-radius:8px; }
+    .voltar { display:block; text-align:center; margin-top:12px; text-decoration:none; color:#333; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Cadastrar Professor</h2>
+
+    {% if erro %}
+      <div class="erro">{{ erro }}</div>
+    {% endif %}
+
+    <form method="post">
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" type="text" required>
+
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="text" required>
+
+      <button class="btn" type="submit">Salvar</button>
+    </form>
+
+    <a class="voltar" href="/">Voltar</a>
+  </div>
+</body>
+</html>
