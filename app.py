@@ -263,6 +263,34 @@ def cadastrar_curso():
 
     return render_template("cadastrar_curso.html")
 
+@app.route("/cadastrar_professor", methods=["GET", "POST"])
+def cadastrar_professor():
+    # Só professor pode acessar
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        nome  = request.form.get("nome", "").strip()
+        senha = request.form.get("senha", "")
+
+        # validações simples
+        if not email or not nome or not senha:
+            return render_template("cadastrar_professor.html", erro="Preencha todos os campos.")
+
+        if email in usuarios:
+            return render_template("cadastrar_professor.html", erro="Já existe um usuário com esse e-mail.")
+
+        # cria o usuário professor
+        usuarios[email] = {"nome": nome, "senha": senha, "tipo": "professor"}
+        salvar_usuarios()  # você já tem essa função
+
+        # volta para home do professor
+        return redirect("/")
+
+    # GET
+    return render_template("cadastrar_professor.html", erro=None)
+
 
 @app.route("/matricular", methods=["GET", "POST"])
 def matricular():
