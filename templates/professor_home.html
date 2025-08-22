@@ -65,9 +65,7 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    .sidebar a.logout:hover {
-      background: #8ad858;
-    }
+    .sidebar a.logout:hover { background: #8ad858; }
     .content {
       flex: 1;
       padding: 40px;
@@ -97,9 +95,7 @@
       font-weight: 600;
       transition: background 0.3s;
     }
-    .actions a.card-btn:hover {
-      background: #e8f5d7;
-    }
+    .actions a.card-btn:hover { background: #e8f5d7; }
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar {
@@ -109,9 +105,7 @@
         border-right: none;
         border-bottom: 2px solid #ccc;
       }
-      .avatar, .user-name {
-        display: none;
-      }
+      .avatar, .user-name { display: none; }
     }
   </style>
 </head>
@@ -129,6 +123,9 @@
     <div class="actions">
       <a href="/cadastrar_curso" class="card-btn">📚 Cadastrar Novo Curso</a>
       <a href="/matricular" class="card-btn">👥 Matricular Aluno</a>
+      <!-- NOVO CARD -->
+      <a href="/cadastrar_professor" class="card-btn">👤 Cadastrar Professor</a>
+      <!-- FIM NOVO CARD -->
       <a href="/acompanhamento" class="card-btn">📊 Acompanhamento de Alunos</a>
       <a href="/editar_curso" class="card-btn">✏️ Editar Curso</a>
     </div>
