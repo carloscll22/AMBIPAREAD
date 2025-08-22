@@ -52,5 +52,6 @@
   "cmte.welner@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Welner Silva Lima"},
   "tuany.oliveira@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "TUANY OLIVEIRA"},
   "leandro.michelin@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "LEANDRO MICHELIN"},
-  "carlos.lopes@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "CARLOS LOPES"}
+  "carlos.lopes@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "CARLOS LOPES"},
+  "larissafr.ctm@gmail.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "LARISSA FURTADO"}
 }
