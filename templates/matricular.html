@@ -114,6 +114,13 @@
         {% endfor %}
       </select>
 
+      <!-- NOVO: Tipo da Turma -->
+      <label for="tipo">Tipo da Turma:</label>
+      <select id="tipo" name="tipo" required>
+        <option value="Inicial">Inicial</option>
+        <option value="Periódico">Periódico</option>
+      </select>
+
       <!-- Turma (3 dígitos, opcional; se vazio o backend gera) -->
       <label for="turma">Turma (3 dígitos):</label>
       <input
@@ -145,9 +152,7 @@
   </div>
 
   <script>
-    // dicionário vindo da rota: { "Curso A": "001", "Curso B": "007", ... }
     const sugestoesPorCurso = {{ sugestoes_por_curso|tojson|safe if sugestoes_por_curso is defined else '{}' }};
-
     const cursoSelect = document.getElementById('curso');
     const turmaInput  = document.getElementById('turma');
 
@@ -155,13 +160,10 @@
       const nome = cursoSelect.value;
       const sug = sugestoesPorCurso[nome] || '001';
       turmaInput.placeholder = sug;
-      // opcional: ao trocar de curso, limpamos o valor digitado para evitar confusão
       turmaInput.value = '';
     }
 
-    // inicializa ao abrir a página
     atualizaPlaceholder();
-    // atualiza ao trocar de curso
     cursoSelect.addEventListener('change', atualizaPlaceholder);
   </script>
 </body>
