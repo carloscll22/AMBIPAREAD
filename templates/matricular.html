@@ -47,6 +47,14 @@
       color: #666;
       margin-top: 4px;
     }
+    .erro {
+      margin-top: 10px;
+      background: #ffe7e7;
+      color: #a30000;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
     input[type="submit"] {
       margin-top: 25px;
       width: 100%;
@@ -79,6 +87,11 @@
 <body>
   <div class="box">
     <h2>Matricular Aluno em Curso</h2>
+
+    {% if erro %}
+      <div class="erro">{{ erro }}</div>
+    {% endif %}
+
     <form method="post">
       <label for="aluno">Aluno:</label>
       <select name="aluno" id="aluno" required>
@@ -107,8 +120,7 @@
         type="text"
         id="turma"
         name="turma"
-        value="{{ sugestao_turma|trim }}"
-        placeholder="001"
+        placeholder="{{ sugestao_turma or '001' }}"
         inputmode="numeric"
         autocomplete="off"
         pattern="[0-9]{3}"
@@ -131,5 +143,26 @@
     </form>
     <a href="/" class="link-voltar">Voltar</a>
   </div>
+
+  <script>
+    // dicionário vindo da rota: { "Curso A": "001", "Curso B": "007", ... }
+    const sugestoesPorCurso = {{ sugestoes_por_curso|tojson|safe if sugestoes_por_curso is defined else '{}' }};
+
+    const cursoSelect = document.getElementById('curso');
+    const turmaInput  = document.getElementById('turma');
+
+    function atualizaPlaceholder() {
+      const nome = cursoSelect.value;
+      const sug = sugestoesPorCurso[nome] || '001';
+      turmaInput.placeholder = sug;
+      // opcional: ao trocar de curso, limpamos o valor digitado para evitar confusão
+      turmaInput.value = '';
+    }
+
+    // inicializa ao abrir a página
+    atualizaPlaceholder();
+    // atualiza ao trocar de curso
+    cursoSelect.addEventListener('change', atualizaPlaceholder);
+  </script>
 </body>
 </html>
