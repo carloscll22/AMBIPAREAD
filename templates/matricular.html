@@ -42,6 +42,11 @@
       font-size: 15px;
       box-sizing: border-box;
     }
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
     input[type="submit"] {
       margin-top: 25px;
       width: 100%;
@@ -83,7 +88,7 @@
       </select>
 
       <label for="curso">Curso:</label>
-      <select name="curso" id="curso">
+      <select name="curso" id="curso" required>
         {% for curso in cursos %}
           <option value="{{ curso.nome }}">{{ curso.nome }}</option>
         {% endfor %}
@@ -96,7 +101,20 @@
         {% endfor %}
       </select>
 
-      <!-- Novo campo: NRT -->
+      <!-- Novo campo: Turma (3 dígitos, sugerida) -->
+      <label for="turma">Turma (3 dígitos):</label>
+      <input
+        type="text"
+        id="turma"
+        name="turma"
+        value="{{ sugestao_turma }}"
+        placeholder="001"
+        pattern="\\d{3}"
+        title="Use exatamente 3 dígitos (ex.: 001, 002)"
+      />
+      <div class="hint">Se deixar em branco, o sistema gera o próximo número automaticamente.</div>
+
+      <!-- Campo: NRT -->
       <label for="nrt">NRT da Turma:</label>
       <input type="text" id="nrt" name="nrt" placeholder="Ex: NRT-2025-01" required>
 
