@@ -101,20 +101,23 @@
         {% endfor %}
       </select>
 
-      <!-- Novo campo: Turma (3 dígitos, sugerida) -->
+      <!-- Turma (3 dígitos, opcional; se vazio o backend gera) -->
       <label for="turma">Turma (3 dígitos):</label>
       <input
         type="text"
         id="turma"
         name="turma"
-        value="{{ sugestao_turma }}"
+        value="{{ sugestao_turma|trim }}"
         placeholder="001"
-        pattern="\\d{3}"
+        inputmode="numeric"
+        autocomplete="off"
+        pattern="[0-9]{3}"
         title="Use exatamente 3 dígitos (ex.: 001, 002)"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,3)"
       />
       <div class="hint">Se deixar em branco, o sistema gera o próximo número automaticamente.</div>
 
-      <!-- Campo: NRT -->
+      <!-- NRT -->
       <label for="nrt">NRT da Turma:</label>
       <input type="text" id="nrt" name="nrt" placeholder="Ex: NRT-2025-01" required>
 
