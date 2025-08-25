@@ -78,8 +78,9 @@
         <option value="0">Curso</option>
         <option value="1">Turma</option>
         <option value="2">NRT</option>
-        <option value="3">Aluno</option>
-        <option value="5">Status</option>
+        <option value="3">Tipo</option><!-- NOVO -->
+        <option value="4">Aluno</option>
+        <option value="6">Status</option>
       </select>
       <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
     </div>
@@ -90,6 +91,7 @@
           <th>Curso</th>
           <th>Turma</th>
           <th>NRT</th>
+          <th>Tipo</th><!-- NOVO -->
           <th>Aluno</th>
           <th>Tempo (min)</th>
           <th>Status</th>
@@ -103,6 +105,7 @@
             <td>{{ e.curso.nome }}</td>
             <td>{{ e.turma }}</td>
             <td>{{ e.nrt }}</td>
+            <td>{{ e.tipo }}</td><!-- NOVO -->
             <td>{{ e.aluno }}</td>
             <td>{{ e.tempo }}</td>
             <td>
@@ -133,7 +136,7 @@
 
   <script>
     function filtrarTabela() {
-      const idx = +document.getElementById('filter-type').value; // já corresponde ao índice da coluna
+      const idx = +document.getElementById('filter-type').value; // índice da coluna
       const termo = document.getElementById('filter-input').value.toLowerCase();
       document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row => {
         const cell = row.querySelectorAll('td')[idx]?.textContent.toLowerCase() || '';
