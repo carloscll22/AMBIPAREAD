@@ -270,7 +270,6 @@ def cadastrar_curso():
         curso = {
             "nome":            request.form["nome"],
             "carga_horaria":   request.form["carga_horaria"],
-            "tipo":            request.form["tipo"],
             "modulos":         modulos,
             "instrutor":       request.form.get("instrutor", instrutor_nome),
             "conteudo":        request.form.get("conteudo", ""),
@@ -325,6 +324,7 @@ def matricular():
         nrt_turma   = request.form.get("nrt")
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
+        tipo_curso  = request.form.get("tipo")
 
         # turma informada (opcional). Se vier, normaliza para 3 dígitos.
         turma_form = (request.form.get("turma") or "").strip()
@@ -440,7 +440,6 @@ def editar_curso_nome(nome):
     if request.method == "POST":
         curso["nome"] = request.form["nome"]
         curso["carga_horaria"] = request.form["carga_horaria"]
-        curso["tipo"] = request.form["tipo"]
         curso["conteudo"] = request.form["conteudo"]
         salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect("/editar_curso")
@@ -908,6 +907,7 @@ def acompanhamento():
             "nota":      nota,
             "nrt":       nrt_val,      # já tinha
             "turma":     turma_num,    # << novo
+            "tipo":      tipo_val,
         })
 
     salvar_dados(CAMINHO_CURSOS, cursos)
