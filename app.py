@@ -15,6 +15,8 @@ CAMINHO_CURSOS = "/mnt/data/cursos.json"
 CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
 CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
 CAMINHO_CERTIFICADOS = "/mnt/data/certificados.json"
+CAMINHO_TURMAS = "/mnt/data/turmas.json"
+
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +36,24 @@ def inicializar_dados():
 def salvar_dados(caminho, dados):
     with open(caminho, "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=2, ensure_ascii=False)
-        
+
+def salvar_turmas_ctrl():
+    salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
+
+def proxima_turma(curso_nome: str) -> str:
+    last = int(turmas_ctrl.get(curso_nome, 0))
+    nxt = last + 1
+    turmas_ctrl[curso_nome] = nxt
+    salvar_turmas_ctrl()
+    return f"{nxt:03d}"
+
+def sugerir_turma(curso_nome: str) -> str:
+    """
+    Apenas sugere (não persiste) o próximo número, para mostrar no formulário.
+    """
+    last = int(turmas_ctrl.get(curso_nome, 0))
+    return f"{last+1:03d}"
+    
 def carregar_dados(caminho, padrao):
     if os.path.exists(caminho):
         with open(caminho, "r", encoding="utf-8") as f:
@@ -49,6 +68,7 @@ cursos      = carregar_dados(CAMINHO_CURSOS, [])
 matriculas  = carregar_dados(CAMINHO_MATRICULAS, [])
 progresso   = carregar_dados(CAMINHO_PROGRESSO, {})
 certificados = carregar_dados(CAMINHO_CERTIFICADOS, {})
+turmas_ctrl  = carregar_dados(CAMINHO_TURMAS, {})
 
 def obter_data_certificado_fixa(aluno: str, curso: str):
     """
@@ -305,6 +325,9 @@ def matricular():
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
 
+        turma_form = (request.form.get("turma") or "").strip()
+        turma_num = turma_form if turma_form else proxima_turma(curso_nome)
+        
         # só adiciona se ainda não existe
         if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
             matriculas.append({
@@ -312,6 +335,7 @@ def matricular():
                 "curso":      curso_nome,
                 "professor":  professor,
                 "nrt":        nrt_turma,
+                "turma":      turma_num,
                 "data_inicio": data_inicio,
                 "data_fim":    data_fim
             })
@@ -339,10 +363,12 @@ def matricular():
         "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima" 
     ]
 
+    sugestao_turma = sugerir_turma(cursos[0]["nome"]) if cursos else ""
     return render_template("matricular.html",
                            alunos=alunos,
                            cursos=cursos,
-                           professores=professores)
+                           professores=professores,
+                           sugestao_turma=sugestao_turma)
 
                   
 @app.route("/editar_curso/<nome>", methods=["GET", "POST"])
@@ -808,8 +834,10 @@ def acompanhamento():
         curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
         if not curso_obj:
             continue
-        turma_nrt = m.get("nrt", "---")
-        
+        m_ref = next((mm for mm in matriculas if mm["aluno"] == m["aluno"] and mm["curso"] == curso_nome), None)
+        turma_num = m_ref.get("turma", "—") if m_ref else "—"
+        nrt_val   = m_ref.get("nrt", "—") if m_ref else "—"
+
         prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
         res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
         nota = f"{round((res['acertos']/res['total']*100),1)}%" if res["total"] > 0 else "---"
@@ -821,10 +849,10 @@ def acompanhamento():
             "tempo":     prog["tempo"],
             "concluido": prog["concluido"],
             "nota":      nota,
-            "nrt":       turma_nrt
+            "nrt":       nrt_val,      # já tinha
+            "turma":     turma_num,    # << novo
         })
 
-    # salva progresso e resultados no disco para não perder dados
     salvar_dados(CAMINHO_CURSOS, cursos)
     salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
