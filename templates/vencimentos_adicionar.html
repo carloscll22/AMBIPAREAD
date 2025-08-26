@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Adicionar Vencimento</title>
+  <style>
+    body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; display:flex; justify-content:center; }
+    .box { background:#fff; width:380px; margin:40px 0; padding:24px; border-radius:10px; box-shadow:0 0 8px rgba(0,0,0,.08); }
+    h2 { margin:0 0 16px; }
+    label { display:block; margin-top:12px; font-weight:bold; }
+    select, input[type="date"] { width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; margin-top:6px; }
+    .erro { margin-top:10px; background:#ffe7e7; color:#a30000; padding:8px 10px; border-radius:6px; font-size:14px; }
+    .row { margin-top:12px; }
+    .btn { margin-top:20px; width:100%; padding:12px; background:#a0e76d; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; }
+    .btn:hover { background:#8dd24a; }
+    .link { display:inline-block; margin-top:12px; text-decoration:none; color:#333; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Adicionar Vencimento</h2>
+
+    {% if erro %}
+      <div class="erro">{{ erro }}</div>
+    {% endif %}
+
+    <form method="post">
+      <label for="aluno">Aluno:</label>
+      <select id="aluno" name="aluno" required>
+        {% for a in alunos %}
+          <option value="{{ a.email }}">{{ a.nome }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="curso">Curso:</label>
+      <select id="curso" name="curso" required>
+        {% for c in cursos %}
+          <option value="{{ c.nome }}">{{ c.nome }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="data_vencimento">Data de Vencimento:</label>
+      <input type="date" id="data_vencimento" name="data_vencimento" required>
+
+      <button type="submit" class="btn">Salvar</button>
+    </form>
+
+    <a class="link" href="/controle_vencimentos">← Voltar</a>
+  </div>
+</body>
+</html>
