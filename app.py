@@ -16,7 +16,7 @@ CAMINHO_MATRICULAS = "/mnt/data/matriculas.json"
 CAMINHO_PROGRESSO = "/mnt/data/progresso.json"
 CAMINHO_CERTIFICADOS = "/mnt/data/certificados.json"
 CAMINHO_TURMAS = "/mnt/data/turmas.json"
-
+CAMINHO_VENCIMENTOS = "/mnt/data/vencimentos.json"
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -69,6 +69,7 @@ matriculas  = carregar_dados(CAMINHO_MATRICULAS, [])
 progresso   = carregar_dados(CAMINHO_PROGRESSO, {})
 certificados = carregar_dados(CAMINHO_CERTIFICADOS, {})
 turmas_ctrl  = carregar_dados(CAMINHO_TURMAS, {})
+vencimentos = carregar_dados(CAMINHO_VENCIMENTOS, [])  
 
 def obter_data_certificado_fixa(aluno: str, curso: str):
     """
@@ -92,6 +93,9 @@ def obter_data_certificado_fixa(aluno: str, curso: str):
     certificados[chave] = {"emitido_em": emitido_em}
     salvar_dados(CAMINHO_CERTIFICADOS, certificados)
     return emitido_em
+
+def salvar_vencimentos():
+    salvar_dados(CAMINHO_VENCIMENTOS, vencimentos)
 
 
 def salvar_usuarios():
@@ -214,7 +218,102 @@ def alterar_senha_professor():
 
     return render_template("perfil_aluno.html", usuario=usuarios[email])
 
+@app.route("/controle_vencimentos")
+def controle_vencimentos():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+    return render_template("controle_vencimentos.html")
 
+
+@app.route("/vencimentos/adicionar", methods=["GET", "POST"])
+def vencimentos_adicionar():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    if request.method == "POST":
+        aluno_email = request.form.get("aluno", "").strip().lower()
+        curso_nome  = request.form.get("curso", "").strip()
+        data_venc   = request.form.get("data_vencimento", "").strip()  # formato YYYY-MM-DD
+
+        erro = None
+        if not aluno_email or not curso_nome or not data_venc:
+            erro = "Preencha todos os campos."
+        elif aluno_email not in usuarios:
+            erro = "Aluno inválido."
+        elif not any(c.get("nome") == curso_nome for c in cursos):
+            erro = "Curso inválido."
+
+        if erro:
+            alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+            return render_template("vencimentos_adicionar.html", alunos=alunos, cursos=cursos, erro=erro)
+
+        # regra: manter UNÍCO por (aluno, curso) – se existir, substitui
+        global vencimentos
+        vencimentos = [v for v in vencimentos if not (v["aluno"] == aluno_email and v["curso"] == curso_nome)]
+        vencimentos.append({
+            "aluno": aluno_email,
+            "curso": curso_nome,
+            "data_vencimento": data_venc  # YYYY-MM-DD
+        })
+        salvar_vencimentos()
+        return redirect("/vencimentos/verificar")
+
+    # GET
+    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+    return render_template("vencimentos_adicionar.html", alunos=alunos, cursos=cursos, erro=None)
+
+
+@app.route("/vencimentos/verificar")
+def vencimentos_verificar():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    hoje = datetime.now(TZ).date()
+    linhas = []
+    for v in vencimentos:
+        aluno_email = v.get("aluno")
+        curso_nome  = v.get("curso")
+        data_str    = v.get("data_vencimento")  # YYYY-MM-DD
+
+        # nome do aluno
+        aluno_nome = usuarios.get(aluno_email, {}).get("nome", aluno_email)
+
+        # parse da data
+        try:
+            data_venc = datetime.strptime(data_str, "%Y-%m-%d").date()
+        except Exception:
+            data_venc = None
+
+        if data_venc:
+            dias = (data_venc - hoje).days
+            vencido = dias < 0
+            em_alerta = dias <= 90  # 90 dias ou menos
+            status = "Vencido" if vencido else f"Vence em {dias} dias"
+        else:
+            dias = None
+            vencido = False
+            em_alerta = False
+            status = "Data inválida"
+
+        linhas.append({
+            "aluno_email": aluno_email,
+            "aluno_nome": aluno_nome,
+            "curso": curso_nome,
+            "data_venc": data_str,
+            "status": status,
+            "mostrar_matricular": (em_alerta or vencido) and data_venc is not None
+        })
+
+    # opcionalmente, ordenar por data de vencimento
+    def _key(l):
+        try:
+            return datetime.strptime(l["data_venc"], "%Y-%m-%d")
+        except Exception:
+            return datetime(2100,1,1)
+    linhas.sort(key=_key)
+
+    return render_template("vencimentos_verificar.html", linhas=linhas)
+    
 # ======================================================================
 #                       ROTAS (PROFESSOR)
 # ======================================================================
@@ -323,6 +422,8 @@ def matricular():
         nrt_turma   = request.form.get("nrt")
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
+        aluno_selected = request.args.get("aluno", "")
+        curso_selected = request.args.get("curso", "")
 
         # >>> NOVO: tipo da matrícula (Inicial / Periódico)
         tipo_matricula = (request.form.get("tipo") or "").strip()
@@ -462,8 +563,10 @@ def matricular():
         alunos=alunos,
         cursos=cursos,
         professores=professores,
-        sugestao_turma=sugestao_turma,             # se seu template ainda usa
-        sugestoes_por_curso=sugestoes_por_curso    # para placeholder dinâmico via JS
+        sugestao_turma=sugestao_turma,             
+        sugestoes_por_curso=sugestoes_por_curso,
+        aluno_selected=aluno_selected,
+        curso_selected=curso_selected
     )
 
 
