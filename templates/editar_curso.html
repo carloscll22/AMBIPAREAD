@@ -2,128 +2,154 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Cursos</title>
+  <title>Cursos Cadastrados</title>
   <style>
     body {
       background-color: #c1f38e;
       font-family: Arial, sans-serif;
       padding: 30px;
     }
-
     .container {
-      background: white;
-      max-width: 800px;
+      background: #fff;
+      max-width: 1000px;
       margin: auto;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 12px rgba(0,0,0,.1);
     }
-
-    h2 {
-      text-align: center;
-      color: #333;
+    h2 { text-align: center; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: top; }
+    th { background-color: #f0f0f0; }
+    .pill {
+      display: inline-block; padding: 3px 8px; border-radius: 20px;
+      background: #eef6e6; border: 1px solid #cfe7b6; font-size: 12px; margin: 2px 4px 0 0;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background-color: #f0f0f0;
-    }
-
     a.botao {
-      background-color: #0d6efd;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
+      background-color: #0d6efd; color: #fff; padding: 6px 12px;
+      border-radius: 6px; text-decoration: none; font-weight: bold;
+      display: inline-block;
     }
-
-    a.botao:hover {
-      background-color: #084298;
+    a.botao:hover { background-color: #084298; }
+    .btn-danger {
+      background-color: #dc3545; color: #fff; padding: 6px 12px; border-radius: 6px; border: 0; cursor: pointer;
+      width: 100%;
     }
-
-    .voltar {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .voltar a {
-      text-decoration: none;
-      color: #006400;
-      font-weight: bold;
-    }
-
-    .voltar a:hover {
-      text-decoration: underline;
-    }
-
-    .alunos-lista {
-      margin-top: 5px;
-      font-size: 0.95em;
-    }
+    .btn-danger:hover { background-color: #b02a37; }
+    .voltar { text-align: center; margin-top: 20px; }
+    .voltar a { text-decoration: none; color: #006400; font-weight: bold; }
+    .voltar a:hover { text-decoration: underline; }
+    .alunos-lista { margin-top: 5px; font-size: .95em; }
+    .muted { color: #777; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Cursos Cadastrados</h2>
+
     <table>
       <thead>
         <tr>
-          <th>Curso</th>
-          <th>Tipo</th>
-          <th>Carga Horária</th>
-          <th>NRT</th>
-          <th>Alunos Matriculados</th>
-          <th>Ações</th>
+          <th style="width: 26%">Curso</th>
+          <th style="width: 10%">Carga Horária</th>
+          <th style="width: 18%">Tipos usados*</th>
+          <th style="width: 18%">Turmas / NRT*</th>
+          <th style="width: 18%">Alunos Matriculados</th>
+          <th style="width: 10%">Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for curso in cursos %}
-        <tr>
-          <td>{{ curso.nome }}</td>
-          <td>{{ curso.tipo }}</td>
-          <td>{{ curso.carga_horaria }}</td>
-          <td>{{ curso.nrt }}</td>
-          <td>
-            <div class="alunos-lista">
-              {% for matricula in matriculas %}
-                {% if matricula.curso == curso.nome %}
-                  <form method="POST" action="{{ url_for('remover_matricula') }}" style="display:inline;">
-                    <input type="hidden" name="curso" value="{{ curso.nome }}">
-                    <input type="hidden" name="aluno" value="{{ matricula.aluno }}">
-                    {{ usuarios[matricula.aluno].nome }}
-                    <button type="submit" title="Remover aluno" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                  </form><br>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </td>
-          <td>
-            <a href="{{ url_for('editar_curso_nome', nome=curso.nome) }}" class="botao">Editar</a>
+          {# Agregadores por curso (usando namespace para conseguir "append") #}
+          {% set ns = namespace(tipos=[], nrts=[], turmas=[]) %}
+          {% for m in matriculas %}
+            {% if m.curso == curso.nome %}
+              {% if m.tipo and m.tipo not in ns.tipos %}
+                {% set _ = ns.tipos.append(m.tipo) %}
+              {% endif %}
+              {% if m.nrt and m.nrt not in ns.nrts %}
+                {% set _ = ns.nrts.append(m.nrt) %}
+              {% endif %}
+              {% if m.turma and m.turma not in ns.turmas %}
+                {% set _ = ns.turmas.append(m.turma) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
 
-            <form method="POST" action="{{ url_for('remover_curso') }}" onsubmit="return confirm('Tem certeza que deseja excluir este curso?');" style="margin-top: 8px;">
-              <input type="hidden" name="curso" value="{{ curso.nome }}">
-              <button type="submit" class="botao" style="background-color: #dc3545; border-radius: 6px; display: block; width: 100%; margin-top: 4px;">Excluir</button>
-            </form>
-          </td>
-        </tr>
+          <tr>
+            <td>
+              <strong>{{ curso.nome }}</strong><br>
+              <span class="muted">
+                Instrutor: {{ curso.instrutor or '—' }}
+              </span>
+            </td>
+
+            <td>{{ curso.carga_horaria or '—' }}</td>
+
+            <td>
+              {% if ns.tipos %}
+                {% for t in ns.tipos %}
+                  <span class="pill">{{ t }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="muted">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if ns.turmas %}
+                <div class="muted">Turmas: {{ ns.turmas|length }}</div>
+              {% endif %}
+              {% if ns.nrts %}
+                <div>
+                  NRTs:
+                  {% for n in ns.nrts %}
+                    <span class="pill">{{ n }}</span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <span class="muted">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              <div class="alunos-lista">
+                {% set tem_aluno = false %}
+                {% for matricula in matriculas %}
+                  {% if matricula.curso == curso.nome %}
+                    {% set tem_aluno = true %}
+                    <form method="POST" action="{{ url_for('remover_matricula') }}" style="display:inline;">
+                      <input type="hidden" name="curso" value="{{ curso.nome }}">
+                      <input type="hidden" name="aluno" value="{{ matricula.aluno }}">
+                      {{ usuarios[matricula.aluno].nome }}
+                      <button type="submit" title="Remover aluno" style="background:none;border:none;color:red;cursor:pointer;">❌</button>
+                    </form><br>
+                  {% endif %}
+                {% endfor %}
+                {% if not tem_aluno %}
+                  <span class="muted">Nenhum aluno matriculado.</span>
+                {% endif %}
+              </div>
+            </td>
+
+            <td>
+              <a href="{{ url_for('editar_curso_nome', nome=curso.nome) }}" class="botao">Editar</a>
+
+              <form method="POST" action="{{ url_for('remover_curso') }}"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este curso?');"
+                    style="margin-top:8px;">
+                <input type="hidden" name="curso" value="{{ curso.nome }}">
+                <button type="submit" class="btn-danger">Excluir</button>
+              </form>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
-
-
     </table>
+
+    <p class="muted" style="margin-top:8px;">
+      * <strong>Tipos</strong> e <strong>Turmas/NRT</strong> são calculados a partir das matrículas do curso.
+    </p>
 
     <div class="voltar">
       <a href="/">← Voltar à Home</a>
