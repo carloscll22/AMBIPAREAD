@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Verificar Vencimentos</title>
+  <style>
+    body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; }
+    .wrap { max-width: 1000px; margin: 40px auto; background:#f5ffe6; padding:24px; border-radius:10px; }
+    h2 { margin:0 0 16px; }
+    table { width:100%; border-collapse:separate; border-spacing:0 8px; }
+    thead th { background:#fff; padding:12px; text-align:left; border-bottom:2px solid #ccc; }
+    tbody tr { background:#fff; }
+    tbody td { padding:12px; border-bottom:1px solid #e0e0e0; vertical-align:middle; }
+    .pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; }
+    .ok { background:#e6f7e6; color:#206b20; }
+    .warn { background:#fff4cc; color:#9a6b00; }
+    .bad { background:#ffe7e7; color:#a30000; }
+    .btn { display:inline-block; padding:8px 12px; background:#a0e76d; border-radius:6px; text-decoration:none; color:#000; font-weight:600; }
+    .btn:hover { background:#8dd24a; }
+    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .back { text-decoration:none; color:#333; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h2>Verificar Vencimentos</h2>
+      <a class="back" href="/controle_vencimentos">← Voltar</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Curso</th>
+          <th>Data de Vencimento</th>
+          <th>Status</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in linhas %}
+          {% set classe =
+            'bad' if 'Vencido' in l.status else
+            'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
+            'ok'
+          %}
+          <tr>
+            <td>{{ l.aluno_nome }}</td>
+            <td>{{ l.curso }}</td>
+            <td>{{ l.data_venc }}</td>
+            <td><span class="pill {{ classe }}">{{ l.status }}</span></td>
+            <td>
+              {% if l.mostrar_matricular %}
+                <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</body>
+</html>
