@@ -1040,7 +1040,8 @@ def prova_resultado(aluno, curso):
         curso_nome=curso,
         resultado=resultado,
         questoes=questoes,
-        respostas_aluno=respostas_aluno
+        respostas_aluno=respostas_aluno,
+        enumerate=enumerate,
     )
 
 
