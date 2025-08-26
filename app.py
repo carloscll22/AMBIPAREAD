@@ -921,25 +921,6 @@ def acompanhamento():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    def inferir_tipo(nome_curso: str) -> str:
-        if not nome_curso:
-            return "—"
-        n = nome_curso.strip().lower()
-        if n.startswith("inicial"):
-            return "Inicial"
-        if n.startswith("periódico") or n.startswith("periodico"):
-            return "Periódico"
-        return "—"
-
-    # backfill (uma passada rápida)
-    mudou = False
-    for m in matriculas:
-        if not m.get("tipo"):
-            m["tipo"] = inferir_tipo(m.get("curso", ""))
-            mudou = True
-    if mudou:
-        salvar_dados(CAMINHO_MATRICULAS, matriculas)
-
     enrollments = []
     for m in matriculas:
         curso_nome = m.get("curso")
@@ -949,30 +930,73 @@ def acompanhamento():
         if not curso_obj:
             continue
 
-        turma_num = m.get("turma", "—")
-        nrt_val   = m.get("nrt", "—")
-        tipo_val  = m.get("tipo", "—")
+        m_ref    = next((mm for mm in matriculas if mm["aluno"] == m["aluno"] and mm["curso"] == curso_nome), None)
+        turma_num = m_ref.get("turma", "—") if m_ref else "—"
+        nrt_val   = m_ref.get("nrt", "—")   if m_ref else "—"
+        tipo_val  = m_ref.get("tipo", "—")  if m_ref else "—"
 
         prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
         res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
-        nota = f"{round((res['acertos']/res['total']*100),1)}%" if res["total"] > 0 else "---"
+        nota_num = (res["acertos"] / res["total"] * 100) if res.get("total") else 0.0
+        nota     = f"{round(nota_num,1)}%" if res.get("total") else "---"
+        aprovado = (res.get("total", 0) > 0 and res.get("acertos", 0) >= 0.7 * res["total"])
+
+        cert_emitido = bool(curso_obj.get("certificados_emitidos", {}).get(m["aluno"]))
 
         enrollments.append({
-            "curso":     curso_obj,
-            "aluno":     usuarios[m["aluno"]]["nome"],
-            "email":     m["aluno"],
-            "tempo":     prog["tempo"],
-            "concluido": prog["concluido"],
-            "nota":      nota,
-            "nrt":       nrt_val,
-            "turma":     turma_num,
-            "tipo":      tipo_val,
+            "curso":        curso_obj,
+            "aluno":        usuarios[m["aluno"]]["nome"],
+            "email":        m["aluno"],
+            "tempo":        prog.get("tempo", "---"),
+            "concluido":    bool(prog.get("concluido")),
+            "nota":         nota,
+            "nota_num":     nota_num,          # útil se quiser ordenar depois
+            "nrt":          nrt_val,
+            "turma":        turma_num,
+            "tipo":         tipo_val,
+            "aprovado":     aprovado,
+            "cert_emitido": cert_emitido,
         })
 
     salvar_dados(CAMINHO_CURSOS, cursos)
-    # não precisa salvar matriculas aqui de novo; já salvamos se houve backfill
-
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
     return render_template("acompanhamento.html", enrollments=enrollments)
+
+@app.route("/prova_resultado/<aluno>/<curso>")
+def prova_resultado(aluno, curso):
+    # somente professor
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    curso_obj = next((c for c in cursos if c["nome"] == curso), None)
+    if not curso_obj:
+        return "Curso não encontrado", 404
+
+    # precisa ter resultado, aprovado e certificado emitido
+    resultado = curso_obj.get("resultados", {}).get(aluno)
+    if not resultado:
+        return "Prova ainda não realizada.", 403
+
+    aprovado = (resultado["acertos"] >= 0.7 * resultado["total"])
+    cert_emitido = bool(curso_obj.get("certificados_emitidos", {}).get(aluno))
+    if not (aprovado and cert_emitido):
+        return "Disponível apenas após aprovação e emissão do certificado.", 403
+
+    aluno_nome = usuarios.get(aluno, {}).get("nome", aluno)
+    questoes   = curso_obj.get("prova", [])  # lista com enunciado, a/b/c/d, correta
+    # respostas do aluno: guardadas por name dos inputs em prova.html
+    # se você não armazena as alternativas marcadas, mostramos só o gabarito/correção
+    respostas_aluno = curso_obj.get("respostas", {}).get(aluno, {})  # opcional
+
+    return render_template(
+        "prova_resultado.html",
+        aluno_email=aluno,
+        aluno_nome=aluno_nome,
+        curso_nome=curso,
+        resultado=resultado,
+        questoes=questoes,
+        respostas_aluno=respostas_aluno
+    )
 
 
 @app.route("/fale_tutor")
