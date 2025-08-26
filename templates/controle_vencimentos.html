@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Vencimento</title>
+  <style>
+    body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; }
+    .wrap { max-width: 720px; margin: 40px auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 0 8px rgba(0,0,0,.08); }
+    h2 { margin:0 0 16px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px; }
+    a.btn { display:block; text-align:center; padding:16px; background:#a0e76d; border-radius:8px; font-weight:bold; color:#000; text-decoration:none; }
+    a.btn:hover { background:#8dd24a; }
+    .back { margin-top:16px; display:inline-block; color:#333; text-decoration:none; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Controle de Vencimento</h2>
+    <p>Escolha uma ação:</p>
+    <div class="grid">
+      <a class="btn" href="/vencimentos/adicionar">Adicionar Vencimento</a>
+      <a class="btn" href="/vencimentos/verificar">Verificar Vencimento</a>
+    </div>
+    <a class="back" href="/">← Voltar</a>
+  </div>
+</body>
+</html>
