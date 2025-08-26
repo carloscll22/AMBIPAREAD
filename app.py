@@ -18,6 +18,24 @@ CAMINHO_CERTIFICADOS = "/mnt/data/certificados.json"
 CAMINHO_TURMAS = "/mnt/data/turmas.json"
 CAMINHO_VENCIMENTOS = "/mnt/data/vencimentos.json"
 
+CURSOS_FIXOS = [
+        "Doutrinamento Básico de Solo",
+        "Conhecimentos Gerais",
+        "Emergências Gerais",
+        "SGSO",
+        "Sobrevivência na Selva",
+        "Instrutor de Voo",
+        "Examinador",
+        "BELL 206-B06",
+        "AS350 SERIES-B,BA,B2,AS50",
+        "AS 365 SERIES (N,N1,N2)/AS65",
+        "AS 355 SERIES (F,F1,F2,NP)/AS55",
+        "AS330J",
+        "AS350B-BA",
+        "AS350B2-B3",
+        "Arriel1 Series",
+        "RR250-C20 Series",
+]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = "/mnt/data/uploads"
@@ -230,38 +248,58 @@ def vencimentos_adicionar():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
+    # monta a lista de opções de curso como o template espera: [{nome: "..."}]
+    nomes_cadastrados = {c.get("nome", "") for c in cursos if isinstance(c, dict)}
+    nomes_fixos = set(CURSOS_FIXOS)
+    nomes_validos = {n for n in (nomes_cadastrados | nomes_fixos) if n}  # união
+
+    cursos_para_select = [{"nome": n} for n in sorted(nomes_validos, key=str.casefold)]
+    alunos_para_select = [{"email": e, "nome": d["nome"]}
+                          for e, d in usuarios.items() if d.get("tipo") == "aluno"]
+
     if request.method == "POST":
-        aluno_email = request.form.get("aluno", "").strip().lower()
-        curso_nome  = request.form.get("curso", "").strip()
-        data_venc   = request.form.get("data_vencimento", "").strip()  # formato YYYY-MM-DD
+        aluno_email = (request.form.get("aluno") or "").strip().lower()
+        curso_nome  = (request.form.get("curso") or "").strip()
+        data_venc   = (request.form.get("data_vencimento") or "").strip()  # YYYY-MM-DD
 
         erro = None
         if not aluno_email or not curso_nome or not data_venc:
             erro = "Preencha todos os campos."
         elif aluno_email not in usuarios:
             erro = "Aluno inválido."
-        elif not any(c.get("nome") == curso_nome for c in cursos):
+        elif curso_nome not in nomes_validos:
+            # agora aceita tanto os fixos quanto os que estão no cursos.json
             erro = "Curso inválido."
 
         if erro:
-            alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-            return render_template("vencimentos_adicionar.html", alunos=alunos, cursos=cursos, erro=erro)
+            return render_template(
+                "vencimentos_adicionar.html",
+                alunos=alunos_para_select,
+                cursos=cursos_para_select,  # mantém o nome 'cursos' p/ seu template
+                erro=erro
+            )
 
-        # regra: manter UNÍCO por (aluno, curso) – se existir, substitui
+        # mantém APENAS 1 registro por (aluno, curso): se existir, substitui
         global vencimentos
-        vencimentos = [v for v in vencimentos if not (v["aluno"] == aluno_email and v["curso"] == curso_nome)]
+        vencimentos = [
+            v for v in vencimentos
+            if not (v.get("aluno") == aluno_email and v.get("curso") == curso_nome)
+        ]
         vencimentos.append({
             "aluno": aluno_email,
             "curso": curso_nome,
-            "data_vencimento": data_venc  # YYYY-MM-DD
+            "data_vencimento": data_venc,  # YYYY-MM-DD
         })
         salvar_vencimentos()
         return redirect("/vencimentos/verificar")
 
     # GET
-    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-    return render_template("vencimentos_adicionar.html", alunos=alunos, cursos=cursos, erro=None)
-
+    return render_template(
+        "vencimentos_adicionar.html",
+        alunos=alunos_para_select,
+        cursos=cursos_para_select,   # mantém o contrato atual do template
+        erro=None
+    )
 
 @app.route("/vencimentos/verificar")
 def vencimentos_verificar():
@@ -532,29 +570,7 @@ def matricular():
         sugestoes_por_curso=sugestoes_por_curso
     )
 
-
-    # ---------- GET ----------
-    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-    professores = [
-        "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
-        "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
-        "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
-        "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
-        "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
-        "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
-        "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
-        "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
-        "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
-        "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
-        "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
-        "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
-        "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
-        "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
-        "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
-        "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
-    ]
-
-    # sugestão por curso (placeholder dinâmico no front)
+     
     sugestoes_por_curso = {c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos}
     sugestao_turma = sugestoes_por_curso[cursos[0]["nome"]] if cursos else ""
 
