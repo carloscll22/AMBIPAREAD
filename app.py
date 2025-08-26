@@ -881,7 +881,6 @@ def acompanhamento():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    # monta lista de matrículas detalhadas
     enrollments = []
     for m in matriculas:
         curso_nome = m.get("curso")
@@ -890,9 +889,11 @@ def acompanhamento():
         curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
         if not curso_obj:
             continue
-        m_ref = next((mm for mm in matriculas if mm["aluno"] == m["aluno"] and mm["curso"] == curso_nome), None)
-        turma_num = m_ref.get("turma", "—") if m_ref else "—"
-        nrt_val   = m_ref.get("nrt", "—") if m_ref else "—"
+
+        # pega direto da matrícula
+        turma_num = m.get("turma", "—")
+        nrt_val   = m.get("nrt", "—")
+        tipo_val  = m.get("tipo", "—")  # <- AQUI definimos o tipo
 
         prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
         res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
@@ -905,17 +906,15 @@ def acompanhamento():
             "tempo":     prog["tempo"],
             "concluido": prog["concluido"],
             "nota":      nota,
-            "nrt":       nrt_val,      # já tinha
-            "turma":     turma_num,    # << novo
-            "tipo":      tipo_val,
+            "nrt":       nrt_val,
+            "turma":     turma_num,
+            "tipo":      tipo_val,   # <- enviado para o template
         })
 
     salvar_dados(CAMINHO_CURSOS, cursos)
     salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
     return render_template("acompanhamento.html", enrollments=enrollments)
-
-
 
 @app.route("/fale_tutor")
 def fale_tutor():
