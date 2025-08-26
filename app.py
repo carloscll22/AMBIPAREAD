@@ -383,6 +383,7 @@ def matricular():
                 "aluno":       aluno_email,
                 "curso":       curso_nome,
                 "professor":   professor,
+                "tipo":        tipo_matricula,
                 "nrt":         nrt_turma,
                 "turma":       turma_num,
                 "data_inicio": data_inicio,
@@ -881,6 +882,25 @@ def acompanhamento():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
+    def inferir_tipo(nome_curso: str) -> str:
+        if not nome_curso:
+            return "—"
+        n = nome_curso.strip().lower()
+        if n.startswith("inicial"):
+            return "Inicial"
+        if n.startswith("periódico") or n.startswith("periodico"):
+            return "Periódico"
+        return "—"
+
+    # backfill (uma passada rápida)
+    mudou = False
+    for m in matriculas:
+        if not m.get("tipo"):
+            m["tipo"] = inferir_tipo(m.get("curso", ""))
+            mudou = True
+    if mudou:
+        salvar_dados(CAMINHO_MATRICULAS, matriculas)
+
     enrollments = []
     for m in matriculas:
         curso_nome = m.get("curso")
@@ -890,10 +910,9 @@ def acompanhamento():
         if not curso_obj:
             continue
 
-        # pega direto da matrícula
         turma_num = m.get("turma", "—")
         nrt_val   = m.get("nrt", "—")
-        tipo_val  = m.get("tipo", "—")  # <- AQUI definimos o tipo
+        tipo_val  = m.get("tipo", "—")
 
         prog = curso_obj.get("progresso", {}).get(m["aluno"], {"tempo": "---", "concluido": False})
         res  = curso_obj.get("resultados", {}).get(m["aluno"], {"acertos": 0, "total": 0})
@@ -908,13 +927,14 @@ def acompanhamento():
             "nota":      nota,
             "nrt":       nrt_val,
             "turma":     turma_num,
-            "tipo":      tipo_val,   # <- enviado para o template
+            "tipo":      tipo_val,
         })
 
     salvar_dados(CAMINHO_CURSOS, cursos)
-    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+    # não precisa salvar matriculas aqui de novo; já salvamos se houve backfill
 
     return render_template("acompanhamento.html", enrollments=enrollments)
+
 
 @app.route("/fale_tutor")
 def fale_tutor():
