@@ -33,10 +33,25 @@
       </select>
 
       <label for="curso">Curso:</label>
-      <select id="curso" name="curso" required>
-        {% for c in cursos %}
-          <option value="{{ c.nome }}">{{ c.nome }}</option>
-        {% endfor %}
+      {% set cs = curso_selected|default('') %}
+      <select name="curso" id="curso" required>
+        <option value="Doutrinamento Básico de Solo" {{ 'selected' if cs in ['Doutrinamento Básico de Solo'] else '' }}>Doutrinamento Básico de Solo</option>
+        <option value="Conhecimentos Gerais" {{ 'selected' if cs in ['Conhecimentos Gerais'] else '' }}>Conhecimentos Gerais</option>
+        <option value="Emergências Gerais" {{ 'selected' if cs in ['Emergências Gerais'] else '' }}>Emergências Gerais</option>
+        <option value="SGSO" {{ 'selected' if cs in ['SGSO'] else '' }}>SGSO</option>
+        <option value="Sobrevivência na Selva" {{ 'selected' if cs in ['Sobrevivência na Selva'] else '' }}>Sobrevivência na Selva</option>
+        <option value="Instrutor de Voo" {{ 'selected' if cs in ['Instrutor de Voo'] else '' }}>Instrutor de Voo</option>
+        <option value="Examinador" {{ 'selected' if cs in ['Examinador'] else '' }}>Examinador</option>
+        <option value="BELL 206-B06" {{ 'selected' if cs in ['BELL 206-B06'] else '' }}>BELL 206-B06</option>
+        <option value="AS350 SERIES-B,BA,B2,AS50" {{ 'selected' if cs in ['AS350 SERIES-B,BA,B2,AS50'] else '' }}>AS350 SERIES-B,BA,B2,AS50</option>
+        <option value="AS 365 SERIES (N,N1,N2)/AS65" {{ 'selected' if cs in ['AS 365 SERIES (N,N1,N2)/AS65','AS 365 SERIES-N,N1,N2-AS65'] else '' }}>AS 365 SERIES-N,N1,N2-AS65</option>
+        <option value="AS 355 SERIES (F,F1,F2,NP)/AS55" {{ 'selected' if cs in ['AS 355 SERIES (F,F1,F2,NP)/AS55','AS 355 SERIES-F,F1,F2,NP-AS55'] else '' }}>AS 355 SERIES-F,F1,F2,NP-AS55</option>
+        <option value="AS330J" {{ 'selected' if cs in ['AS330J'] else '' }}>AS330J</option>
+        <option value="AS350B-BA" {{ 'selected' if cs in ['AS350B-BA'] else '' }}>AS350B-BA</option>
+        <option value="AS350B2-B3" {{ 'selected' if cs in ['AS350B2-B3'] else '' }}>AS350B2-B3</option>
+        <option value="Arriel1 Series" {{ 'selected' if cs in ['Arriel1 Series'] else '' }}>Arriel1 Series</option>
+        <option value="RR250-C20 Series" {{ 'selected' if cs in ['RR250-C20 Series'] else '' }}>RR250-C20 Series</option>
+      </select>
       </select>
 
       <label for="data_vencimento">Data de Vencimento:</label>
