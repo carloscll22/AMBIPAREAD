@@ -4,84 +4,17 @@
   <meta charset="UTF-8" />
   <title>Matricular Aluno</title>
   <style>
-    body {
-      background-color: #c1f38e;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      padding-top: 40px;
-    }
-    .box {
-      background-color: white;
-      padding: 25px 30px;
-      border-radius: 10px;
-      width: 360px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #444;
-    }
-    select, input[type="text"], input[type="date"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-    .hint {
-      font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-    }
-    .erro {
-      margin-top: 10px;
-      background: #ffe7e7;
-      color: #a30000;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    input[type="submit"] {
-      margin-top: 25px;
-      width: 100%;
-      padding: 12px;
-      background-color: #a0e76d;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-      color: #333;
-      transition: background-color 0.3s ease;
-    }
-    input[type="submit"]:hover {
-      background-color: #8dd24a;
-    }
-    .link-voltar {
-      display: block;
-      margin-top: 20px;
-      text-align: center;
-      text-decoration: none;
-      color: #333;
-      font-weight: bold;
-    }
-    .link-voltar:hover {
-      text-decoration: underline;
-    }
+    body { background-color:#c1f38e; margin:0; font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:flex-start; height:100vh; padding-top:40px; }
+    .box { background:#fff; padding:25px 30px; border-radius:10px; width:360px; box-shadow:0 0 8px rgba(0,0,0,.1); text-align:left; }
+    h2 { text-align:center; margin-bottom:25px; color:#333; }
+    label { display:block; margin-top:15px; font-weight:bold; color:#444; }
+    select, input[type="text"], input[type="date"] { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ccc; font-size:15px; box-sizing:border-box; }
+    .hint { font-size:12px; color:#666; margin-top:4px; }
+    .erro { margin-top:10px; background:#ffe7e7; color:#a30000; padding:8px 10px; border-radius:6px; font-size:14px; }
+    input[type="submit"] { margin-top:25px; width:100%; padding:12px; background:#a0e76d; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; color:#333; transition:background .3s; }
+    input[type="submit"]:hover { background:#8dd24a; }
+    .link-voltar { display:block; margin-top:20px; text-align:center; text-decoration:none; color:#333; font-weight:bold; }
+    .link-voltar:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -114,9 +47,9 @@
         {% endfor %}
       </select>
 
-      <!-- NOVO: Tipo da Turma -->
-      <label for="tipo">Tipo da Turma:</label>
-      <select id="tipo" name="tipo" required>
+      <!-- Tipo da matrícula -->
+      <label for="tipo">Tipo:</label>
+      <select name="tipo" id="tipo" required>
         <option value="Inicial">Inicial</option>
         <option value="Periódico">Periódico</option>
       </select>
