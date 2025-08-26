@@ -21,9 +21,7 @@
     .sidebar button:hover { background: #8ad858; }
     .sidebar .logout { margin-top: auto; text-decoration: none; color: #333; font-weight: bold; }
 
-    .content {
-      flex: 1; padding: 30px; background-color: #f5ffe6;
-    }
+    .content { flex: 1; padding: 30px; background-color: #f5ffe6; }
     .content h2 { margin-bottom: 20px; color: #333; }
     .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; }
     .filter-bar select,
@@ -32,17 +30,13 @@
       font-size: 14px; flex: 1;
     }
 
-    table {
-      width: 100%; border-collapse: separate; border-spacing: 0 8px;
-    }
+    table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
     thead th {
       background: #fff; padding: 12px; text-align: left; font-weight: 600;
       border-bottom: 2px solid #ccc;
     }
     tbody tr { background: #fff; }
-    tbody td {
-      padding: 12px; border-bottom: 1px solid #e0e0e0; vertical-align: middle;
-    }
+    tbody td { padding: 12px; border-bottom: 1px solid #e0e0e0; vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #e8f5d7; }
 
@@ -73,14 +67,16 @@
 
   <div class="content">
     <h2>Relatório de Alunos Matriculados</h2>
+
     <div class="filter-bar">
       <select id="filter-type">
         <option value="0">Curso</option>
         <option value="1">Turma</option>
         <option value="2">NRT</option>
-        <option value="3">Tipo</option><!-- NOVO -->
+        <option value="3">Tipo</option>
         <option value="4">Aluno</option>
         <option value="6">Status</option>
+        <option value="7">Nota</option>
       </select>
       <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
     </div>
@@ -91,7 +87,7 @@
           <th>Curso</th>
           <th>Turma</th>
           <th>NRT</th>
-          <th>Tipo</th><!-- NOVO -->
+          <th>Tipo</th>
           <th>Aluno</th>
           <th>Tempo (min)</th>
           <th>Status</th>
@@ -105,7 +101,7 @@
             <td>{{ e.curso.nome }}</td>
             <td>{{ e.turma }}</td>
             <td>{{ e.nrt }}</td>
-            <td>{{ e.tipo }}</td><!-- NOVO -->
+            <td>{{ e.tipo }}</td>
             <td>{{ e.aluno }}</td>
             <td>{{ e.tempo }}</td>
             <td>
@@ -124,6 +120,11 @@
                 <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
                   Lista Presença
                 </a>
+                {% if e.aprovado and e.cert_emitido %}
+                  <a href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
+                    Visualizar Prova
+                  </a>
+                {% endif %}
               {% else %}
                 ---
               {% endif %}
