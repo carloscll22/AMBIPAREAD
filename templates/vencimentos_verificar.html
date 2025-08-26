@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Verificar Vencimentos</title>
   <style>
     body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; }
@@ -19,6 +19,24 @@
     .btn:hover { background:#8dd24a; }
     .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .back { text-decoration:none; color:#333; font-weight:bold; }
+
+    /* Barra de filtros */
+    .filters { display:flex; flex-wrap:wrap; gap:12px; margin: 8px 0 16px; align-items: center; }
+    .search-wrap { position: relative; flex: 1 1 320px; }
+    .search-wrap input {
+      width:100%; padding:10px 36px 10px 34px; border:1px solid #aaa; border-radius:8px; background:#fff;
+    }
+    .search-wrap .icon {
+      position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; opacity:.7;
+    }
+    .filters select { padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff; }
+    .filters .actions { display:flex; gap:8px; }
+    .filters .actions button, .filters .actions a {
+      padding:10px 12px; border-radius:8px; border:1px solid #9bd85f; background:#a0e76d; color:#000; font-weight:600; text-decoration:none;
+    }
+    .filters .actions button[type="button"] { background:#fff; border-color:#bbb; font-weight:500; }
+    .legend { font-size:12px; color:#333; opacity:.8; margin-top:-4px; }
+    .result-info { font-size:13px; color:#333; margin: 8px 0 0; }
   </style>
 </head>
 <body>
@@ -27,6 +45,45 @@
       <h2>Verificar Vencimentos</h2>
       <a class="back" href="/controle_vencimentos">← Voltar</a>
     </div>
+
+    {# captura parâmetros atuais #}
+    {% set q = (request.args.get('q') or '') %}
+    {% set q_low = q|lower %}
+    {% set sel = (request.args.get('status') or '') %}
+
+    <!-- Barra de pesquisa e filtro (GET) -->
+    <form class="filters" method="get" action="{{ url_for('vencimentos_verificar') }}">
+      <div class="search-wrap">
+        <span class="icon">🔍</span>
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          placeholder="Buscar por aluno ou curso..."
+          autocomplete="off"
+        />
+      </div>
+
+      <select name="status" aria-label="Filtro de status">
+        <option value="" {{ '' == sel and 'selected' or '' }}>Todos os Status</option>
+        <option value="ok" {{ 'ok' == sel and 'selected' or '' }}>Em dia</option>
+        <option value="warn" {{ 'warn' == sel and 'selected' or '' }}>Vencendo (≤ 90 dias)</option>
+        <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
+      </select>
+
+      <div class="actions">
+        <button type="submit">Aplicar</button>
+        <a href="{{ url_for('vencimentos_verificar') }}" title="Limpar filtros">Limpar</a>
+      </div>
+    </form>
+
+    <div class="legend">
+      <span class="pill ok">Em dia</span>
+      <span class="pill warn">Vence em ≤ 90 dias</span>
+      <span class="pill bad">Vencido</span>
+    </div>
+
+    {% set ns = namespace(count=0) %}
 
     <table>
       <thead>
@@ -40,27 +97,52 @@
       </thead>
       <tbody>
         {% for l in linhas %}
+          {# classifica status como no seu template #}
           {% set classe =
             'bad' if 'Vencido' in l.status else
             'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
             'ok'
           %}
+
+          {# aplica filtros (server-side, sem JS) #}
+          {% set match_status = (sel == '' or sel == classe) %}
+          {% set aluno_low = (l.aluno_nome|string)|lower %}
+          {% set curso_low = (l.curso|string)|lower %}
+          {% set match_q = (q_low == '' or (q_low in aluno_low) or (q_low in curso_low)) %}
+
+          {% if match_status and match_q %}
+            {% set ns.count = ns.count + 1 %}
+            <tr>
+              <td>{{ l.aluno_nome }}</td>
+              <td>{{ l.curso }}</td>
+              <td>{{ l.data_venc }}</td>
+              <td><span class="pill {{ classe }}">{{ l.status }}</span></td>
+              <td>
+                {% if l.mostrar_matricular %}
+                  <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+
+        {% if ns.count == 0 %}
           <tr>
-            <td>{{ l.aluno_nome }}</td>
-            <td>{{ l.curso }}</td>
-            <td>{{ l.data_venc }}</td>
-            <td><span class="pill {{ classe }}">{{ l.status }}</span></td>
-            <td>
-              {% if l.mostrar_matricular %}
-                <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
-              {% else %}
-                —
-              {% endif %}
+            <td colspan="5" style="text-align:center; color:#666; padding:20px;">
+              Nenhum registro encontrado para os filtros aplicados.
             </td>
           </tr>
-        {% endfor %}
+        {% endif %}
       </tbody>
     </table>
+
+    <p class="result-info">
+      {{ ns.count }} resultado{{ 1 if ns.count == 1 else 's' }} encontrado{{ 1 if ns.count == 1 else 's' }}.
+      {% if q %} • Busca: <strong>{{ q }}</strong>{% endif %}
+      {% if sel %} • Status: <strong>{{ 'Em dia' if sel=='ok' else ('Vencendo' if sel=='warn' else 'Vencido') }}</strong>{% endif %}
+    </p>
 
   </div>
 </body>
