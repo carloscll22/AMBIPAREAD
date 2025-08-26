@@ -14,8 +14,8 @@
     .pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; }
     .ok { background:#e6f7e6; color:#206b20; }
     .warn { background:#fff4cc; color:#9a6b00; }
-    .bad { background:#ffe7e7; color:#a30000; }
-    .btn { display:inline-block; padding:10px 14px; background:#a0e76d; border-radius:8px; text-decoration:none; color:#000; font-weight:700; }
+    .bad  { background:#ffe7e7; color:#a30000; }
+    .btn  { display:inline-block; padding:10px 14px; background:#a0e76d; border-radius:8px; text-decoration:none; color:#000; font-weight:700; }
     .btn:hover { background:#8dd24a; }
     .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .back { text-decoration:none; color:#333; font-weight:bold; }
@@ -63,11 +63,8 @@
     .sortable { cursor:pointer; user-select:none; color:#5b2bbd; text-decoration:underline; }
     .arrow { font-size:12px; margin-left:6px; opacity:.7; }
 
-    /* Mobile: empilha */
     @media (max-width: 720px) {
-      .filters {
-        grid-template-columns: 1fr; /* tudo empilhado */
-      }
+      .filters { grid-template-columns: 1fr; }
       .actions { justify-content:stretch; }
       .actions a, .actions button { width: 100%; text-align:center; }
     }
@@ -80,7 +77,6 @@
       <a class="back" href="/controle_vencimentos">← Voltar</a>
     </div>
 
-    {# parâmetros atuais #}
     {% set q = (request.args.get('q') or '') %}
     {% set q_low = q|lower %}
     {% set sel = (request.args.get('status') or '') %}
@@ -95,15 +91,14 @@
       </div>
 
       <select name="status" aria-label="Filtro de status">
-        <option value="" {{ '' == sel and 'selected' or '' }}>Todos os Status</option>
-        <option value="ok" {{ 'ok' == sel and 'selected' or '' }}>Em dia</option>
+        <option value=""  {{ ''   == sel and 'selected' or '' }}>Todos os Status</option>
+        <option value="ok"   {{ 'ok'   == sel and 'selected' or '' }}>Em dia</option>
         <option value="warn" {{ 'warn' == sel and 'selected' or '' }}>Vencendo (≤ 90 dias)</option>
-        <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
+        <option value="bad"  {{ 'bad'  == sel and 'selected' or '' }}>Vencido</option>
       </select>
 
-      <!-- mantém sort atual ao aplicar filtros -->
       <div class="actions">
-        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="sort"  value="{{ sort }}">
         <input type="hidden" name="order" value="{{ order }}">
         <button type="submit">Aplicar</button>
         <a class="secondary" href="{{ url_for('vencimentos_verificar') }}">Limpar</a>
@@ -126,9 +121,7 @@
           <th>
             {% set new_order = 'desc' if order == 'asc' else 'asc' %}
             <a class="sortable"
-               href="{{ url_for('vencimentos_verificar',
-                                q=q, status=sel,
-                                sort='data', order=new_order) }}">
+               href="{{ url_for('vencimentos_verificar', q=q, status=sel, sort='data', order=new_order) }}">
               Data de Vencimento
               {% if sort == 'data' %}
                 <span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>
@@ -143,10 +136,12 @@
       </thead>
       <tbody>
         {% for l in linhas %}
+          {# classe já pode vir pronta da rota; mantém fallback #}
           {% set classe =
-            'bad' if 'Vencido' in l.status else
-            'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
-            'ok'
+            l.classe if l.classe is defined else
+            ('bad' if 'Vencido' in l.status else
+             'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
+             'ok')
           %}
           {% set match_status = (sel == '' or sel == classe) %}
           {% set aluno_low = (l.aluno_nome|string)|lower %}
@@ -163,9 +158,7 @@
               <td>
                 {% if l.mostrar_matricular %}
                   <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
-                {% else %}
-                  —
-                {% endif %}
+                {% else %} — {% endif %}
               </td>
             </tr>
           {% endif %}
