@@ -21,22 +21,43 @@
     .back { text-decoration:none; color:#333; font-weight:bold; }
 
     /* Barra de filtros */
-    .filters { display:flex; flex-wrap:wrap; gap:12px; margin: 8px 0 16px; align-items: center; }
-    .search-wrap { position: relative; flex: 1 1 320px; }
+    .filters {
+      display:flex; align-items:center; gap:12px;
+      margin: 8px 0 16px; flex-wrap: nowrap;
+    }
+    .search-wrap { position: relative; flex: 1 1 auto; min-width: 280px; }
     .search-wrap input {
-      width:100%; padding:10px 36px 10px 34px; border:1px solid #aaa; border-radius:8px; background:#fff;
+      width:100%; padding:10px 36px 10px 34px;
+      border:1px solid #aaa; border-radius:8px; background:#fff;
     }
     .search-wrap .icon {
-      position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; opacity:.7;
+      position:absolute; left:10px; top:50%; transform:translateY(-50%);
+      font-size:16px; opacity:.7;
     }
-    .filters select { padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff; }
-    .filters .actions { display:flex; gap:8px; }
-    .filters .actions button, .filters .actions a {
-      padding:10px 12px; border-radius:8px; border:1px solid #9bd85f; background:#a0e76d; color:#000; font-weight:600; text-decoration:none;
+    .filters select {
+      padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff;
+      min-width: 180px;
     }
-    .filters .actions button[type="button"] { background:#fff; border-color:#bbb; font-weight:500; }
-    .legend { font-size:12px; color:#333; opacity:.8; margin-top:-4px; }
+    .actions { display:flex; gap:8px; margin-left:auto; }
+    .actions button, .actions a {
+      padding:10px 12px; border-radius:8px; border:1px solid #9bd85f;
+      background:#a0e76d; color:#000; font-weight:600; text-decoration:none;
+      cursor:pointer;
+    }
+    .actions .secondary { background:#fff; border-color:#bbb; font-weight:500; }
+
+    .legend { font-size:12px; color:#333; opacity:.85; margin-top:-4px; display:flex; gap:8px; }
     .result-info { font-size:13px; color:#333; margin: 8px 0 0; }
+
+    .sortable { cursor:pointer; user-select:none; }
+    .arrow { font-size:12px; margin-left:4px; opacity:.7; }
+
+    @media (max-width: 640px) {
+      .filters { flex-wrap: wrap; }
+      .actions { margin-left: 0; width:100%; justify-content:flex-end; }
+      .search-wrap { min-width: 100%; }
+      .filters select { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -46,22 +67,17 @@
       <a class="back" href="/controle_vencimentos">← Voltar</a>
     </div>
 
-    {# captura parâmetros atuais #}
     {% set q = (request.args.get('q') or '') %}
     {% set q_low = q|lower %}
     {% set sel = (request.args.get('status') or '') %}
+    {% set sort = request.args.get('sort') or '' %}
+    {% set order = request.args.get('order') or 'asc' %}
 
-    <!-- Barra de pesquisa e filtro (GET) -->
+    <!-- filtros -->
     <form class="filters" method="get" action="{{ url_for('vencimentos_verificar') }}">
       <div class="search-wrap">
         <span class="icon">🔍</span>
-        <input
-          type="text"
-          name="q"
-          value="{{ q }}"
-          placeholder="Buscar por aluno ou curso..."
-          autocomplete="off"
-        />
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por aluno ou curso..." autocomplete="off" />
       </div>
 
       <select name="status" aria-label="Filtro de status">
@@ -71,9 +87,12 @@
         <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
       </select>
 
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="order" value="{{ order }}">
+
       <div class="actions">
         <button type="submit">Aplicar</button>
-        <a href="{{ url_for('vencimentos_verificar') }}" title="Limpar filtros">Limpar</a>
+        <a class="secondary" href="{{ url_for('vencimentos_verificar') }}">Limpar</a>
       </div>
     </form>
 
@@ -90,21 +109,30 @@
         <tr>
           <th>Aluno</th>
           <th>Curso</th>
-          <th>Data de Vencimento</th>
+          <th>
+            {# link de ordenação #}
+            {% set new_order = 'desc' if order == 'asc' else 'asc' %}
+            <a class="sortable"
+               href="{{ url_for('vencimentos_verificar',
+                                q=q, status=sel,
+                                sort='data', order=new_order) }}">
+              Data de Vencimento
+              {% if sort == 'data' %}
+                <span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>
+              {% endif %}
+            </a>
+          </th>
           <th>Status</th>
           <th>Ação</th>
         </tr>
       </thead>
       <tbody>
         {% for l in linhas %}
-          {# classifica status como no seu template #}
           {% set classe =
             'bad' if 'Vencido' in l.status else
             'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
             'ok'
           %}
-
-          {# aplica filtros (server-side, sem JS) #}
           {% set match_status = (sel == '' or sel == classe) %}
           {% set aluno_low = (l.aluno_nome|string)|lower %}
           {% set curso_low = (l.curso|string)|lower %}
@@ -127,7 +155,6 @@
             </tr>
           {% endif %}
         {% endfor %}
-
         {% if ns.count == 0 %}
           <tr>
             <td colspan="5" style="text-align:center; color:#666; padding:20px;">
@@ -139,11 +166,11 @@
     </table>
 
     <p class="result-info">
-      {{ ns.count }} resultado{{ 1 if ns.count == 1 else 's' }} encontrado{{ 1 if ns.count == 1 else 's' }}.
+      {{ ns.count }} resultado{{ 1 if ns.count == 1 else 's' }}.
       {% if q %} • Busca: <strong>{{ q }}</strong>{% endif %}
       {% if sel %} • Status: <strong>{{ 'Em dia' if sel=='ok' else ('Vencendo' if sel=='warn' else 'Vencido') }}</strong>{% endif %}
+      {% if sort == 'data' %} • Ordenado por data ({{ 'crescente' if order=='asc' else 'decrescente' }}){% endif %}
     </p>
-
   </div>
 </body>
 </html>
