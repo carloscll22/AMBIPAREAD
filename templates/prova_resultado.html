@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Prova – {{ aluno_nome }} – {{ curso_nome }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:#f5ffe6;color:#333;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .btn{background:#a0e76d;border:none;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;text-decoration:none;color:#000}
+    .btn:hover{background:#8ad858}
+    .paper{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);padding:20px}
+    h1{font-size:20px;margin-bottom:6px}
+    .meta{color:#555;margin-bottom:18px}
+    .score{font-weight:600;margin-bottom:18px}
+    .q{border-top:1px solid #eee;padding-top:14px;margin-top:14px}
+    .alt{margin:4px 0 0 14px}
+    .ok{font-weight:600}
+    .tag{display:inline-block;font-size:12px;background:#eef7e6;border-radius:6px;padding:3px 8px;margin-left:8px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="btn" href="{{ url_for('acompanhamento') }}">← Voltar ao Acompanhamento</a>
+    <button class="btn" onclick="window.print()">Imprimir/Salvar PDF</button>
+  </div>
+
+  <div class="paper">
+    <h1>Prova do Curso: {{ curso_nome }}</h1>
+    <div class="meta">Aluno: <strong>{{ aluno_nome }}</strong> &nbsp;|&nbsp; E-mail: {{ aluno_email }}</div>
+
+    <div class="score">
+      Acertos: {{ resultado.acertos }} de {{ resultado.total }}
+      <span class="tag">Nota: {{ ((resultado.acertos / resultado.total) * 100) | round(1) }}%</span>
+      {% if (resultado.acertos / resultado.total) >= 0.7 %}
+        <span class="tag">Aprovado</span>
+      {% else %}
+        <span class="tag" style="background:#ffe7e7">Reprovado</span>
+      {% endif %}
+    </div>
+
+    {% for i, q in enumerate(questoes) %}
+      <div class="q">
+        <div><strong>Q{{ i+1 }}.</strong> {{ q.enunciado }}</div>
+        <div class="alt">A) {{ q.a }}</div>
+        <div class="alt">B) {{ q.b }}</div>
+        <div class="alt">C) {{ q.c }}</div>
+        <div class="alt">D) {{ q.d }}</div>
+        <div class="alt ok">
+          Gabarito: {{ q.correta|upper }}
+          {% if respostas_aluno and ('pergunta_' ~ i) in respostas_aluno %}
+            &nbsp;|&nbsp; Marcada: {{ respostas_aluno['pergunta_' ~ i]|upper }}
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
