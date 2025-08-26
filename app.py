@@ -316,7 +316,6 @@ def matricular():
     if session.get("tipo") != "professor":
         return redirect("/")
 
-    # ---------- POST ----------
     if request.method == "POST":
         aluno_email = request.form["aluno"]
         curso_nome  = request.form["curso"]
@@ -324,22 +323,30 @@ def matricular():
         nrt_turma   = request.form.get("nrt")
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
-        tipo_curso  = request.form.get("tipo")
 
-        # turma informada (opcional). Se vier, normaliza para 3 dígitos.
+        # >>> NOVO: tipo da matrícula (Inicial / Periódico)
+        tipo_matricula = (request.form.get("tipo") or "").strip()
+
+        # Turma: usa a digitada (se válida) ou gera automaticamente.
         turma_form = (request.form.get("turma") or "").strip()
-        turma_num = None
-        if turma_form and turma_form.isdigit():
-            turma_norm = f"{int(turma_form):03d}"
-            # se já existe a turma para este curso, ignoramos e geramos automático
-            if not any(m.get("curso") == curso_nome and m.get("turma") == turma_norm for m in matriculas):
-                turma_num = turma_norm
 
-        # se não veio válida/única, geramos a próxima automaticamente
+        # normaliza e valida 3 dígitos se veio preenchido
+        turma_num = None
+        if turma_form:
+            if turma_form.isdigit():
+                turma_form = f"{int(turma_form):03d}"   # "2" -> "002"
+            if len(turma_form) == 3 and turma_form.isdigit():
+                turma_num = turma_form
+
+        # evita duplicar turma manual para o mesmo curso
+        if turma_num and any(m.get("curso") == curso_nome and m.get("turma") == turma_num for m in matriculas):
+            turma_num = None  # força geração automática
+
         if not turma_num:
+            # gera próxima turma sequencial (limite 250 por curso)
             last = int(turmas_ctrl.get(curso_nome, 0))
             if last >= 250:
-                # monta dados de tela + erro
+                # Limite atingido
                 alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
                 professores = [
                     "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
@@ -359,15 +366,12 @@ def matricular():
                     "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
                     "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
                 ]
-                # sugestões por curso para o front
-                sugestoes_por_curso = {c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos}
-                sugestao_turma = sugestoes_por_curso[cursos[0]["nome"]] if cursos else ""
+                sugestoes_por_curso = {
+                    c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
+                }
                 return render_template(
                     "matricular.html",
-                    alunos=alunos,
-                    cursos=cursos,
-                    professores=professores,
-                    sugestao_turma=sugestao_turma,
+                    alunos=alunos, cursos=cursos, professores=professores,
                     sugestoes_por_curso=sugestoes_por_curso,
                     erro="Limite máximo de 250 turmas atingido para este curso."
                 )
@@ -377,13 +381,13 @@ def matricular():
             salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
             turma_num = f"{nxt:03d}"
 
-        # grava matrícula se ainda não houver para (aluno, curso)
+        # Só adiciona se ainda não existir para esse aluno/curso
         if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
             matriculas.append({
                 "aluno":       aluno_email,
                 "curso":       curso_nome,
                 "professor":   professor,
-                "tipo":        tipo_matricula,
+                "tipo":        tipo_matricula,   # <<< salva o tipo
                 "nrt":         nrt_turma,
                 "turma":       turma_num,
                 "data_inicio": data_inicio,
@@ -392,6 +396,41 @@ def matricular():
             salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
         return redirect("/matricular")
+
+    # --- GET ---
+    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+    professores = [
+        "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
+        "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
+        "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
+        "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
+        "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
+        "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
+        "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
+        "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
+        "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
+        "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
+        "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
+        "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
+        "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
+        "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
+        "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
+        "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
+    ]
+
+    # placeholder por curso para o campo Turma
+    sugestoes_por_curso = {
+        c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
+    }
+
+    return render_template(
+        "matricular.html",
+        alunos=alunos,
+        cursos=cursos,
+        professores=professores,
+        sugestoes_por_curso=sugestoes_por_curso
+    )
+
 
     # ---------- GET ----------
     alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
