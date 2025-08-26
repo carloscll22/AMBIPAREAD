@@ -20,25 +20,23 @@
     .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .back { text-decoration:none; color:#333; font-weight:bold; }
 
-    /* Barra de filtros em GRID: input | status | ordem | botões */
+    /* Barra de filtros: GRID – input | select | botões */
     .filters {
       display: grid;
-      grid-template-columns: minmax(260px,1fr) 220px 220px auto;
-      gap: 12px;
-      align-items: center;
-      margin: 8px 0 16px;
+      grid-template-columns: minmax(260px, 1fr) 220px auto;
+      gap: 12px; align-items: center; margin: 8px 0 16px;
     }
     .search-wrap { position: relative; width: 100%; }
     .search-wrap input {
       width:100%; padding:10px 36px 10px 34px;
-      border:1px solid #aaa; border-radius:8px; background:#fff; box-sizing:border-box;
+      border:1px solid #aaa; border-radius:8px; background:#fff; box-sizing: border-box;
     }
     .search-wrap .icon {
       position:absolute; left:10px; top:50%; transform:translateY(-50%);
       font-size:16px; opacity:.7; pointer-events:none;
     }
     .filters select {
-      padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff; width:100%; box-sizing:border-box;
+      padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff; width: 100%; box-sizing:border-box;
     }
     .actions { display:flex; gap:8px; justify-content:flex-end; }
     .actions button, .actions a {
@@ -50,13 +48,13 @@
     .legend { font-size:12px; color:#333; opacity:.85; margin-top:-4px; display:flex; gap:8px; }
     .result-info { font-size:13px; color:#333; margin: 8px 0 0; }
 
-    @media (max-width: 920px) {
-      .filters { grid-template-columns: 1fr 1fr; }
-      .actions { grid-column: 1 / -1; justify-content:stretch; }
-      .actions a, .actions button { width:100%; text-align:center; }
-    }
-    @media (max-width: 560px) {
+    .sortable { cursor:pointer; user-select:none; color:#5b2bbd; text-decoration:underline; }
+    .arrow { font-size:12px; margin-left:6px; opacity:.7; }
+
+    @media (max-width: 720px) {
       .filters { grid-template-columns: 1fr; }
+      .actions { justify-content:stretch; }
+      .actions a, .actions button { width: 100%; text-align:center; }
     }
   </style>
 </head>
@@ -75,7 +73,6 @@
 
     <!-- Filtros (GET) -->
     <form class="filters" method="get" action="{{ url_for('vencimentos_verificar') }}">
-      <!-- Busca -->
       <div class="search-wrap">
         <span class="icon">🔍</span>
         <input type="text" name="q" value="{{ q }}" placeholder="Buscar por aluno ou curso..." autocomplete="off" />
@@ -89,15 +86,10 @@
         <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
       </select>
 
-      <!-- Ordem por Data -->
-      <select name="order" aria-label="Ordem por data">
-        <option value="asc"  {{ order=='asc'  and 'selected' or '' }}>Ordem: mais próximo</option>
-        <option value="desc" {{ order=='desc' and 'selected' or '' }}>Ordem: mais distante</option>
-      </select>
-
-      <!-- mantém sort fixo em 'data' para ordenar por vencimento -->
+      <!-- mantém sort/order atuais ao aplicar filtros -->
       <div class="actions">
-        <input type="hidden" name="sort" value="data">
+        <input type="hidden" name="sort"  value="{{ sort }}">
+        <input type="hidden" name="order" value="{{ order }}">
         <button type="submit">Aplicar</button>
         <a class="secondary" href="{{ url_for('vencimentos_verificar') }}">Limpar</a>
       </div>
@@ -116,8 +108,22 @@
         <tr>
           <th>Aluno</th>
           <th>Curso</th>
-          <th>Data de Vencimento</th>
-          <th>Status</th>
+          <th>
+            {% set new_order_data = 'desc' if (sort=='data' and order=='asc') else 'asc' %}
+            <a class="sortable"
+               href="{{ url_for('vencimentos_verificar', q=q, status=sel, sort='data', order=new_order_data) }}">
+              Data de Vencimento
+              {% if sort == 'data' %}<span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>{% else %}<span class="arrow">⇵</span>{% endif %}
+            </a>
+          </th>
+          <th>
+            {% set new_order_status = 'desc' if (sort=='status' and order=='asc') else 'asc' %}
+            <a class="sortable"
+               href="{{ url_for('vencimentos_verificar', q=q, status=sel, sort='status', order=new_order_status) }}">
+              Status
+              {% if sort == 'status' %}<span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>{% else %}<span class="arrow">⇵</span>{% endif %}
+            </a>
+          </th>
           <th>Ação</th>
         </tr>
       </thead>
@@ -164,7 +170,7 @@
       {{ ns.count }} resultado{{ 1 if ns.count == 1 else 's' }}.
       {% if q %} • Busca: <strong>{{ q }}</strong>{% endif %}
       {% if sel %} • Status: <strong>{{ 'Em dia' if sel=='ok' else ('Vencendo' if sel=='warn' else 'Vencido') }}</strong>{% endif %}
-      {% if request.args.get('sort') == 'data' %} • Ordenado por data ({{ 'mais próximo' if order=='asc' else 'mais distante' }}){% endif %}
+      {% if sort %} • Ordenado por <strong>{{ 'status' if sort=='status' else 'data' }}</strong> ({{ 'crescente' if order=='asc' else 'decrescente' }}){% endif %}
     </p>
   </div>
 </body>
