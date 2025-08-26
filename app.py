@@ -793,17 +793,59 @@ def prova(nome):
     if not curso:
         return "Curso não encontrado", 404
 
+    # matrícula (para mostrar se assinou presença)
     matricula = next((m for m in matriculas if m["aluno"] == aluno_email and m["curso"] == nome), None)
     presenca_assinada = matricula.get("presenca_assinada", False) if matricula else False
 
+    perguntas = curso.get("prova", [])
+
     if request.method == "POST":
-        acertos = sum(1 for i, p in enumerate(curso["prova"]) if request.form.get(f"pergunta_{i}") == p["correta"])
-        total   = len(curso["prova"])
-        aprovado = acertos >= 0.7 * total
+        # ----- coletar escolhas do aluno -----
+        escolhas = {}  # ex.: {"0":"a","1":"d","2":"b"}
+        acertos = 0
+        total = len(perguntas)
 
-        curso.setdefault("resultados", {})[aluno_email] = {"acertos": acertos, "total": total}
-        salvar_dados(CAMINHO_CURSOS, cursos)  # ⬅️ Salva os resultados da prova
+        for i, p in enumerate(perguntas):
+            esc = (request.form.get(f"pergunta_{i}") or "").strip()
+            escolhas[str(i)] = esc
+            if esc and esc == p.get("correta"):
+                acertos += 1
 
+        aprovado = (acertos >= 0.7 * total) if total > 0 else True
+        porcentagem = int((acertos / total) * 100) if total > 0 else 0
+
+        # ----- salvar RESULTADO agregado (como você já fazia) -----
+        curso.setdefault("resultados", {})[aluno_email] = {
+            "acertos": acertos,
+            "total": total,
+            "porcentagem": porcentagem,
+            "aprovado": aprovado,
+            "quando": datetime.now(TZ).isoformat(),
+        }
+
+        # ----- salvar ESCOLHAS por pergunta -----
+        # guarda tanto o mapa escolhas quanto um detalhamento por pergunta
+        detalhes = []
+        for i, p in enumerate(perguntas):
+            marcada = escolhas.get(str(i), "")
+            detalhes.append({
+                "i": i,
+                "enunciado": p.get("enunciado", ""),
+                "correta": p.get("correta", ""),
+                "marcada": marcada,
+                "ok": (marcada == p.get("correta", "")),
+            })
+
+        curso.setdefault("respostas", {})[aluno_email] = {
+            "escolhas": escolhas,   # simples e leve
+            "detalhe": detalhes,    # pronto para exibir/baixar depois
+            "quando": datetime.now(TZ).isoformat(),
+        }
+
+        # persiste no disco
+        salvar_dados(CAMINHO_CURSOS, cursos)
+
+        # renderiza a mesma tela com o resultado (compatível com seu template atual)
         return render_template(
             "prova.html",
             curso=curso,
@@ -811,17 +853,20 @@ def prova(nome):
             enviado=True,
             acertos=acertos,
             total=total,
-            porcentagem=int(acertos / total * 100),
+            porcentagem=porcentagem,
             aprovado=aprovado,
-            presenca_assinada=presenca_assinada
+            presenca_assinada=presenca_assinada,
+            escolhas=escolhas  # opcional; template pode ignorar
         )
 
+    # GET: exibe a prova
     return render_template(
         "prova.html",
         curso=curso,
         enumerate=enumerate,
         presenca_assinada=presenca_assinada
     )
+
 
 
 
