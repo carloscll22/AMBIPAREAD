@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from flask import send_from_directory
 from random import randint
 from werkzeug.utils import secure_filename  
-from datetime import datetime
+from datetime import datetime, date
 import pytz
 import shutil    
 import os
@@ -120,6 +120,13 @@ def salvar_usuarios():
     with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
+def add_years(d: date, years: int) -> date:
+    """Soma 'years' anos à data d, ajustando 29/02 -> 28/02 quando necessário."""
+    try:
+        return d.replace(year=d.year + years)
+    except ValueError:
+        # lida com 29/02
+        return d.replace(month=2, day=28, year=d.year + years)
 
 progresso_por_aluno = {}
 
@@ -1046,78 +1053,70 @@ def emitir_certificado(aluno, curso):
 
     # Recupera o professor definido na matrícula
     matricula = next((m for m in matriculas if m["aluno"] == aluno and m["curso"] == curso), None)
-    professor_assinante = matricula["professor"] if matricula else curso_obj["instrutor"]
+    professor_assinante = matricula["professor"] if matricula else curso_obj.get("instrutor", "—")
 
     emitido_em = obter_data_certificado_fixa(aluno=aluno, curso=curso)
 
-periodicidade_anos = 1
-if matricula:
-    try:
-        periodicidade_anos = int(matricula.get("periodicidade", 1))
-    except (ValueError, TypeError):
-        periodicidade_anos = 1
-if periodicidade_anos not in (1, 2, 3, 5):
+    # --------- CÁLCULO E GRAVAÇÃO DO VENCIMENTO (agora dentro da função) ----------
     periodicidade_anos = 1
+    if matricula:
+        try:
+            periodicidade_anos = int(matricula.get("periodicidade", 1))
+        except (ValueError, TypeError):
+            periodicidade_anos = 1
+    if periodicidade_anos not in (1, 2, 3, 5):
+        periodicidade_anos = 1
 
-# data de emissão (preferir ISO se existir)
-emissao_date = None
-iso = emitido_em.get("iso")
-if iso:
-    try:
-        emissao_date = datetime.fromisoformat(iso).date()
-    except Exception:
-        emissao_date = None
-if emissao_date is None:
-    # fallback para "dd/mm/YYYY"
-    try:
-        emissao_date = datetime.strptime(emitido_em.get("data", ""), "%d/%m/%Y").date()
-    except Exception:
-        emissao_date = datetime.now(TZ).date()
+    # data de emissão preferindo ISO
+    emissao_date = None
+    iso = emitido_em.get("iso")
+    if iso:
+        try:
+            emissao_date = datetime.fromisoformat(iso).date()
+        except Exception:
+            emissao_date = None
+    if emissao_date is None:
+        # fallback "dd/mm/YYYY"
+        try:
+            emissao_date = datetime.strptime(emitido_em.get("data", ""), "%d/%m/%Y").date()
+        except Exception:
+            emissao_date = datetime.now(TZ).date()
 
-venc_date = add_years(emissao_date, periodicidade_anos)
-venc_str  = venc_date.strftime("%Y-%m-%d")  # formato que sua tela de verificação usa
+    venc_date = add_years(emissao_date, periodicidade_anos)
+    venc_str  = venc_date.strftime("%Y-%m-%d")
 
-# mantém apenas um registro por (aluno, curso)
-global vencimentos
-vencimentos = [
-    v for v in vencimentos
-    if not (v.get("aluno") == aluno and v.get("curso") == curso)
-]
-vencimentos.append({
-    "aluno": aluno,
-    "curso": curso,
-    "data_vencimento": venc_str,
-})
-salvar_vencimentos()
-# --- fim do cálculo de vencimento ---
+    global vencimentos
+    vencimentos = [
+        v for v in vencimentos
+        if not (v.get("aluno") == aluno and v.get("curso") == curso)
+    ]
+    vencimentos.append({
+        "aluno": aluno,
+        "curso": curso,
+        "data_vencimento": venc_str,
+    })
+    salvar_vencimentos()
+    # --------- FIM DO CÁLCULO/GRAVAÇÃO DO VENCIMENTO -----------------------------
+
     data_assinatura_instrutor = emitido_em["data"]
     hora_assinatura_instrutor = emitido_em["hora"]
     data_assinatura_aluno     = emitido_em["data"]
     hora_assinatura_aluno     = emitido_em["hora"]
 
-
     carga     = curso_obj.get("carga_horaria", "")
     conteudo  = curso_obj.get("conteudo", "")
-    aluno_nome = usuarios[aluno]["nome"]
+    aluno_nome = usuarios.get(aluno, {}).get("nome", aluno)
 
-    # (Opcional) Registrar que o certificado foi emitido
+    # Registrar que o certificado foi emitido
     curso_obj.setdefault("certificados_emitidos", {})[aluno] = {
         "data": data_assinatura_instrutor,
         "hora": hora_assinatura_instrutor,
         "ip": gerar_ip()
     }
     salvar_dados(CAMINHO_CURSOS, cursos)
-from datetime import datetime, date
 
-def add_years(d: date, years: int) -> date:
-    """Soma 'years' anos à data d, ajustando 29/02 -> 28/02 quando necessário."""
-    try:
-        return d.replace(year=d.year + years)
-    except ValueError:
-        # lida com 29/02
-        return d.replace(month=2, day=28, year=d.year + years)
-            
-    return render_template("certificado.html",
+    return render_template(
+        "certificado.html",
         aluno_nome=aluno_nome,
         curso=curso,
         carga=carga,
@@ -1131,7 +1130,6 @@ def add_years(d: date, years: int) -> date:
         ip_instrutor=gerar_ip(),
         ip_aluno=gerar_ip()
     )
-
 
 # ======================================================================
 #                       RELATÓRIOS / UTIL
