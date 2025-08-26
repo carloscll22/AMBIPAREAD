@@ -15,48 +15,61 @@
     .ok { background:#e6f7e6; color:#206b20; }
     .warn { background:#fff4cc; color:#9a6b00; }
     .bad { background:#ffe7e7; color:#a30000; }
-    .btn { display:inline-block; padding:8px 12px; background:#a0e76d; border-radius:6px; text-decoration:none; color:#000; font-weight:600; }
+    .btn { display:inline-block; padding:10px 14px; background:#a0e76d; border-radius:8px; text-decoration:none; color:#000; font-weight:700; }
     .btn:hover { background:#8dd24a; }
     .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .back { text-decoration:none; color:#333; font-weight:bold; }
 
-    /* Barra de filtros */
+    /* Barra de filtros: GRID para evitar sobreposição */
     .filters {
-      display:flex; align-items:center; gap:12px;
-      margin: 8px 0 16px; flex-wrap: nowrap;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) 220px auto; /* input | select | botões */
+      gap: 12px;
+      align-items: center;
+      margin: 8px 0 16px;
     }
-    .search-wrap { position: relative; flex: 1 1 auto; min-width: 280px; }
+    .search-wrap { position: relative; width: 100%; }
     .search-wrap input {
-      width:100%; padding:10px 36px 10px 34px;
-      border:1px solid #aaa; border-radius:8px; background:#fff;
+      width:100%;
+      padding:10px 36px 10px 34px;
+      border:1px solid #aaa;
+      border-radius:8px;
+      background:#fff;
+      box-sizing: border-box;
     }
     .search-wrap .icon {
       position:absolute; left:10px; top:50%; transform:translateY(-50%);
-      font-size:16px; opacity:.7;
+      font-size:16px; opacity:.7; pointer-events:none;
     }
     .filters select {
-      padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff;
-      min-width: 180px;
+      padding:10px;
+      border:1px solid #aaa;
+      border-radius:8px;
+      background:#fff;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .actions { display:flex; gap:8px; margin-left:auto; }
+    .actions { display:flex; gap:8px; justify-content:flex-end; }
     .actions button, .actions a {
       padding:10px 12px; border-radius:8px; border:1px solid #9bd85f;
-      background:#a0e76d; color:#000; font-weight:600; text-decoration:none;
+      background:#a0e76d; color:#000; font-weight:700; text-decoration:none;
       cursor:pointer;
     }
-    .actions .secondary { background:#fff; border-color:#bbb; font-weight:500; }
+    .actions .secondary { background:#fff; border-color:#bbb; font-weight:600; }
 
     .legend { font-size:12px; color:#333; opacity:.85; margin-top:-4px; display:flex; gap:8px; }
     .result-info { font-size:13px; color:#333; margin: 8px 0 0; }
 
-    .sortable { cursor:pointer; user-select:none; }
-    .arrow { font-size:12px; margin-left:4px; opacity:.7; }
+    .sortable { cursor:pointer; user-select:none; color:#5b2bbd; text-decoration:underline; }
+    .arrow { font-size:12px; margin-left:6px; opacity:.7; }
 
-    @media (max-width: 640px) {
-      .filters { flex-wrap: wrap; }
-      .actions { margin-left: 0; width:100%; justify-content:flex-end; }
-      .search-wrap { min-width: 100%; }
-      .filters select { width: 100%; }
+    /* Mobile: empilha */
+    @media (max-width: 720px) {
+      .filters {
+        grid-template-columns: 1fr; /* tudo empilhado */
+      }
+      .actions { justify-content:stretch; }
+      .actions a, .actions button { width: 100%; text-align:center; }
     }
   </style>
 </head>
@@ -67,13 +80,14 @@
       <a class="back" href="/controle_vencimentos">← Voltar</a>
     </div>
 
+    {# parâmetros atuais #}
     {% set q = (request.args.get('q') or '') %}
     {% set q_low = q|lower %}
     {% set sel = (request.args.get('status') or '') %}
     {% set sort = request.args.get('sort') or '' %}
     {% set order = request.args.get('order') or 'asc' %}
 
-    <!-- filtros -->
+    <!-- Filtros (GET) -->
     <form class="filters" method="get" action="{{ url_for('vencimentos_verificar') }}">
       <div class="search-wrap">
         <span class="icon">🔍</span>
@@ -87,10 +101,10 @@
         <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
       </select>
 
-      <input type="hidden" name="sort" value="{{ sort }}">
-      <input type="hidden" name="order" value="{{ order }}">
-
+      <!-- mantém sort atual ao aplicar filtros -->
       <div class="actions">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="order" value="{{ order }}">
         <button type="submit">Aplicar</button>
         <a class="secondary" href="{{ url_for('vencimentos_verificar') }}">Limpar</a>
       </div>
@@ -110,7 +124,6 @@
           <th>Aluno</th>
           <th>Curso</th>
           <th>
-            {# link de ordenação #}
             {% set new_order = 'desc' if order == 'asc' else 'asc' %}
             <a class="sortable"
                href="{{ url_for('vencimentos_verificar',
@@ -119,6 +132,8 @@
               Data de Vencimento
               {% if sort == 'data' %}
                 <span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>
+              {% else %}
+                <span class="arrow">⇵</span>
               {% endif %}
             </a>
           </th>
