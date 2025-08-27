@@ -17,10 +17,15 @@
     .bad  { background:#ffe7e7; color:#a30000; }
     .btn  { display:inline-block; padding:10px 14px; background:#a0e76d; border-radius:8px; text-decoration:none; color:#000; font-weight:700; }
     .btn:hover { background:#8dd24a; }
+    .btn-blue { background:#0d6efd; color:#fff; }
+    .btn-blue:hover { background:#084298; color:#fff; }
+    .btn-red { background:#dc3545; color:#fff; border:0; }
+    .btn-red:hover { background:#b02a37; color:#fff; }
     .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .back { text-decoration:none; color:#333; font-weight:bold; }
+    .actions-inline { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 
-    /* Barra de filtros: GRID – input | select | botões */
+    /* Barra de filtros */
     .filters {
       display: grid;
       grid-template-columns: minmax(260px, 1fr) 220px auto;
@@ -55,6 +60,8 @@
       .filters { grid-template-columns: 1fr; }
       .actions { justify-content:stretch; }
       .actions a, .actions button { width: 100%; text-align:center; }
+      .actions-inline { flex-direction: column; align-items: stretch; }
+      .actions-inline > * { width: 100%; text-align:center; }
     }
   </style>
 </head>
@@ -78,7 +85,6 @@
         <input type="text" name="q" value="{{ q }}" placeholder="Buscar por aluno ou curso..." autocomplete="off" />
       </div>
 
-      <!-- Filtro de Status -->
       <select name="status" aria-label="Filtro de status">
         <option value=""    {{ ''    == sel and 'selected' or '' }}>Todos os Status</option>
         <option value="ok"  {{ 'ok'  == sel and 'selected' or '' }}>Em dia</option>
@@ -86,7 +92,6 @@
         <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
       </select>
 
-      <!-- mantém sort/order atuais ao aplicar filtros -->
       <div class="actions">
         <input type="hidden" name="sort"  value="{{ sort }}">
         <input type="hidden" name="order" value="{{ order }}">
@@ -124,12 +129,11 @@
               {% if sort == 'status' %}<span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>{% else %}<span class="arrow">⇵</span>{% endif %}
             </a>
           </th>
-          <th>Ação</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for l in linhas %}
-          {# classe pode vir da rota; mantém fallback #}
           {% set classe =
             l.classe if l.classe is defined else
             ('bad' if 'Vencido' in l.status else
@@ -149,9 +153,24 @@
               <td>{{ l.data_venc }}</td>
               <td><span class="pill {{ classe }}">{{ l.status }}</span></td>
               <td>
-                {% if l.mostrar_matricular %}
-                  <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
-                {% else %} — {% endif %}
+                <div class="actions-inline">
+                  {% if l.mostrar_matricular %}
+                    <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
+                  {% endif %}
+
+                  <!-- Editar Vencimento -->
+                  <a class="btn btn-blue" href="{{ url_for('vencimentos_editar', aluno=l.aluno_email, curso=l.curso) }}">
+                    Editar Vencimento
+                  </a>
+
+                  <!-- Excluir Vencimento -->
+                  <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
+                        onsubmit="return confirm('Tem certeza que deseja excluir este vencimento?');">
+                    <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
+                    <input type="hidden" name="curso" value="{{ l.curso }}">
+                    <button type="submit" class="btn btn-red">Excluir Vencimento</button>
+                  </form>
+                </div>
               </td>
             </tr>
           {% endif %}
