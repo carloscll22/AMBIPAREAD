@@ -1,196 +1,120 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Verificar Vencimentos</title>
   <style>
-    body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; }
-    .wrap { max-width: 1000px; margin: 40px auto; background:#f5ffe6; padding:24px; border-radius:10px; }
-    h2 { margin:0 0 16px; }
-    table { width:100%; border-collapse:separate; border-spacing:0 8px; }
-    thead th { background:#fff; padding:12px; text-align:left; border-bottom:2px solid #ccc; }
-    tbody tr { background:#fff; }
-    tbody td { padding:12px; border-bottom:1px solid #e0e0e0; vertical-align:middle; }
-    .pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; }
-    .ok { background:#e6f7e6; color:#206b20; }
-    .warn { background:#fff4cc; color:#9a6b00; }
-    .bad  { background:#ffe7e7; color:#a30000; }
-    .btn  { display:inline-block; padding:10px 14px; background:#a0e76d; border-radius:8px; text-decoration:none; color:#000; font-weight:700; }
-    .btn:hover { background:#8dd24a; }
-    .btn-blue { background:#0d6efd; color:#fff; }
-    .btn-blue:hover { background:#084298; color:#fff; }
-    .btn-red { background:#dc3545; color:#fff; border:0; }
-    .btn-red:hover { background:#b02a37; color:#fff; }
-    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .back { text-decoration:none; color:#333; font-weight:bold; }
-    .actions-inline { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    body {
+      background-color: #f0f8e6;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
 
-    /* Barra de filtros */
-    .filters {
-      display: grid;
-      grid-template-columns: minmax(260px, 1fr) 220px auto;
-      gap: 12px; align-items: center; margin: 8px 0 16px;
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
     }
-    .search-wrap { position: relative; width: 100%; }
-    .search-wrap input {
-      width:100%; padding:10px 36px 10px 34px;
-      border:1px solid #aaa; border-radius:8px; background:#fff; box-sizing: border-box;
-    }
-    .search-wrap .icon {
-      position:absolute; left:10px; top:50%; transform:translateY(-50%);
-      font-size:16px; opacity:.7; pointer-events:none;
-    }
-    .filters select {
-      padding:10px; border:1px solid #aaa; border-radius:8px; background:#fff; width: 100%; box-sizing:border-box;
-    }
-    .actions { display:flex; gap:8px; justify-content:flex-end; }
-    .actions button, .actions a {
-      padding:10px 12px; border-radius:8px; border:1px solid #9bd85f;
-      background:#a0e76d; color:#000; font-weight:700; text-decoration:none; cursor:pointer;
-    }
-    .actions .secondary { background:#fff; border-color:#bbb; font-weight:600; }
 
-    .legend { font-size:12px; color:#333; opacity:.85; margin-top:-4px; display:flex; gap:8px; }
-    .result-info { font-size:13px; color:#333; margin: 8px 0 0; }
-
-    .sortable { cursor:pointer; user-select:none; color:#5b2bbd; text-decoration:underline; }
-    .arrow { font-size:12px; margin-left:6px; opacity:.7; }
-
-    @media (max-width: 720px) {
-      .filters { grid-template-columns: 1fr; }
-      .actions { justify-content:stretch; }
-      .actions a, .actions button { width: 100%; text-align:center; }
-      .actions-inline { flex-direction: column; align-items: stretch; }
-      .actions-inline > * { width: 100%; text-align:center; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f5f5f5;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .status.ok { color: green; }
+    .status.alerta { color: orange; }
+    .status.vencido { color: red; }
+
+    /* Botões lado a lado */
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      font-size: 13px;
+      line-height: 1;
+      padding: 8px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 0;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .btn-green   { background:#8dd24a; color:#0a0a0a; }
+    .btn-blue    { background:#0d6efd; color:#fff; }
+    .btn-red     { background:#dc3545; color:#fff; }
+    .btn:hover   { filter: brightness(0.95); }
+    td.col-acoes { padding-top: 12px; padding-bottom: 12px; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <h2>Verificar Vencimentos</h2>
-      <a class="back" href="/controle_vencimentos">← Voltar</a>
-    </div>
+  <h2>Verificar Vencimentos</h2>
 
-    {% set q = (request.args.get('q') or '') %}
-    {% set q_low = q|lower %}
-    {% set sel = (request.args.get('status') or '') %}
-    {% set sort = (request.args.get('sort') or '') %}
-    {% set order = (request.args.get('order') or 'asc') %}
+  <table>
+    <thead>
+      <tr>
+        <th>Aluno</th>
+        <th>Curso</th>
+        <th>Data de Vencimento</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in linhas %}
+      <tr>
+        <td>{{ l.aluno_nome }}</td>
+        <td>{{ l.curso }}</td>
+        <td>{{ l.data_venc }}</td>
+        <td class="status">{{ l.status }}</td>
+        <td class="col-acoes">
+          <div class="actions">
+            {% if l.mostrar_matricular %}
+              <a class="btn btn-green"
+                 href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">
+                Matricular Aluno
+              </a>
+            {% endif %}
 
-    <!-- Filtros (GET) -->
-    <form class="filters" method="get" action="{{ url_for('vencimentos_verificar') }}">
-      <div class="search-wrap">
-        <span class="icon">🔍</span>
-        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por aluno ou curso..." autocomplete="off" />
-      </div>
-
-      <select name="status" aria-label="Filtro de status">
-        <option value=""    {{ ''    == sel and 'selected' or '' }}>Todos os Status</option>
-        <option value="ok"  {{ 'ok'  == sel and 'selected' or '' }}>Em dia</option>
-        <option value="warn"{{ 'warn'== sel and 'selected' or '' }}>Vencendo (≤ 90 dias)</option>
-        <option value="bad" {{ 'bad' == sel and 'selected' or '' }}>Vencido</option>
-      </select>
-
-      <div class="actions">
-        <input type="hidden" name="sort"  value="{{ sort }}">
-        <input type="hidden" name="order" value="{{ order }}">
-        <button type="submit">Aplicar</button>
-        <a class="secondary" href="{{ url_for('vencimentos_verificar') }}">Limpar</a>
-      </div>
-    </form>
-
-    <div class="legend">
-      <span class="pill ok">Em dia</span>
-      <span class="pill warn">Vence em ≤ 90 dias</span>
-      <span class="pill bad">Vencido</span>
-    </div>
-
-    {% set ns = namespace(count=0) %}
-
-    <table>
-      <thead>
-        <tr>
-          <th>Aluno</th>
-          <th>Curso</th>
-          <th>
-            {% set new_order_data = 'desc' if (sort=='data' and order=='asc') else 'asc' %}
-            <a class="sortable"
-               href="{{ url_for('vencimentos_verificar', q=q, status=sel, sort='data', order=new_order_data) }}">
-              Data de Vencimento
-              {% if sort == 'data' %}<span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>{% else %}<span class="arrow">⇵</span>{% endif %}
+            <a class="btn btn-blue"
+               href="{{ url_for('vencimentos_editar', aluno=l.aluno_email, curso=l.curso) }}">
+              Editar Vencimento
             </a>
-          </th>
-          <th>
-            {% set new_order_status = 'desc' if (sort=='status' and order=='asc') else 'asc' %}
-            <a class="sortable"
-               href="{{ url_for('vencimentos_verificar', q=q, status=sel, sort='status', order=new_order_status) }}">
-              Status
-              {% if sort == 'status' %}<span class="arrow">{{ '↑' if order=='asc' else '↓' }}</span>{% else %}<span class="arrow">⇵</span>{% endif %}
-            </a>
-          </th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for l in linhas %}
-          {% set classe =
-            l.classe if l.classe is defined else
-            ('bad' if 'Vencido' in l.status else
-             'warn' if 'Vence em' in l.status and (l.status.split()|length>2 and (l.status.split()[2]|int) <= 90) else
-             'ok')
-          %}
-          {% set match_status = (sel == '' or sel == classe) %}
-          {% set aluno_low = (l.aluno_nome|string)|lower %}
-          {% set curso_low = (l.curso|string)|lower %}
-          {% set match_q = (q_low == '' or (q_low in aluno_low) or (q_low in curso_low)) %}
 
-          {% if match_status and match_q %}
-            {% set ns.count = ns.count + 1 %}
-            <tr>
-              <td>{{ l.aluno_nome }}</td>
-              <td>{{ l.curso }}</td>
-              <td>{{ l.data_venc }}</td>
-              <td><span class="pill {{ classe }}">{{ l.status }}</span></td>
-              <td>
-                <div class="actions-inline">
-                  {% if l.mostrar_matricular %}
-                    <a class="btn" href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">Matricular Aluno</a>
-                  {% endif %}
+            <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
+                  onsubmit="return confirm('Tem certeza que deseja excluir este vencimento?');"
+                  style="margin:0;">
+              <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
+              <input type="hidden" name="curso" value="{{ l.curso }}">
+              <button type="submit" class="btn btn-red">Excluir Vencimento</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-                  <!-- Editar Vencimento -->
-                  <a class="btn btn-blue" href="{{ url_for('vencimentos_editar', aluno=l.aluno_email, curso=l.curso) }}">
-                    Editar Vencimento
-                  </a>
-
-                  <!-- Excluir Vencimento -->
-                  <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
-                        onsubmit="return confirm('Tem certeza que deseja excluir este vencimento?');">
-                    <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
-                    <input type="hidden" name="curso" value="{{ l.curso }}">
-                    <button type="submit" class="btn btn-red">Excluir Vencimento</button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-        {% if ns.count == 0 %}
-          <tr>
-            <td colspan="5" style="text-align:center; color:#666; padding:20px;">
-              Nenhum registro encontrado para os filtros aplicados.
-            </td>
-          </tr>
-        {% endif %}
-      </tbody>
-    </table>
-
-    <p class="result-info">
-      {{ ns.count }} resultado{{ 1 if ns.count == 1 else 's' }}.
-      {% if q %} • Busca: <strong>{{ q }}</strong>{% endif %}
-      {% if sel %} • Status: <strong>{{ 'Em dia' if sel=='ok' else ('Vencendo' if sel=='warn' else 'Vencido') }}</strong>{% endif %}
-      {% if sort %} • Ordenado por <strong>{{ 'status' if sort=='status' else 'data' }}</strong> ({{ 'crescente' if order=='asc' else 'decrescente' }}){% endif %}
-    </p>
+  <div style="margin-top:20px;">
+    <a href="/controle_vencimentos">← Voltar</a>
   </div>
 </body>
 </html>
