@@ -674,27 +674,33 @@ def editar_curso_nome(nome):
 
 @app.route("/editar_curso_form", methods=["GET", "POST"])
 def editar_curso_form_handler():
-    # só professor
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    # pegamos o nome pela query-string
     nome = request.args.get("nome", "")
     curso = next((c for c in cursos if c.get("nome") == nome), None)
     if not curso:
         return "Curso não encontrado", 404
 
+    # listas usadas no template
+    mods = curso.get("modulos", []) or []
+    perguntas = curso.get("prova", []) or []
+
     if request.method == "POST":
-        # salve aqui os campos que seu formulário envia
         curso["carga_horaria"] = request.form.get("carga_horaria", curso.get("carga_horaria", ""))
         curso["conteudo"]      = request.form.get("conteudo",      curso.get("conteudo", ""))
 
-        # TODO (quando você quiser): tratar módulos/prova aqui também
+        # TODO: aqui você trata atualização de módulos e prova se quiser
         salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect(url_for("lista_cursos_para_editar"))
 
-    # GET -> mostra o form
-    return render_template("editar_curso_form.html", curso=curso)
+    return render_template(
+        "editar_curso_form.html",
+        curso=curso,
+        mods=mods,
+        perguntas=perguntas,
+        enumerate=enumerate,   # <- isto resolve seu erro
+    )
 
 
 @app.route("/editar_curso", endpoint="lista_cursos_para_editar")
