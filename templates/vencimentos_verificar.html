@@ -5,76 +5,137 @@
   <title>Verificar Vencimentos</title>
   <style>
     body {
-      background-color: #f0f8e6;
+      background-color: #f5ffe6;
       font-family: Arial, sans-serif;
+      margin: 0;
       padding: 20px;
     }
-
     h2 {
+      text-align: center;
       color: #333;
       margin-bottom: 20px;
     }
-
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .top-bar a {
+      color: #006400;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .top-bar a:hover {
+      text-decoration: underline;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .filters input, .filters select {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .filters button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .filters .apply {
+      background: #8dd24a;
+      color: #000;
+    }
+    .filters .clear {
+      background: #ccc;
+      color: #000;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 10px;
     }
-
     th, td {
-      border: 1px solid #ddd;
       padding: 10px;
+      border-bottom: 1px solid #ddd;
       text-align: left;
     }
-
     th {
-      background: #f5f5f5;
+      background-color: #fff;
     }
-
-    .status {
+    tr:hover {
+      background-color: #f0f8e2;
+    }
+    .status-pill {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
       font-weight: bold;
+      display: inline-block;
     }
+    .status-green { background: #d4edda; color: #155724; }
+    .status-yellow { background: #fff3cd; color: #856404; }
+    .status-red { background: #f8d7da; color: #721c24; }
 
-    .status.ok { color: green; }
-    .status.alerta { color: orange; }
-    .status.vencido { color: red; }
-
-    /* Botões lado a lado */
+    /* Ações lado a lado */
     .actions {
       display: flex;
-      gap: 8px;
-      align-items: center;
+      gap: 6px;
       flex-wrap: wrap;
     }
-    .btn {
-      display: inline-block;
+    .actions .btn {
       font-size: 13px;
-      line-height: 1;
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-radius: 6px;
-      text-decoration: none;
-      border: 0;
-      cursor: pointer;
       font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
       white-space: nowrap;
     }
-    .btn-green   { background:#8dd24a; color:#0a0a0a; }
-    .btn-blue    { background:#0d6efd; color:#fff; }
-    .btn-red     { background:#dc3545; color:#fff; }
-    .btn:hover   { filter: brightness(0.95); }
-    td.col-acoes { padding-top: 12px; padding-bottom: 12px; }
+    .btn-green { background:#8dd24a; color:#0a0a0a; border:none; }
+    .btn-blue  { background:#0d6efd; color:#fff; border:none; }
+    .btn-red   { background:#dc3545; color:#fff; border:none; }
+    .btn:hover { filter: brightness(0.95); }
   </style>
 </head>
 <body>
-  <h2>Verificar Vencimentos</h2>
+  <div class="top-bar">
+    <h2>Verificar Vencimentos</h2>
+    <a href="/">← Voltar</a>
+  </div>
 
+  <!-- Barra de filtros -->
+  <div class="filters">
+    <input type="text" id="search" placeholder="Buscar por aluno ou curso...">
+    <select id="statusFilter">
+      <option value="">Todos os Status</option>
+      <option value="verde">Em dia</option>
+      <option value="amarelo">Vence em ≤ 90 dias</option>
+      <option value="vermelho">Vencido</option>
+    </select>
+    <button class="apply" onclick="aplicarFiltro()">Aplicar</button>
+    <button class="clear" onclick="limparFiltro()">Limpar</button>
+  </div>
+
+  <!-- Legenda -->
+  <div style="margin-bottom:10px;">
+    <span class="status-pill status-green">Em dia</span>
+    <span class="status-pill status-yellow">Vence em ≤ 90 dias</span>
+    <span class="status-pill status-red">Vencido</span>
+  </div>
+
+  <!-- Tabela -->
   <table>
     <thead>
       <tr>
         <th>Aluno</th>
         <th>Curso</th>
-        <th>Data de Vencimento</th>
-        <th>Status</th>
+        <th><a href="?sort=data">Data de Vencimento</a></th>
+        <th><a href="?sort=status">Status</a></th>
         <th>Ações</th>
       </tr>
     </thead>
@@ -84,37 +145,61 @@
         <td>{{ l.aluno_nome }}</td>
         <td>{{ l.curso }}</td>
         <td>{{ l.data_venc }}</td>
-        <td class="status">{{ l.status }}</td>
-        <td class="col-acoes">
-          <div class="actions">
-            {% if l.mostrar_matricular %}
-              <a class="btn btn-green"
-                 href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">
-                Matricular Aluno
-              </a>
-            {% endif %}
-
-            <a class="btn btn-blue"
-               href="{{ url_for('vencimentos_editar', aluno=l.aluno_email, curso=l.curso) }}">
-              Editar Vencimento
+        <td>
+          {% if "Vencido" in l.status %}
+            <span class="status-pill status-red">{{ l.status }}</span>
+          {% elif "Vence em" in l.status %}
+            <span class="status-pill status-yellow">{{ l.status }}</span>
+          {% else %}
+            <span class="status-pill status-green">{{ l.status }}</span>
+          {% endif %}
+        </td>
+        <td class="actions">
+          {% if l.mostrar_matricular %}
+            <a class="btn btn-green"
+               href="{{ url_for('matricular') }}?aluno={{ l.aluno_email }}&curso={{ l.curso }}">
+              Matricular Aluno
             </a>
-
-            <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
-                  onsubmit="return confirm('Tem certeza que deseja excluir este vencimento?');"
-                  style="margin:0;">
-              <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
-              <input type="hidden" name="curso" value="{{ l.curso }}">
-              <button type="submit" class="btn btn-red">Excluir Vencimento</button>
-            </form>
-          </div>
+          {% endif %}
+          <a class="btn btn-blue"
+             href="{{ url_for('vencimentos_editar', aluno=l.aluno_email, curso=l.curso) }}">
+            Editar Vencimento
+          </a>
+          <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
+                onsubmit="return confirm('Tem certeza que deseja excluir este vencimento?');"
+                style="margin:0;">
+            <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
+            <input type="hidden" name="curso" value="{{ l.curso }}">
+            <button type="submit" class="btn btn-red">Excluir Vencimento</button>
+          </form>
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <div style="margin-top:20px;">
-    <a href="/controle_vencimentos">← Voltar</a>
-  </div>
+  <script>
+    function aplicarFiltro() {
+      const termo = document.getElementById("search").value.toLowerCase();
+      const statusSel = document.getElementById("statusFilter").value;
+      document.querySelectorAll("tbody tr").forEach(row => {
+        const aluno = row.cells[0].textContent.toLowerCase();
+        const curso = row.cells[1].textContent.toLowerCase();
+        const status = row.cells[3].textContent.toLowerCase();
+
+        let mostrar = (aluno.includes(termo) || curso.includes(termo));
+        if (statusSel === "verde") mostrar = mostrar && status.includes("em dia");
+        if (statusSel === "amarelo") mostrar = mostrar && status.includes("vence em");
+        if (statusSel === "vermelho") mostrar = mostrar && status.includes("vencido");
+
+        row.style.display = mostrar ? "" : "none";
+      });
+    }
+    function limparFiltro() {
+      document.getElementById("search").value = "";
+      document.getElementById("statusFilter").value = "";
+      document.querySelectorAll("tbody tr").forEach(row => row.style.display = "");
+    }
+  </script>
 </body>
 </html>
