@@ -7,6 +7,7 @@ import pytz
 import shutil    
 import os
 import json
+import time
 
 TZ = pytz.timezone("America/Sao_Paulo")
 
@@ -677,29 +678,105 @@ def editar_curso_form_handler():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    nome = request.args.get("nome", "")
+    nome = request.args.get("nome", "").strip()
     curso = next((c for c in cursos if c.get("nome") == nome), None)
     if not curso:
         return "Curso não encontrado", 404
 
-    # listas usadas no template
-    mods = curso.get("modulos", []) or []
-    perguntas = curso.get("prova", []) or []
+    # garante chaves básicas
+    curso.setdefault("carga_horaria", "")
+    curso.setdefault("conteudo", "")
+    curso.setdefault("modulos", [])
+    curso.setdefault("prova", [])
 
     if request.method == "POST":
-        curso["carga_horaria"] = request.form.get("carga_horaria", curso.get("carga_horaria", ""))
-        curso["conteudo"]      = request.form.get("conteudo",      curso.get("conteudo", ""))
+        # --------- CAMPOS SIMPLES ---------
+        curso["carga_horaria"] = request.form.get("carga_horaria", curso["carga_horaria"]).strip()
+        curso["conteudo"]      = request.form.get("conteudo", curso["conteudo"]).strip()
 
-        # TODO: aqui você trata atualização de módulos e prova se quiser
+        # --------- MÓDULOS (multi-upload) ---------
+        # Captura todos os índices presentes no POST
+        mod_idxs = set()
+        for k in request.form.keys():
+            if k.startswith("modulos[") and "][titulo]" in k:
+                try:
+                    mod_idxs.add(int(k.split("[")[1].split("]")[0]))
+                except:
+                    pass
+        for k in request.files.keys():
+            if k.startswith("modulos[") and "][arquivo]" in k:
+                try:
+                    mod_idxs.add(int(k.split("[")[1].split("]")[0]))
+                except:
+                    pass
+
+        new_modulos = []
+        for i in sorted(mod_idxs):
+            titulo = (request.form.get(f"modulos[{i}][titulo]") or "").strip()
+            remover = request.form.get(f"modulos[{i}][remover]") == "on"
+            atual   = (request.form.get(f"modulos[{i}][arquivo_atual]") or "").strip()
+            file    = request.files.get(f"modulos[{i}][arquivo]")
+
+            if remover:
+                # pula (remoção)
+                continue
+
+            filename = atual
+            if file and file.filename:
+                raw = secure_filename(file.filename)
+                # evita sobrescrever: prefixo com timestamp
+                filename = f"{int(time.time())}_{raw}"
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            # só adiciona módulo se tiver ao menos título ou arquivo
+            if titulo or filename:
+                new_modulos.append({"titulo": titulo, "arquivo": filename})
+
+        curso["modulos"] = new_modulos
+
+        # --------- PROVA (perguntas) ---------
+        q_idxs = set()
+        for k in request.form.keys():
+            if k.startswith("perguntas[") and "][" in k:
+                try:
+                    q_idxs.add(int(k.split("[")[1].split("]")[0]))
+                except:
+                    pass
+
+        novas_perguntas = []
+        for i in sorted(q_idxs):
+            rmv = request.form.get(f"perguntas[{i}][remover]") == "on"
+            en  = (request.form.get(f"perguntas[{i}][enunciado]") or "").strip()
+            a   = (request.form.get(f"perguntas[{i}][a]") or "").strip()
+            b   = (request.form.get(f"perguntas[{i}][b]") or "").strip()
+            c   = (request.form.get(f"perguntas[{i}][c]") or "").strip()
+            d   = (request.form.get(f"perguntas[{i}][d]") or "").strip()
+            cor = (request.form.get(f"perguntas[{i}][correta]") or "").strip()
+
+            if rmv:
+                continue
+
+            # só guarda se tiver enunciado
+            if en:
+                novas_perguntas.append({
+                    "enunciado": en,
+                    "a": a, "b": b, "c": c, "d": d,
+                    "correta": cor
+                })
+
+        curso["prova"] = novas_perguntas
+
         salvar_dados(CAMINHO_CURSOS, cursos)
         return redirect(url_for("lista_cursos_para_editar"))
 
+    # GET: envia dados atuais
     return render_template(
         "editar_curso_form.html",
         curso=curso,
-        mods=mods,
-        perguntas=perguntas,
-        enumerate=enumerate,   # <- isto resolve seu erro
+        mods=curso["modulos"],
+        perguntas=curso["prova"],
+        enumerate=enumerate,     # ok usar enumerate no template, se quiser
     )
 
 
