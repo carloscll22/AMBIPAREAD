@@ -4,123 +4,227 @@
   <meta charset="UTF-8">
   <title>Editar Curso</title>
   <style>
-    body {
-      background-color: #c1f38e;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 30px;
+    body { background:#c1f38e; font-family: Arial, sans-serif; margin:0; padding:30px; }
+    .container { background:#fff; max-width:1000px; margin:auto; padding:30px; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.1); }
+    h2 { text-align:center; color:#333; margin-bottom:20px; }
+    label { display:block; margin-top:14px; font-weight:bold; color:#333; }
+    input[type="text"], input[type="number"], textarea, select {
+      width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:8px;
     }
-
-    .container {
-      background-color: white;
-      max-width: 800px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    .readonly { background:#f7f7f7; font-weight:bold; }
+    .row { display:flex; gap:12px; }
+    .row > div { flex:1; }
+    .muted { color:#666; font-size:12px; }
+    .section { margin-top:24px; padding:16px; border:1px solid #e4e4e4; border-radius:12px; background:#fafafa; }
+    .item { padding:12px; border:1px dashed #ddd; border-radius:10px; background:#fff; margin-top:12px; }
+    .item h4 { margin:0 0 8px 0; color:#333; }
+    .actions { display:flex; gap:8px; margin-top:14px; }
+    button, .btn {
+      background:#0d6efd; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold;
     }
-
-    h2 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    .readonly {
-      background-color: #f0f0f0;
-      border: none;
-      font-weight: bold;
-    }
-
-    button {
-      margin-top: 25px;
-      background-color: #0d6efd;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background-color: #084298;
-    }
-
-    .voltar {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .voltar a {
-      text-decoration: none;
-      color: #006400;
-      font-weight: bold;
-    }
-
-    .voltar a:hover {
-      text-decoration: underline;
-    }
-
-    .arquivo-atual {
-      font-size: 14px;
-      color: #444;
-      margin-top: 5px;
-    }
+    button:hover, .btn:hover { background:#084298; }
+    .btn-danger { background:#dc3545; }
+    .btn-danger:hover { background:#b02a37; }
+    .voltar { text-align:center; margin-top:18px; }
+    .voltar a { color:#006400; text-decoration:none; font-weight:bold; }
+    .voltar a:hover { text-decoration:underline; }
+    .arquivo-atual { font-size:13px; margin-top:6px; color:#444; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Editar Curso: {{ curso.nome }}</h2>
+
     <form method="post" enctype="multipart/form-data">
-      
+      <!-- Identidade do curso -->
       <label for="nome">Nome do Curso</label>
       <input type="text" id="nome" name="nome" value="{{ curso.nome }}" class="readonly" readonly>
 
-      <label for="carga_horaria">Carga Horária</label>
-      <input type="text" id="carga_horaria" name="carga_horaria" value="{{ curso.carga_horaria }}" required>
+      <div class="row">
+        <div>
+          <label for="carga_horaria">Carga Horária</label>
+          <input type="number" id="carga_horaria" name="carga_horaria" value="{{ curso.carga_horaria }}" min="0" step="1" required>
+        </div>
+        <div>
+          <label for="instrutor">Instrutor</label>
+          <input type="text" id="instrutor" name="instrutor" value="{{ curso.instrutor or '' }}" placeholder="Nome do instrutor">
+        </div>
+      </div>
 
-      <label for="tipo">Tipo</label>
-      <select id="tipo" name="tipo">
-        <option value="Inicial" {% if curso.tipo == 'Inicial' %}selected{% endif %}>Inicial</option>
-        <option value="Periódico" {% if curso.tipo == 'Periódico' %}selected{% endif %}>Periódico</option>
-      </select>
+      <label for="conteudo">Conteúdo (ementa / descrição)</label>
+      <textarea id="conteudo" name="conteudo" rows="5" placeholder="Resumo/ementa do curso...">{{ curso.conteudo }}</textarea>
 
-      <label for="data_realizacao">Data de Realização</label>
-      <input type="date" id="data_realizacao" name="data_realizacao" value="{{ curso.data_realizacao }}" required>
+      <!-- ========================= MÓDULOS ========================= -->
+      <div class="section">
+        <h3>Módulos</h3>
+        <div class="muted">Cada módulo pode ter um arquivo (PDF, vídeo etc.). Se não enviar novo arquivo, o atual será mantido.</div>
 
-      <label for="nrt">Número da NRT</label>
-      <input type="text" id="nrt" name="nrt" value="{{ curso.nrt }}">
+        <div id="modulos">
+          {% set mods = curso.modulos or [] %}
+          {% for i, m in enumerate(mods) %}
+            <div class="item" data-kind="modulo">
+              <h4>Módulo {{ i+1 }}</h4>
+              <label>Título</label>
+              <input type="text" name="modulos[{{ i }}][titulo]" value="{{ m.titulo }}" required>
 
-      <label for="conteudo">Conteúdo</label>
-      <textarea id="conteudo" name="conteudo" rows="5">{{ curso.conteudo }}</textarea>
+              {% if m.arquivo %}
+                <div class="arquivo-atual">Arquivo atual: <strong>{{ m.arquivo }}</strong></div>
+                <input type="hidden" name="modulos[{{ i }}][arquivo_atual]" value="{{ m.arquivo }}">
+              {% endif %}
 
-      <label for="arquivo">Arquivo de Conteúdo (opcional)</label>
-      {% if curso.arquivo %}
-        <div class="arquivo-atual">Arquivo atual: {{ curso.arquivo }}</div>
-      {% endif %}
-      <input type="file" id="arquivo" name="arquivo">
+              <label>Trocar arquivo (opcional)</label>
+              <input type="file" name="modulos[{{ i }}][arquivo]">
+              <div class="actions">
+                <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover módulo</button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
 
-      <button type="submit">Salvar Alterações</button>
+        <div class="actions">
+          <button type="button" onclick="adicionarModulo()">+ Adicionar módulo</button>
+        </div>
+      </div>
+
+      <!-- ========================= PROVA ========================= -->
+      <div class="section">
+        <h3>Prova – múltipla escolha</h3>
+        <div id="perguntas">
+          {% set qs = curso.prova or [] %}
+          {% for i, q in enumerate(qs) %}
+            <div class="item" data-kind="pergunta">
+              <h4>Pergunta {{ i+1 }}</h4>
+              <label>Enunciado</label>
+              <textarea name="perguntas[{{ i }}][enunciado]" rows="3" required>{{ q.enunciado }}</textarea>
+
+              <div class="row">
+                <div>
+                  <label>Alternativa A</label>
+                  <input type="text" name="perguntas[{{ i }}][a]" value="{{ q.a }}" required>
+                </div>
+                <div>
+                  <label>Alternativa B</label>
+                  <input type="text" name="perguntas[{{ i }}][b]" value="{{ q.b }}" required>
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>Alternativa C</label>
+                  <input type="text" name="perguntas[{{ i }}][c]" value="{{ q.c }}" required>
+                </div>
+                <div>
+                  <label>Alternativa D</label>
+                  <input type="text" name="perguntas[{{ i }}][d]" value="{{ q.d }}" required>
+                </div>
+              </div>
+
+              <label>Correta</label>
+              <select name="perguntas[{{ i }}][correta]" required>
+                <option value="">—</option>
+                <option value="a" {% if q.correta=='a' %}selected{% endif %}>A</option>
+                <option value="b" {% if q.correta=='b' %}selected{% endif %}>B</option>
+                <option value="c" {% if q.correta=='c' %}selected{% endif %}>C</option>
+                <option value="d" {% if q.correta=='d' %}selected{% endif %}>D</option>
+              </select>
+
+              <div class="actions">
+                <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover pergunta</button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="actions">
+          <button type="button" onclick="adicionarPergunta()">+ Adicionar pergunta</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Salvar Alterações</button>
+      </div>
     </form>
 
     <div class="voltar">
       <a href="{{ url_for('lista_cursos_para_editar') }}">← Voltar</a>
     </div>
   </div>
+
+  <script>
+    function removerItem(btn){
+      const box = btn.closest('.item');
+      box.parentNode.removeChild(box);
+      renumerar();
+    }
+
+    function adicionarModulo(){
+      const wrap = document.getElementById('modulos');
+      const idx = wrap.querySelectorAll('[data-kind="modulo"]').length;
+      const html = `
+        <div class="item" data-kind="modulo">
+          <h4>Módulo ${idx+1}</h4>
+          <label>Título</label>
+          <input type="text" name="modulos[${idx}][titulo]" required>
+          <label>Arquivo (opcional)</label>
+          <input type="file" name="modulos[${idx}][arquivo]">
+          <div class="actions">
+            <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover módulo</button>
+          </div>
+        </div>`;
+      wrap.insertAdjacentHTML('beforeend', html);
+    }
+
+    function adicionarPergunta(){
+      const wrap = document.getElementById('perguntas');
+      const idx = wrap.querySelectorAll('[data-kind="pergunta"]').length;
+      const html = `
+        <div class="item" data-kind="pergunta">
+          <h4>Pergunta ${idx+1}</h4>
+          <label>Enunciado</label>
+          <textarea name="perguntas[${idx}][enunciado]" rows="3" required></textarea>
+          <div class="row">
+            <div>
+              <label>Alternativa A</label>
+              <input type="text" name="perguntas[${idx}][a]" required>
+            </div>
+            <div>
+              <label>Alternativa B</label>
+              <input type="text" name="perguntas[${idx}][b]" required>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Alternativa C</label>
+              <input type="text" name="perguntas[${idx}][c]" required>
+            </div>
+            <div>
+              <label>Alternativa D</label>
+              <input type="text" name="perguntas[${idx}][d]" required>
+            </div>
+          </div>
+          <label>Correta</label>
+          <select name="perguntas[${idx}][correta]" required>
+            <option value="">—</option>
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+          </select>
+          <div class="actions">
+            <button type="button" class="btn btn-danger" onclick="removerItem(this)">Remover pergunta</button>
+          </div>
+        </div>`;
+      wrap.insertAdjacentHTML('beforeend', html);
+    }
+
+    function renumerar(){
+      // (opcional) renumerar títulos após remoção
+      document.querySelectorAll('#modulos [data-kind="modulo"]').forEach((el,i)=>{
+        el.querySelector('h4').textContent = 'Módulo ' + (i+1);
+      });
+      document.querySelectorAll('#perguntas [data-kind="pergunta"]').forEach((el,i)=>{
+        el.querySelector('h4').textContent = 'Pergunta ' + (i+1);
+      });
+    }
+  </script>
 </body>
 </html>
