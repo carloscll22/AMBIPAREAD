@@ -612,33 +612,66 @@ def editar_curso_nome(nome):
         return "Curso não encontrado", 404
 
     if request.method == "POST":
-        curso["nome"] = request.form["nome"]
-        curso["carga_horaria"] = request.form["carga_horaria"]
-        curso["conteudo"] = request.form["conteudo"]
-        salvar_dados(CAMINHO_CURSOS, cursos)
-        return redirect("/editar_curso")
+    # Atualiza campos básicos
+    curso["carga_horaria"] = request.form.get("carga_horaria", curso.get("carga_horaria"))
+    curso["instrutor"]     = request.form.get("instrutor", curso.get("instrutor", ""))
+    curso["conteudo"]      = request.form.get("conteudo", curso.get("conteudo", ""))
 
-    if 'arquivo' in request.files:
-        file = request.files['arquivo']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            caminho = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(caminho)
-            curso["arquivo"] = filename
-            salvar_dados(CAMINHO_CURSOS, cursos)
-            return redirect("/editar_curso")
+    # -------- MÓDULOS (preserva arquivo se não enviar um novo) --------
+    novos_modulos = []
+    idx = 0
+    while True:
+        titulo = request.form.get(f"modulos[{idx}][titulo]")
+        if titulo is None:
+            break  # chegou ao fim
+        titulo = titulo.strip()
+        if not titulo:
+            idx += 1
+            continue
 
-    alunos_matriculados = [
-        usuarios[m["aluno"]]["nome"]
-        for m in matriculas
-        if m["curso"] == nome and m["aluno"] in usuarios
-    ]
+        file = request.files.get(f"modulos[{idx}][arquivo]")
+        arquivo_atual = request.form.get(f"modulos[{idx}][arquivo_atual]", "").strip()
 
-    return render_template(
-        "editar_curso_form.html",
-        curso=curso,
-        alunos_matriculados=alunos_matriculados
-    )
+        arquivo_nome = None
+        if file and file.filename:
+            if allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                caminho = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                os.makedirs(os.path.dirname(caminho), exist_ok=True)
+                file.save(caminho)
+                arquivo_nome = filename
+        else:
+            # mantém o arquivo já existente, se houver
+            if arquivo_atual:
+                arquivo_nome = arquivo_atual
+
+        novos_modulos.append({
+            "titulo":  titulo,
+            "arquivo": arquivo_nome
+        })
+        idx += 1
+
+    curso["modulos"] = novos_modulos
+
+    # -------- PROVA (permite editar perguntas) --------
+    novas_perguntas = []
+    # coletar todos os campos "perguntas[i][campo]"
+    for key, val in request.form.items():
+        if key.startswith("perguntas[") and "][" in key:
+            try:
+                i = int(key.split("[")[1].split("]")[0])
+                campo = key.split("][")[1].rstrip("]")
+            except (IndexError, ValueError):
+                continue
+            while len(novas_perguntas) <= i:
+                novas_perguntas.append({"enunciado":"", "a":"", "b":"", "c":"", "d":"", "correta":""})
+            novas_perguntas[i][campo] = val
+
+    curso["prova"] = [q for q in novas_perguntas if q.get("enunciado")]
+
+    salvar_dados(CAMINHO_CURSOS, cursos)
+    return redirect(url_for("lista_cursos_para_editar"))
+
 
 
 @app.route("/editar_curso", endpoint="lista_cursos_para_editar")
