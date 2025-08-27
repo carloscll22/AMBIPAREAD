@@ -613,9 +613,9 @@ def editar_curso_nome(nome):
 
     if request.method == "POST":
     # Atualiza campos básicos
-    curso["carga_horaria"] = request.form.get("carga_horaria", curso.get("carga_horaria"))
-    curso["instrutor"]     = request.form.get("instrutor", curso.get("instrutor", ""))
-    curso["conteudo"]      = request.form.get("conteudo", curso.get("conteudo", ""))
+        curso["carga_horaria"] = request.form.get("carga_horaria", curso.get("carga_horaria"))
+        curso["instrutor"]     = request.form.get("instrutor", curso.get("instrutor", ""))
+        curso["conteudo"]      = request.form.get("conteudo", curso.get("conteudo", ""))
 
     # -------- MÓDULOS (preserva arquivo se não enviar um novo) --------
     novos_modulos = []
