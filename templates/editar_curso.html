@@ -133,7 +133,7 @@
             </td>
 
             <td>
-              <a href="{{ url_for('editar_curso_nome', nome=curso.nome) }}" class="botao">Editar</a>
+              <a href="{{ url_for('editar_curso_form_handler', nome=curso.nome) }}" class="botao">Editar</a>
 
               <form method="POST" action="{{ url_for('remover_curso') }}"
                     onsubmit="return confirm('Tem certeza que deseja excluir este curso?');"
