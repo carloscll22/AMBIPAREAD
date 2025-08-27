@@ -602,7 +602,7 @@ def matricular():
 
 
                   
-@app.route("/editar_curso/<nome>", methods=["GET", "POST"])
+@app.route("/editar_curso/<path:nome>", methods=["GET", "POST"])
 def editar_curso_nome(nome):
     if session.get("tipo") != "professor":
         return redirect("/login")
