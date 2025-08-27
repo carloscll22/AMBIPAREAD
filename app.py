@@ -1270,6 +1270,64 @@ def emitir_certificado(aluno, curso):
         ip_aluno=gerar_ip()
     )
 
+@app.route("/vencimentos/excluir", methods=["POST"])
+def vencimentos_excluir():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    aluno = (request.form.get("aluno") or "").strip().lower()
+    curso = (request.form.get("curso") or "").strip()
+
+    global vencimentos
+    antes = len(vencimentos)
+    vencimentos = [
+        v for v in vencimentos
+        if not (v.get("aluno") == aluno and v.get("curso") == curso)
+    ]
+    if len(vencimentos) != antes:
+        salvar_vencimentos()
+    return redirect("/vencimentos/verificar")
+
+
+@app.route("/vencimentos/editar", methods=["GET", "POST"])
+def vencimentos_editar():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    aluno = (request.args.get("aluno") or request.form.get("aluno") or "").strip().lower()
+    curso = (request.args.get("curso") or request.form.get("curso") or "").strip()
+
+    # acha o registro
+    reg = next((v for v in vencimentos if v.get("aluno") == aluno and v.get("curso") == curso), None)
+    if not reg:
+        # se não existe, volta para verificar
+        return redirect("/vencimentos/verificar")
+
+    if request.method == "POST":
+        nova_data = (request.form.get("data_vencimento") or "").strip()  # YYYY-MM-DD
+        # valida formato simples
+        try:
+            datetime.strptime(nova_data, "%Y-%m-%d")
+            reg["data_vencimento"] = nova_data
+            salvar_vencimentos()
+            return redirect("/vencimentos/verificar")
+        except Exception:
+            # só re-renderiza com erro
+            aluno_nome = usuarios.get(aluno, {}).get("nome", aluno)
+            return render_template("vencimentos_editar.html",
+                                   aluno_email=aluno,
+                                   aluno_nome=aluno_nome,
+                                   curso=curso,
+                                   data_vencimento=nova_data,
+                                   erro="Data inválida. Use o formato AAAA-MM-DD.")
+
+    # GET
+    aluno_nome = usuarios.get(aluno, {}).get("nome", aluno)
+    return render_template("vencimentos_editar.html",
+                           aluno_email=aluno,
+                           aluno_nome=aluno_nome,
+                           curso=curso,
+                           data_vencimento=reg.get("data_vencimento", ""))
 # ======================================================================
 #                       RELATÓRIOS / UTIL
 # ======================================================================
