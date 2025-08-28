@@ -27,12 +27,18 @@
 
     <form method="post">
       <label for="aluno">Aluno:</label>
-      <select name="aluno" id="aluno" required>
-        {% for aluno in alunos %}
-          <option value="{{ aluno.email }}">{{ aluno.nome }}</option>
-        {% endfor %}
-      </select>
-
+      <div id="alunosContainer">
+        <select name="alunos[]" id="aluno" required>
+          {% for aluno in alunos %}
+            <option value="{{ aluno.email }}">{{ aluno.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="button" onclick="addAluno()" aria-label="Adicionar outro aluno"
+              style="margin-top:8px;padding:6px 10px;border-radius:6px;border:1px solid #ccc;background:#f6f6f6;cursor:pointer;">
+        + Adicionar outro aluno
+      </button>
+      
       <label for="curso">Curso:</label>
       <select name="curso" id="curso" required>
         {% for curso in cursos %}
@@ -82,7 +88,6 @@
         <option value="5">5 anos</option>
       </select>
 
-      
       <label for="data_inicio">Data Início:</label>
       <input type="date" id="data_inicio" name="data_inicio" required>
 
@@ -109,5 +114,17 @@
     atualizaPlaceholder();
     cursoSelect.addEventListener('change', atualizaPlaceholder);
   </script>
+
+  <script>
+    function addAluno() {
+      const container = document.getElementById('alunosContainer');
+      const first = document.getElementById('aluno');
+      const clone = first.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.style.marginTop = '8px';
+      container.appendChild(clone);
+    }
+  </script>
+
 </body>
 </html>
