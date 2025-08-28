@@ -492,49 +492,140 @@ def editar_turma_form(curso, turma):
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    # Coleta matrículas da turma alvo
+    # Matrículas da turma alvo
     ms = [m for m in matriculas if m.get("curso") == curso and (m.get("turma") or "—") == turma]
-
     if not ms:
-        # Se não achou, pode ser turma "—" (sem numeração). Mantemos 404 simples.
         return "Turma não encontrada", 404
 
-    # Valores “atuais” (se consistentes, mostra; se não, mostra vazio para o prof escolher)
+    # Helper para pegar valor único de um campo (ou vazio se for misto)
     def unico_ou_vazio(campo):
         vals = {m.get(campo) for m in ms if m.get(campo)}
         return list(vals)[0] if len(vals) == 1 else ""
 
-    # GET -> carrega formulário
-    if request.method == "GET":
-        ctx = {
-            "curso": curso,
-            "turma": turma,
-            "nrt": unico_ou_vazio("nrt"),
-            "tipo": unico_ou_vazio("tipo"),
-            "professor": unico_ou_vazio("professor"),
-            "periodicidade": unico_ou_vazio("periodicidade"),
-            "data_inicio": unico_ou_vazio("data_inicio"),
-            "data_fim": unico_ou_vazio("data_fim"),
-            "professores_lista": [
-                "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
-                "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
-                "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
-                "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
-                "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
-                "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
-                "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
-                "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
-                "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
-                "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
-                "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
-                "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
-                "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
-                "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
-                "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
-                "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
+    # Exemplar para copiar metadados ao adicionar aluno
+    exemplar = ms[0]
+
+    # ============== POST: três ações possíveis ===================
+    # acao = save (atualiza metadados) | add (adiciona aluno) | remove (remove aluno)
+    if request.method == "POST":
+        acao = (request.form.get("acao") or "save").strip()
+
+        if acao == "remove":
+            aluno_email = (request.form.get("aluno") or "").strip().lower()
+            # remove apenas a matrícula desse aluno nessa turma/curso
+            global matriculas
+            antes = len(matriculas)
+            matriculas = [
+                m for m in matriculas
+                if not (m.get("curso") == curso and (m.get("turma") or "—") == turma and m.get("aluno") == aluno_email)
             ]
-        }
-        return render_template("editar_turma_form.html", **ctx)
+            if len(matriculas) < antes:
+                salvar_dados(CAMINHO_MATRICULAS, matriculas)
+                flash("Aluno removido da turma.", "success")
+            else:
+                flash("Aluno não encontrado na turma.", "warning")
+            return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+
+        if acao == "add":
+            aluno_novo = (request.form.get("aluno_novo") or "").strip().lower()
+            if not aluno_novo or aluno_novo not in usuarios or usuarios[aluno_novo].get("tipo") != "aluno":
+                flash("Seleção de aluno inválida.", "warning")
+                return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+
+            # Evita duplicidade por (aluno, curso)
+            ja_tem = any(m.get("aluno") == aluno_novo and m.get("curso") == curso for m in matriculas)
+            if ja_tem:
+                flash("Este aluno já está matriculado neste curso.", "warning")
+                return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+
+            # Copia metadados da turma (NRT, tipo, prof, periodicidade, datas)
+            nova = {
+                "aluno":       aluno_novo,
+                "curso":       curso,
+                "professor":   exemplar.get("professor"),
+                "tipo":        exemplar.get("tipo"),
+                "nrt":         exemplar.get("nrt"),
+                "turma":       turma if turma != "—" else "",   # mantemos "—" como vazio no arquivo
+                "data_inicio": exemplar.get("data_inicio"),
+                "data_fim":    exemplar.get("data_fim"),
+                "periodicidade": exemplar.get("periodicidade"),
+            }
+            matriculas.append(nova)
+            salvar_dados(CAMINHO_MATRICULAS, matriculas)
+            flash("Aluno adicionado à turma.", "success")
+            return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+
+        # acao == "save": atualiza metadados da turma para todos os alunos
+        nrt_new   = (request.form.get("nrt") or "").strip()
+        tipo_new  = (request.form.get("tipo") or "").strip()
+        prof_new  = (request.form.get("professor") or "").strip()
+        per_new   = request.form.get("periodicidade")
+        di_new    = (request.form.get("data_inicio") or "").strip()
+        df_new    = (request.form.get("data_fim") or "").strip()
+
+        if per_new not in ("", "1", "2", "3", "5"):
+            per_new = ""
+
+        for m in ms:
+            if nrt_new:  m["nrt"] = nrt_new
+            if tipo_new: m["tipo"] = tipo_new
+            if prof_new: m["professor"] = prof_new
+            if per_new != "": m["periodicidade"] = int(per_new)
+            if di_new:   m["data_inicio"] = di_new
+            if df_new:   m["data_fim"] = df_new
+
+        salvar_dados(CAMINHO_MATRICULAS, matriculas)
+        flash("Turma atualizada com sucesso!", "success")
+        return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+
+    # ============== GET: monta contexto ===================
+    # Alunos **da turma** (nome + email)
+    alunos_da_turma = []
+    for m in ms:
+        email = m.get("aluno")
+        nome  = usuarios.get(email, {}).get("nome", email)
+        alunos_da_turma.append({"email": email, "nome": nome})
+
+    # Alunos elegíveis para adicionar: são "aluno" e NÃO estão matriculados neste mesmo curso
+    ja_no_curso = {m.get("aluno") for m in matriculas if m.get("curso") == curso}
+    candidatos = []
+    for email, d in usuarios.items():
+        if d.get("tipo") == "aluno" and email not in ja_no_curso:
+            candidatos.append({"email": email, "nome": d.get("nome", email)})
+    candidatos.sort(key=lambda x: x["nome"].casefold())
+
+    ctx = {
+        "curso": curso,
+        "turma": turma,
+        "nrt": unico_ou_vazio("nrt"),
+        "tipo": unico_ou_vazio("tipo"),
+        "professor": unico_ou_vazio("professor"),
+        "periodicidade": str(unico_ou_vazio("periodicidade")) if unico_ou_vazio("periodicidade") != "" else "",
+        "data_inicio": unico_ou_vazio("data_inicio"),
+        "data_fim": unico_ou_vazio("data_fim"),
+        "professores_lista": [
+            "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
+            "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
+            "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
+            "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
+            "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
+            "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
+            "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
+            "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
+            "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
+            "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
+            "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
+            "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
+            "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
+            "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
+            "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
+            "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
+        ],
+        "alunos_da_turma": sorted(alunos_da_turma, key=lambda x: x["nome"].casefold()),
+        "candidatos": candidatos,
+    }
+    return render_template("editar_turma_form.html", **ctx)
+
 
     # POST -> atualiza TODAS as matrículas da turma
     nrt_new   = (request.form.get("nrt") or "").strip()
@@ -560,6 +651,7 @@ def editar_turma_form(curso, turma):
     salvar_dados(CAMINHO_MATRICULAS, matriculas)
     flash("Turma atualizada com sucesso!", "success")
     return redirect(url_for("editar_turma_lista"))
+        
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
     # Só professor pode acessar
