@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask import send_from_directory
 from random import randint
-from werkzeug.utils import secure_filename  
+from werkzeug.utils import secure_filename
+from flask import flash, url_for, redirect
 from datetime import datetime, date
 import pytz
 import shutil    
@@ -468,31 +469,28 @@ def matricular():
         nrt_turma   = request.form.get("nrt")
         data_inicio = request.form.get("data_inicio")
         data_fim    = request.form.get("data_fim")
-        aluno_selected = request.args.get("aluno", "")
-        curso_selected = request.args.get("curso", "")
 
+        # Periodicidade
         try:
             periodicidade_anos = int(request.form.get("periodicidade", "1"))
         except ValueError:
             periodicidade_anos = 1
         if periodicidade_anos not in (1, 2, 3, 5):
             periodicidade_anos = 1
-                
-        # >>> NOVO: tipo da matrícula (Inicial / Periódico)
+
+        # Tipo da matrícula
         tipo_matricula = (request.form.get("tipo") or "").strip()
 
-        # Turma: usa a digitada (se válida) ou gera automaticamente.
+        # Turma (usa a digitada válida ou gera automaticamente)
         turma_form = (request.form.get("turma") or "").strip()
-
-        # normaliza e valida 3 dígitos se veio preenchido
         turma_num = None
         if turma_form:
             if turma_form.isdigit():
-                turma_form = f"{int(turma_form):03d}"   # "2" -> "002"
+                turma_form = f"{int(turma_form):03d}"
             if len(turma_form) == 3 and turma_form.isdigit():
                 turma_num = turma_form
 
-        # evita duplicar turma manual para o mesmo curso
+        # Evita duplicar turma manual para o mesmo curso
         if turma_num and any(m.get("curso") == curso_nome and m.get("turma") == turma_num for m in matriculas):
             turma_num = None  # força geração automática
 
@@ -500,7 +498,6 @@ def matricular():
             # gera próxima turma sequencial (limite 250 por curso)
             last = int(turmas_ctrl.get(curso_nome, 0))
             if last >= 250:
-                # Limite atingido
                 alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
                 professores = [
                     "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
@@ -535,22 +532,26 @@ def matricular():
             salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
             turma_num = f"{nxt:03d}"
 
-        # Só adiciona se ainda não existir para esse aluno/curso
+        # Grava matrícula se ainda não existir
         if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
             matriculas.append({
-                "aluno":       aluno_email,
-                "curso":       curso_nome,
-                "professor":   professor,
-                "tipo":        tipo_matricula,   # <<< salva o tipo
-                "nrt":         nrt_turma,
-                "turma":       turma_num,
-                "data_inicio": data_inicio,
-                "data_fim":    data_fim,
+                "aluno":         aluno_email,
+                "curso":         curso_nome,
+                "professor":     professor,
+                "tipo":          tipo_matricula,
+                "nrt":           nrt_turma,
+                "turma":         turma_num,
+                "data_inicio":   data_inicio,
+                "data_fim":      data_fim,
                 "periodicidade": periodicidade_anos,
             })
             salvar_dados(CAMINHO_MATRICULAS, matriculas)
+            flash("Matriculado com Sucesso!", "success")
+        else:
+            flash("Este aluno já está matriculado neste curso.", "info")
 
-        return redirect("/matricular")
+        # volta para a Home
+        return redirect(url_for("home"))
 
     # --- GET ---
     alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
@@ -572,11 +573,7 @@ def matricular():
         "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
         "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
     ]
-
-    # placeholder por curso para o campo Turma
-    sugestoes_por_curso = {
-        c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
-    }
+    sugestoes_por_curso = {c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos}
 
     return render_template(
         "matricular.html",
@@ -585,23 +582,6 @@ def matricular():
         professores=professores,
         sugestoes_por_curso=sugestoes_por_curso
     )
-
-     
-    sugestoes_por_curso = {c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos}
-    sugestao_turma = sugestoes_por_curso[cursos[0]["nome"]] if cursos else ""
-
-    return render_template(
-        "matricular.html",
-        alunos=alunos,
-        cursos=cursos,
-        professores=professores,
-        sugestao_turma=sugestao_turma,             
-        sugestoes_por_curso=sugestoes_por_curso,
-        aluno_selected=aluno_selected,
-        curso_selected=curso_selected
-    )
-
-
                   
 @app.route("/editar_curso/<path:nome>", methods=["GET", "POST"])
 def editar_curso_nome(nome):
