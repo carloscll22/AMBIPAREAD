@@ -5,7 +5,7 @@
   <title>Editar Turma</title>
   <style>
     body { background:#c1f38e; font-family:Arial, sans-serif; padding:30px; }
-    .container { background:#fff; max-width:700px; margin:auto; padding:25px 30px; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.1); }
+    .container { background:#fff; max-width:820px; margin:auto; padding:25px 30px; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.1); }
     h2 { text-align:center; color:#333; margin-bottom:20px; }
     label { display:block; margin-top:12px; font-weight:bold; color:#444; }
     input, select { width:100%; padding:8px; margin-top:6px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
@@ -16,6 +16,12 @@
     .toolbar a { text-decoration:none; font-weight:bold; color:#006400; }
     .muted { color:#666; font-size:14px; }
     .readonly { background:#f0f0f0; }
+    .panel { margin-top:24px; padding:14px; background:#f9f9f9; border:1px solid #ddd; border-radius:10px; }
+    .list { margin-top:10px; }
+    .chip { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; margin:6px 6px 0 0; background:#eef6e6; border:1px solid #cfe7b6; border-radius:18px; font-size:14px; }
+    .chip form { display:inline; margin:0; }
+    .chip button { background:none; border:none; cursor:pointer; color:#c00; font-weight:bold; }
+    .row-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; }
   </style>
 </head>
 <body>
@@ -26,7 +32,10 @@
     </div>
     <h2>Editar Turma</h2>
 
+    <!-- Metadados da turma -->
     <form method="post">
+      <input type="hidden" name="acao" value="save">
+
       <label>Curso</label>
       <input type="text" value="{{ curso }}" class="readonly" readonly>
 
@@ -83,6 +92,56 @@
 
       <button type="submit" class="btn">Salvar Alterações</button>
     </form>
+
+    <!-- Painel: Alunos da Turma (com remover) -->
+    <div class="panel">
+      <strong>Alunos da turma</strong>
+      <div class="list">
+        {% if alunos_da_turma %}
+          {% for a in alunos_da_turma %}
+            <span class="chip">
+              {{ a.nome }}
+              <form method="post" onsubmit="return confirm('Remover {{ a.nome }} desta turma?');">
+                <input type="hidden" name="acao" value="remove">
+                <input type="hidden" name="aluno" value="{{ a.email }}">
+                <button title="Remover">×</button>
+              </form>
+            </span>
+          {% endfor %}
+        {% else %}
+          <span class="muted">Nenhum aluno nesta turma.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Painel: Adicionar Aluno -->
+    <div class="panel">
+      <strong>Adicionar aluno à turma</strong>
+      <form method="post" style="margin-top:10px;">
+        <input type="hidden" name="acao" value="add">
+        <div class="row-3">
+          <div style="grid-column: 1 / span 2;">
+            <label for="aluno_novo">Selecionar aluno</label>
+            <select id="aluno_novo" name="aluno_novo" required>
+              {% if candidatos %}
+                {% for c in candidatos %}
+                  <option value="{{ c.email }}">{{ c.nome }}</option>
+                {% endfor %}
+              {% else %}
+                <option value="">— Não há alunos elegíveis —</option>
+              {% endif %}
+            </select>
+          </div>
+          <div style="align-self:end;">
+            <button type="submit" class="btn" {% if not candidatos %}disabled{% endif %}>Adicionar</button>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          * Só aparecem alunos que ainda <u>não estão matriculados neste curso</u>.
+        </div>
+      </form>
+    </div>
+
   </div>
 </body>
 </html>
