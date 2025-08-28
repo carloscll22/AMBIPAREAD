@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Turma</title>
+  <style>
+    body { background:#c1f38e; font-family:Arial, sans-serif; padding:30px; }
+    .container { background:#fff; max-width:700px; margin:auto; padding:25px 30px; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.1); }
+    h2 { text-align:center; color:#333; margin-bottom:20px; }
+    label { display:block; margin-top:12px; font-weight:bold; color:#444; }
+    input, select { width:100%; padding:8px; margin-top:6px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .btn { margin-top:18px; background:#a0e76d; color:#333; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:bold; }
+    .btn:hover { background:#8ad858; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .toolbar a { text-decoration:none; font-weight:bold; color:#006400; }
+    .muted { color:#666; font-size:14px; }
+    .readonly { background:#f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <div class="muted">Curso: <strong>{{ curso }}</strong> &nbsp;|&nbsp; Turma: <strong>{{ turma }}</strong></div>
+      <a href="{{ url_for('editar_turma_lista') }}">← Voltar</a>
+    </div>
+    <h2>Editar Turma</h2>
+
+    <form method="post">
+      <label>Curso</label>
+      <input type="text" value="{{ curso }}" class="readonly" readonly>
+
+      <label>Turma</label>
+      <input type="text" value="{{ turma }}" class="readonly" readonly>
+
+      <div class="row">
+        <div>
+          <label for="nrt">NRT</label>
+          <input type="text" id="nrt" name="nrt" value="{{ nrt }}">
+        </div>
+        <div>
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo">
+            <option value=""  {{ ''  == tipo and 'selected' or '' }}>—</option>
+            <option value="Inicial"   {{ 'Inicial'   == tipo and 'selected' or '' }}>Inicial</option>
+            <option value="Periódico" {{ 'Periódico' == tipo and 'selected' or '' }}>Periódico</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="professor">Professor</label>
+          <select id="professor" name="professor">
+            <option value="">—</option>
+            {% for p in professores_lista %}
+              <option value="{{ p }}" {{ p == professor and 'selected' or '' }}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="periodicidade">Periodicidade (anos)</label>
+          <select id="periodicidade" name="periodicidade">
+            <option value=""  {{ ''  == periodicidade and 'selected' or '' }}>—</option>
+            <option value="1" {{ '1' == periodicidade and 'selected' or '' }}>1</option>
+            <option value="2" {{ '2' == periodicidade and 'selected' or '' }}>2</option>
+            <option value="3" {{ '3' == periodicidade and 'selected' or '' }}>3</option>
+            <option value="5" {{ '5' == periodicidade and 'selected' or '' }}>5</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="data_inicio">Data Início</label>
+          <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
+        </div>
+        <div>
+          <label for="data_fim">Data Fim</label>
+          <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}">
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Salvar Alterações</button>
+    </form>
+  </div>
+</body>
+</html>
