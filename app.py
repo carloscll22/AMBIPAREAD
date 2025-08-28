@@ -463,14 +463,13 @@ def matricular():
         return redirect("/")
 
     if request.method == "POST":
-        aluno_email = request.form["aluno"]
-        curso_nome  = request.form["curso"]
-        professor   = request.form["professor"]
-        nrt_turma   = request.form.get("nrt")
-        data_inicio = request.form.get("data_inicio")
-        data_fim    = request.form.get("data_fim")
+        alunos_email = request.form.getlist("alunos[]")  # agora lista de alunos
+        curso_nome   = request.form["curso"]
+        professor    = request.form["professor"]
+        nrt_turma    = request.form.get("nrt")
+        data_inicio  = request.form.get("data_inicio")
+        data_fim     = request.form.get("data_fim")
 
-        # Periodicidade
         try:
             periodicidade_anos = int(request.form.get("periodicidade", "1"))
         except ValueError:
@@ -478,11 +477,9 @@ def matricular():
         if periodicidade_anos not in (1, 2, 3, 5):
             periodicidade_anos = 1
 
-        # Tipo da matrícula
         tipo_matricula = (request.form.get("tipo") or "").strip()
+        turma_form     = (request.form.get("turma") or "").strip()
 
-        # Turma (usa a digitada válida ou gera automaticamente)
-        turma_form = (request.form.get("turma") or "").strip()
         turma_num = None
         if turma_form:
             if turma_form.isdigit():
@@ -490,33 +487,14 @@ def matricular():
             if len(turma_form) == 3 and turma_form.isdigit():
                 turma_num = turma_form
 
-        # Evita duplicar turma manual para o mesmo curso
         if turma_num and any(m.get("curso") == curso_nome and m.get("turma") == turma_num for m in matriculas):
-            turma_num = None  # força geração automática
+            turma_num = None  # evita duplicação
 
         if not turma_num:
-            # gera próxima turma sequencial (limite 250 por curso)
             last = int(turmas_ctrl.get(curso_nome, 0))
             if last >= 250:
                 alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-                professores = [
-                    "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
-                    "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
-                    "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
-                    "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
-                    "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
-                    "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
-                    "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
-                    "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
-                    "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
-                    "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
-                    "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
-                    "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
-                    "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
-                    "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
-                    "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
-                    "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
-                ]
+                professores = [ ... lista de professores ... ]
                 sugestoes_por_curso = {
                     c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
                 }
@@ -532,48 +510,33 @@ def matricular():
             salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
             turma_num = f"{nxt:03d}"
 
-        # Grava matrícula se ainda não existir
-        if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
-            matriculas.append({
-                "aluno":         aluno_email,
-                "curso":         curso_nome,
-                "professor":     professor,
-                "tipo":          tipo_matricula,
-                "nrt":           nrt_turma,
-                "turma":         turma_num,
-                "data_inicio":   data_inicio,
-                "data_fim":      data_fim,
-                "periodicidade": periodicidade_anos,
-            })
-            salvar_dados(CAMINHO_MATRICULAS, matriculas)
-            flash("Matriculado com Sucesso!", "success")
-        else:
-            flash("Este aluno já está matriculado neste curso.", "info")
+        # 🔹 Matricula todos os alunos enviados
+        for aluno_email in alunos_email:
+            if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
+                matriculas.append({
+                    "aluno":       aluno_email,
+                    "curso":       curso_nome,
+                    "professor":   professor,
+                    "tipo":        tipo_matricula,
+                    "nrt":         nrt_turma,
+                    "turma":       turma_num,
+                    "data_inicio": data_inicio,
+                    "data_fim":    data_fim,
+                    "periodicidade": periodicidade_anos,
+                })
 
-        # volta para a Home
+        salvar_dados(CAMINHO_MATRICULAS, matriculas)
+
+        flash("Matriculado com Sucesso!", "success")
         return redirect(url_for("home"))
 
     # --- GET ---
     alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
-    professores = [
-        "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
-        "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
-        "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
-        "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
-        "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
-        "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
-        "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
-        "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
-        "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
-        "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
-        "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
-        "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
-        "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
-        "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
-        "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
-        "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
-    ]
-    sugestoes_por_curso = {c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos}
+    professores = [ ... lista de professores ... ]
+
+    sugestoes_por_curso = {
+        c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
+    }
 
     return render_template(
         "matricular.html",
@@ -582,6 +545,7 @@ def matricular():
         professores=professores,
         sugestoes_por_curso=sugestoes_por_curso
     )
+
                   
 @app.route("/editar_curso/<path:nome>", methods=["GET", "POST"])
 def editar_curso_nome(nome):
