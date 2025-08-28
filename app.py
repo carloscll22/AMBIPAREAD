@@ -428,6 +428,138 @@ def cadastrar_curso():
 
     return render_template("cadastrar_curso.html")
 
+@app.route("/editar_turma")
+def editar_turma_lista():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    # Turma não é entidade separada: agregamos pelas matrículas
+    # chave = (curso, turma)
+    grupos = {}
+    for m in matriculas:
+        curso_nome = m.get("curso")
+        turma_num  = m.get("turma") or "—"
+        if not curso_nome:
+            continue
+        key = (curso_nome, turma_num)
+
+        g = grupos.setdefault(key, {
+            "curso": curso_nome,
+            "turma": turma_num,
+            "nrts": set(),
+            "tipos": set(),
+            "professores": set(),
+            "periodicidades": set(),
+            "data_inicio": set(),
+            "data_fim": set(),
+            "alunos": []
+        })
+        if m.get("nrt"): g["nrts"].add(m["nrt"])
+        if m.get("tipo"): g["tipos"].add(m["tipo"])
+        if m.get("professor"): g["professores"].add(m["professor"])
+        if m.get("periodicidade") is not None: g["periodicidades"].add(str(m["periodicidade"]))
+        if m.get("data_inicio"): g["data_inicio"].add(m["data_inicio"])
+        if m.get("data_fim"): g["data_fim"].add(m["data_fim"])
+        g["alunos"].append(m["aluno"])
+
+    # transforma sets em strings amigáveis
+    linhas = []
+    for (curso_nome, turma_num), g in grupos.items():
+        def one_or_mixed(s):
+            if not s: return "—"
+            return list(s)[0] if len(s) == 1 else "Vários"
+        linhas.append({
+            "curso": curso_nome,
+            "turma": turma_num,
+            "nrt": one_or_mixed(g["nrts"]),
+            "tipo": one_or_mixed(g["tipos"]),
+            "professor": one_or_mixed(g["professores"]),
+            "periodicidade": one_or_mixed(g["periodicidades"]),
+            "data_inicio": one_or_mixed(g["data_inicio"]),
+            "data_fim": one_or_mixed(g["data_fim"]),
+            "qtd_alunos": len(g["alunos"]),
+        })
+
+    # ordena por curso, depois turma
+    linhas.sort(key=lambda r: (r["curso"].casefold(), r["turma"]))
+
+    return render_template("editar_turma.html", linhas=linhas)
+
+
+# --------------------- EDITAR TURMA (FORM) ---------------------
+@app.route("/editar_turma/<curso>/<turma>", methods=["GET", "POST"])
+def editar_turma_form(curso, turma):
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    # Coleta matrículas da turma alvo
+    ms = [m for m in matriculas if m.get("curso") == curso and (m.get("turma") or "—") == turma]
+
+    if not ms:
+        # Se não achou, pode ser turma "—" (sem numeração). Mantemos 404 simples.
+        return "Turma não encontrada", 404
+
+    # Valores “atuais” (se consistentes, mostra; se não, mostra vazio para o prof escolher)
+    def unico_ou_vazio(campo):
+        vals = {m.get(campo) for m in ms if m.get(campo)}
+        return list(vals)[0] if len(vals) == 1 else ""
+
+    # GET -> carrega formulário
+    if request.method == "GET":
+        ctx = {
+            "curso": curso,
+            "turma": turma,
+            "nrt": unico_ou_vazio("nrt"),
+            "tipo": unico_ou_vazio("tipo"),
+            "professor": unico_ou_vazio("professor"),
+            "periodicidade": unico_ou_vazio("periodicidade"),
+            "data_inicio": unico_ou_vazio("data_inicio"),
+            "data_fim": unico_ou_vazio("data_fim"),
+            "professores_lista": [
+                "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
+                "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
+                "Carlos Agusto da Silva Negreiros", "Carlos Eduardo Alho Maria", "Carlos Eduardo Vizentim de Moraes",
+                "Carlos Franck da Costa Simanke", "Carlos Rubens Prudente Melo", "Celio Ricardo de Albuquerque Pimentel",
+                "Charles Pires Pannain", "Cleyton de Oliveira Almeida", "Danielle dos Santos Pereira",
+                "Daniel de Sousa Freitas da Silva Telles", "Djalma da Conceição Neto", "Eduardo Antonio Ferreira",
+                "Eduardo Dupke Worm", "Fabio Amaral Goes de Araujo", "Fernando Carlos da Silva Telles",
+                "Flavio Ramalho dos Santos", "Hazafe Pacheco de Alencar", "Isaac Barreto de Andrade",
+                "Jerusa Cristiane Alves Trajano da Silva", "Leonardo Pompein Campos Rapini", "Lohana Detes Tose",
+                "Lucas Medonça Mattara", "Luís Eduardo Santana Pessôa de Oliveira", "Luiz Fellipe Marron Rabello",
+                "Luiz Fernando Lima", "Manollo Aleixo Jordão", "Marcelo Ricardo Soares Metre", "Marcelo Teruo Hashizume",
+                "Mateus Cruz de Sousa", "Matheus Tondim Fraga", "Mauricio Andries dos Santos",
+                "Paulo Cesar Machado Claudino", "Paulo Roberto de Andrade Costa", "Rafael Herculano Cavalcante",
+                "Ricardo Chacon Veeck", "Ricardo de Moraes Ramos", "Rodrigo Pereira Silva Vasconcelos",
+                "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
+                "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
+            ]
+        }
+        return render_template("editar_turma_form.html", **ctx)
+
+    # POST -> atualiza TODAS as matrículas da turma
+    nrt_new   = (request.form.get("nrt") or "").strip()
+    tipo_new  = (request.form.get("tipo") or "").strip()
+    prof_new  = (request.form.get("professor") or "").strip()
+    per_new   = request.form.get("periodicidade")  # pode vir '', '1','2','3','5'
+    di_new    = (request.form.get("data_inicio") or "").strip()
+    df_new    = (request.form.get("data_fim") or "").strip()
+
+    # Normaliza periodicidade
+    if per_new not in ("", "1", "2", "3", "5"):
+        per_new = ""
+
+    # Aplica (somente campos preenchidos no form)
+    for m in ms:
+        if nrt_new:  m["nrt"] = nrt_new
+        if tipo_new: m["tipo"] = tipo_new
+        if prof_new: m["professor"] = prof_new
+        if per_new != "": m["periodicidade"] = int(per_new)
+        if di_new:   m["data_inicio"] = di_new
+        if df_new:   m["data_fim"] = df_new
+
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+    flash("Turma atualizada com sucesso!", "success")
+    return redirect(url_for("editar_turma_lista"))
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
     # Só professor pode acessar
