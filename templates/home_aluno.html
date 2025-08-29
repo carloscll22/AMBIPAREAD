@@ -1,173 +1,112 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Central do Aluno</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
-      background-color: #f5ffe6;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;display:flex;min-height:100vh;background:#c1f38e}
+    .sidebar{width:240px;background:#fff;border-right:2px solid #ccc;padding:20px;display:flex;flex-direction:column;align-items:center}
+    .logo{width:120px;height:auto;margin-bottom:16px}
+    .avatar-wrap{position:relative;width:100px;height:100px;margin-bottom:10px}
+    .avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #cce7b3}
+    .avatar-btn{position:absolute;right:-6px;bottom:-6px;background:#a0e76d;border:none;border-radius:999px;padding:6px 10px;font-weight:700;cursor:pointer}
+    .user-name{font-weight:600;font-size:16px;color:#333;text-align:center;margin:8px 0 16px}
+    .sidebar .btn, .sidebar a.btn-link{width:100%;padding:10px;margin-bottom:12px;background:#a0e76d;border:none;border-radius:8px;font-weight:600;color:#000;text-align:center;cursor:pointer;transition:background .3s;text-decoration:none;display:block}
+    .sidebar .btn:hover, .sidebar a.btn-link:hover{background:#8ad858}
+    .sidebar a.logout{width:100%;padding:10px;margin-top:auto;background:#a0e76d;border:none;border-radius:8px;font-weight:600;color:#000;text-decoration:none;text-align:center;cursor:pointer;transition:background .3s}
+    .sidebar a.logout:hover{background:#8ad858}
+
+    .content{flex:1;padding:32px;background:#f5ffe6}
+    h2{color:#333;font-size:22px;font-weight:600;margin-bottom:18px}
+
+    .section{margin-top:8px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card{
+      background:#fff;border-left:5px solid #a0e76d;padding:16px;border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:8px
     }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #fff;
-      padding: 15px 30px;
-      border-bottom: 2px solid #ccc;
+    .card a.card-link{color:inherit;text-decoration:none}
+    .card h3{font-size:16px;color:#222}
+    .card small{color:#666}
+    .card .actions{margin-top:8px}
+    .btn-primary{background:#0d6efd;color:#fff;border:none;border-radius:6px;padding:8px 12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn-primary:hover{filter:brightness(0.95)}
+    @media (max-width:768px){
+      body{flex-direction:column}
+      .sidebar{width:100%;flex-direction:row;justify-content:space-around;border-right:none;border-bottom:2px solid #ccc}
+      .logo{display:none}
+      .user-name{display:none}
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .logo img { height: 40px; }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .user-info form { margin: 0; }
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ccc;
-      cursor: pointer;
-    }
-    .btn {
-      background: #a0e76d;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #000;
-    }
-    .btn:hover { background: #8ad858; }
-    .logout {
-      background: #a0e76d;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      color: #000;
-    }
-    .logout:hover { background: #8ad858; }
-    main {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      padding: 30px;
-    }
-    .section {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.1);
-    }
-    .section h3 {
-      margin-bottom: 15px;
-      font-size: 18px;
-      color: #333;
-    }
-    .card {
-      background: #f9f9f9;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      border-left: 5px solid #a0e76d;
-    }
-    .card strong { display: block; }
-    .btn-cert {
-      margin-top: 10px;
-      display: inline-block;
-      background: #a0e76d;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: 600;
-      text-decoration: none;
-      color: #000;
-    }
-    .btn-cert:hover { background: #8ad858; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
-      <h2>Central do Aluno</h2>
-    </div>
-    <div class="user-info">
-      <span>{{ usuario }}</span>
+  <div class="sidebar">
+    <!-- LOGO -->
+    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
 
-      <!-- Foto de perfil clicável -->
-      <form action="{{ url_for('upload_foto') }}" method="post" enctype="multipart/form-data">
-        <label for="foto" style="cursor:pointer;">
-          <img src="{{ avatar_url }}" alt="Foto de Perfil" class="avatar">
-        </label>
-        <input type="file" id="foto" name="foto" accept="image/*" style="display:none" onchange="this.form.submit()">
+    <!-- Avatar + botão trocar foto -->
+    <div class="avatar-wrap">
+      <img src="{{ avatar_url }}" alt="Foto de Perfil" class="avatar" id="avatarImg">
+      <button class="avatar-btn" title="Trocar foto" onclick="document.getElementById('fotoInput').click()">✎</button>
+      <form id="fotoForm" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+        <input id="fotoInput" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoForm').submit()">
       </form>
-
-      <button type="button" class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
-      <a href="/logout" class="logout">Sair</a>
     </div>
-  </header>
 
-  <main>
-    <!-- Cursos Matriculados -->
+    <div class="user-name">{{ usuario }}</div>
+
+    <a href="/alterar_senha" class="btn-link">Alterar Senha</a>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
+
+  <div class="content">
+    <h2>Meus Cursos</h2>
+
+    <!-- CURSOS MATRICULADOS (inclui aguardando início + em andamento) -->
     <div class="section">
-      <h3>Cursos Matriculados</h3>
-      {% if cursos_matriculados %}
-        {% for curso in cursos_matriculados %}
+      <h3 style="margin-bottom:10px;color:#2a2a2a;">Cursos Matriculados</h3>
+      <div class="grid">
+        {% if cursos_matriculados %}
+          {% for c in cursos_matriculados %}
           <div class="card">
-            <strong>{{ curso.nome }}</strong>
-            <a href="{{ url_for('ver_material', nome=curso.nome) }}">Visualizar Curso</a>
+            <a class="card-link" href="{{ url_for('ver_material', curso=c.nome) }}">
+              <h3>{{ c.nome }}</h3>
+              {% if c.data_fim %}
+                <small>Data limite: {{ c.data_fim }}</small>
+              {% endif %}
+            </a>
           </div>
-        {% endfor %}
-      {% else %}
-        <p>Nenhum curso matriculado sem início.</p>
-      {% endif %}
+          {% endfor %}
+        {% else %}
+          <div class="card"><h3>Nenhum curso pendente.</h3></div>
+        {% endif %}
+      </div>
     </div>
 
-    <!-- Cursos em Andamento -->
-    <div class="section">
-      <h3>Cursos em Andamento</h3>
-      {% if cursos_andamento %}
-        {% for curso in cursos_andamento %}
+    <!-- CURSOS CONCLUÍDOS (somente baixar certificado) -->
+    <div class="section" style="margin-top:24px;">
+      <h3 style="margin-bottom:10px;color:#2a2a2a;">Cursos Concluídos</h3>
+      <div class="grid">
+        {% if cursos_concluidos %}
+          {% for c in cursos_concluidos %}
           <div class="card">
-            <strong>{{ curso.nome }}</strong>
-            <a href="{{ url_for('ver_material', nome=curso.nome) }}">Continuar Curso</a>
+            <h3>{{ c.nome }}</h3>
+            <div class="actions">
+              <a class="btn-primary"
+                 href="{{ url_for('emitir_certificado', aluno=aluno_email, curso=c.nome) }}">
+                Baixar Certificado
+              </a>
+            </div>
           </div>
-        {% endfor %}
-      {% else %}
-        <p>Nenhum curso em andamento.</p>
-      {% endif %}
+          {% endfor %}
+        {% else %}
+          <div class="card"><h3>Nenhum certificado disponível ainda.</h3></div>
+        {% endif %}
+      </div>
     </div>
-
-    <!-- Cursos Concluídos -->
-    <div class="section">
-      <h3>Cursos Concluídos</h3>
-      {% if cursos_concluidos %}
-        {% for curso in cursos_concluidos %}
-          <div class="card">
-            <strong>{{ curso.nome }}</strong>
-            Conclusão: {{ curso.data_conclusao }}
-            <br>
-            <a href="{{ url_for('certificado', nome=curso.nome) }}" class="btn-cert">Baixar Certificado</a>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>Nenhum curso concluído ainda.</p>
-      {% endif %}
-    </div>
-  </main>
+  </div>
 </body>
 </html>
