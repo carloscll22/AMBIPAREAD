@@ -198,55 +198,65 @@ def upload_foto():
 
 @app.route("/")
 def home():
-    if "usuario" in session:
-        if session["tipo"] == "professor":
-            return render_template("professor_home.html", usuario=session["usuario"])
+    if "usuario" not in session:
+        return redirect("/login")
 
-        # ---------- Aluno ----------
-        email = session["usuario"]
+    if session["tipo"] == "professor":
+        return render_template("professor_home.html", usuario=session["usuario"])
 
-        # Monta avatar_url com cache-busting
-        avatar_url = url_for("static", filename="avatar_padrao.png")
-        foto_rel = usuarios.get(email, {}).get("foto")  # SEMPRE 'foto'
-        if foto_rel:
-            abs_path = os.path.join(app.static_folder, foto_rel)
-            if os.path.exists(abs_path):
-                ver = str(int(os.path.getmtime(abs_path)))
-                avatar_url = url_for("static", filename=foto_rel) + f"?v={ver}"
+    # ---------- Aluno ----------
+    email = session["usuario"]
 
-        cursos_aluno = [m["curso"] for m in matriculas if m["aluno"] == email]
-        cursos_disp = [c for c in cursos if c.get("nome") in cursos_aluno]
+    # Avatar com cache-busting
+    avatar_url = url_for("static", filename="avatar_padrao.png")
+    foto_rel = usuarios.get(email, {}).get("foto")
+    if foto_rel:
+        abs_path = os.path.join(app.static_folder, foto_rel)
+        if os.path.exists(abs_path):
+            ver = str(int(os.path.getmtime(abs_path)))
+            avatar_url = url_for("static", filename=foto_rel) + f"?v={ver}"
 
-        progresso_map = {}
-        venc_map = {}
+    # Cursos do aluno (pelas matrículas)
+    cursos_aluno = [m["curso"] for m in matriculas if m["aluno"] == email]
+    cursos_disp = [c for c in cursos if c.get("nome") in cursos_aluno]
 
-        for curso in cursos_disp:
-            # Progresso
-            prog = curso.get("progresso", {}).get(email)
-            progresso_map[curso["nome"]] = prog if prog else {"tempo": 0, "concluido": False}
+    cursos_matriculados = []  # inclui “aguardando início” e “em andamento”
+    cursos_concluidos   = []  # somente com certificado liberado
 
-            # Data limite da matrícula
-            matricula = next((m for m in matriculas if m["aluno"] == email and m["curso"] == curso["nome"]), None)
-            curso["data_fim"] = matricula.get("data_fim") if matricula else None
-            venc_map[curso["nome"]] = curso["data_fim"] or "Não Definida"
+    for curso in cursos_disp:
+        nome = curso.get("nome")
 
-            # Certificado disponível?
-            resultado = curso.get("resultados", {}).get(email)
-            if resultado and resultado.get("acertos", 0) >= 0.7 * resultado.get("total", 1):
-                curso["certificado_disponivel"] = True
-                curso.setdefault("progresso", {}).setdefault(email, {})["concluido"] = True
-                progresso_map[curso["nome"]]["concluido"] = True
-            else:
-                curso["certificado_disponivel"] = False
+        # Matrícula deste curso
+        mat = next((m for m in matriculas if m["aluno"] == email and m["curso"] == nome), None)
+        presenca_ok = bool(mat and mat.get("presenca_assinada"))
 
-        return render_template(
-            "home_aluno.html",
-            usuario=usuarios.get(email, {}).get("nome", email),
-            cursos=cursos_disp,
-            progresso=progresso_map,
-            vencimentos=venc_map,
-            avatar_url=avatar_url
-        )
+        # Progresso e resultado
+        prog = curso.get("progresso", {}).get(email, {"concluido": False})
+        res  = curso.get("resultados", {}).get(email)
+
+        aprovado = bool(res and res.get("total", 0) > 0 and res["acertos"] >= 0.7 * res["total"])
+        certificado_disponivel = (aprovado and presenca_ok and bool(prog.get("concluido")))
+
+        # Monta payload enxuto pra tela
+        item = {
+            "nome": nome,
+            "data_fim": mat.get("data_fim") if mat else None,
+        }
+
+        if certificado_disponivel:
+            cursos_concluidos.append(item)
+        else:
+            cursos_matriculados.append(item)
+
+    return render_template(
+        "home_aluno.html",
+        usuario=usuarios.get(email, {}).get("nome", email),
+        avatar_url=avatar_url,
+        cursos_matriculados=cursos_matriculados,
+        cursos_concluidos=cursos_concluidos,
+        aluno_email=email,
+    )
+
 
     return redirect("/login")
 
