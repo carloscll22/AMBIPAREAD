@@ -31,9 +31,7 @@
       align-items: center;
       gap: 15px;
     }
-    .user-info form {
-      margin: 0;
-    }
+    .user-info form { margin: 0; }
     .avatar {
       width: 80px;
       height: 80px;
@@ -49,6 +47,7 @@
       padding: 8px 14px;
       font-weight: 600;
       cursor: pointer;
+      color: #000;
     }
     .btn:hover { background: #8ad858; }
     .logout {
@@ -107,13 +106,12 @@
       <h2>Central do Aluno</h2>
     </div>
     <div class="user-info">
-      <span>{{ session['nome'] }}</span>
-      
+      <span>{{ usuario }}</span>
+
       <!-- Foto de perfil clicável -->
       <form action="{{ url_for('upload_foto') }}" method="post" enctype="multipart/form-data">
         <label for="foto" style="cursor:pointer;">
-          <img src="{{ url_for('static', filename=usuarios[session['email']].get('foto', 'avatar_padrao.png')) }}" 
-               alt="Foto de Perfil" class="avatar">
+          <img src="{{ avatar_url }}" alt="Foto de Perfil" class="avatar">
         </label>
         <input type="file" id="foto" name="foto" accept="image/*" style="display:none" onchange="this.form.submit()">
       </form>
