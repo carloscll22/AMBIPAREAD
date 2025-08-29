@@ -6,158 +6,170 @@
   <title>Central do Aluno</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Poppins',sans-serif;background:#c1f38e;min-height:100vh}
-    .wrap{max-width:1200px;margin:0 auto;padding:24px}
-
-    /* HEADER */
-    .header{
-      display:flex;align-items:center;justify-content:space-between;
-      background:#f5ffe6;border-radius:12px;padding:12px 16px;margin-bottom:22px
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background-color: #f5ffe6;
     }
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img.logo{height:28px}
-    .brand h1{font-size:18px;font-weight:600;color:#1b1b1b}
-    .user-area{display:flex;align-items:center;gap:10px}
-    .btn{
-      background:#a0e76d;border:none;border-radius:8px;padding:8px 14px;
-      font-weight:600;cursor:pointer;color:#000;text-decoration:none
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 15px 30px;
+      border-bottom: 2px solid #ccc;
     }
-    .btn:hover{background:#8ad858}
-    .avatar-box{
-      position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;
-      border:2px solid #e3f3c5;flex-shrink:0;cursor:pointer
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .avatar-box img{width:100%;height:100%;object-fit:cover}
-    .avatar-edit{
-      position:absolute;right:-6px;bottom:-6px;background:#a0e76d;color:#000;
-      border-radius:10px;padding:2px 6px;font-size:11px;border:1px solid #88cf4f
+    .logo img { height: 40px; }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
-    .avatar-form{display:inline}
-    .avatar-input{display:none}
-
-    /* GRID SEÇÕES */
-    .grid{
-      display:grid;gap:20px;
-      grid-template-columns: 1fr 1fr 0.9fr;
-      align-items:start
+    .user-info form {
+      margin: 0;
     }
-    .col{background:#f5ffe6;border-radius:12px;padding:16px}
-    .col h2{font-size:16px;color:#333;margin-bottom:10px}
-    .empty{
-      background:#fff;border:1px dashed #ccd8b6;color:#555;padding:14px 12px;
-      border-radius:10px;font-size:14px
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ccc;
+      cursor: pointer;
     }
-
-    /* CARDS DE CURSO */
-    .card{
-      background:#fff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.05);
-      padding:12px 14px;margin-bottom:10px
+    .btn {
+      background: #a0e76d;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
     }
-    .card .title{
-      font-weight:600;color:#222;margin-bottom:4px;font-size:14px
+    .btn:hover { background: #8ad858; }
+    .logout {
+      background: #a0e76d;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      color: #000;
     }
-    .card .meta{font-size:12px;color:#666;margin-bottom:8px}
-    .card a.link{display:inline-block;font-size:13px;color:#0a0a0a;
-      background:#a0e76d;border-radius:8px;padding:6px 10px;text-decoration:none;font-weight:600}
-    .card a.link:hover{background:#8ad858}
-
-    /* Concluídos (coluna direita) */
-    .done {display:flex;flex-direction:column;gap:10px}
-    .done .card .meta strong{font-weight:600;color:#333}
-    .download{display:inline-block;margin-top:6px}
-
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
+    .logout:hover { background: #8ad858; }
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 30px;
     }
+    .section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.1);
+    }
+    .section h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+    .card {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 5px solid #a0e76d;
+    }
+    .card strong { display: block; }
+    .btn-cert {
+      margin-top: 10px;
+      display: inline-block;
+      background: #a0e76d;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #000;
+    }
+    .btn-cert:hover { background: #8ad858; }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
+      <h2>Central do Aluno</h2>
+    </div>
+    <div class="user-info">
+      <span>{{ session['nome'] }}</span>
+      
+      <!-- Foto de perfil clicável -->
+      <form action="{{ url_for('upload_foto') }}" method="post" enctype="multipart/form-data">
+        <label for="foto" style="cursor:pointer;">
+          <img src="{{ url_for('static', filename=usuarios[session['email']].get('foto', 'avatar_padrao.png')) }}" 
+               alt="Foto de Perfil" class="avatar">
+        </label>
+        <input type="file" id="foto" name="foto" accept="image/*" style="display:none" onchange="this.form.submit()">
+      </form>
 
-    <!-- HEADER -->
-    <div class="header">
-      <div class="brand">
-        <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar">
-        <h1>Central do Aluno</h1>
-      </div>
-      <div class="user-area">
-        <span style="font-size:14px;color:#333">{{ session['nome'] }}</span>
+      <button type="button" class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
+      <a href="/logout" class="logout">Sair</a>
+    </div>
+  </header>
 
-        <!-- Avatar clicável (upload automático) -->
-        <form class="avatar-form" action="/aluno/avatar" method="post" enctype="multipart/form-data">
-          <label class="avatar-box" title="Alterar foto de perfil">
-            <img src="{{ usuario_avatar or url_for('static', filename='avatar_padrao.png') }}" alt="avatar">
-            <span class="avatar-edit">✏️</span>
-            <input class="avatar-input" type="file" name="avatar" accept="image/*" onchange="this.form.submit()">
-          </label>
-        </form>
-
-        <a href="/perfil" class="btn">Alterar Senha</a>
-        <a href="/logout" class="btn">Sair</a>
-      </div>
+  <main>
+    <!-- Cursos Matriculados -->
+    <div class="section">
+      <h3>Cursos Matriculados</h3>
+      {% if cursos_matriculados %}
+        {% for curso in cursos_matriculados %}
+          <div class="card">
+            <strong>{{ curso.nome }}</strong>
+            <a href="{{ url_for('ver_material', nome=curso.nome) }}">Visualizar Curso</a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>Nenhum curso matriculado sem início.</p>
+      {% endif %}
     </div>
 
-    <!-- CONTEÚDO -->
-    <div class="grid">
-
-      <!-- Matriculados (ainda não iniciados) -->
-      <div class="col">
-        <h2>Cursos Matriculados</h2>
-        {% if matriculados and matriculados|length > 0 %}
-          {% for c in matriculados %}
-            <div class="card">
-              <div class="title">{{ c.nome }}</div>
-              <div class="meta">Visualizar Curso.</div>
-              <a class="link" href="{{ url_for('ver_material', curso=c.nome) }}">Iniciar / Continuar</a>
-            </div>
-          {% endfor %}
-        {% else %}
-          <div class="empty">Nenhum curso matriculado sem início.</div>
-        {% endif %}
-      </div>
-
-      <!-- Em andamento -->
-      <div class="col">
-        <h2>Cursos em Andamento</h2>
-        {% if andamento and andamento|length > 0 %}
-          {% for c in andamento %}
-            <div class="card">
-              <div class="title">{{ c.nome }}</div>
-              <div class="meta">Visualizar Curso.</div>
-              <a class="link" href="{{ url_for('ver_material', curso=c.nome) }}">Continuar</a>
-            </div>
-          {% endfor %}
-        {% else %}
-          <div class="empty">Nenhum curso em andamento.</div>
-        {% endif %}
-      </div>
-
-      <!-- Concluídos -->
-      <div class="col">
-        <h2>Cursos Concluídos</h2>
-        <div class="done">
-          {% if concluidos and concluidos|length > 0 %}
-            {% for c in concluidos %}
-              <div class="card">
-                <div class="title">{{ c.nome }}</div>
-                <div class="meta">
-                  {% if c.data_conclusao %}
-                    Conclusão: <strong>{{ c.data_conclusao }}</strong>
-                  {% else %}
-                    Concluído ✓
-                  {% endif %}
-                </div>
-                <a class="link download" href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=c.nome) }}">Baixar Certificado</a>
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="empty">Nenhum curso concluído ainda.</div>
-          {% endif %}
-        </div>
-      </div>
-
+    <!-- Cursos em Andamento -->
+    <div class="section">
+      <h3>Cursos em Andamento</h3>
+      {% if cursos_andamento %}
+        {% for curso in cursos_andamento %}
+          <div class="card">
+            <strong>{{ curso.nome }}</strong>
+            <a href="{{ url_for('ver_material', nome=curso.nome) }}">Continuar Curso</a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>Nenhum curso em andamento.</p>
+      {% endif %}
     </div>
-  </div>
+
+    <!-- Cursos Concluídos -->
+    <div class="section">
+      <h3>Cursos Concluídos</h3>
+      {% if cursos_concluidos %}
+        {% for curso in cursos_concluidos %}
+          <div class="card">
+            <strong>{{ curso.nome }}</strong>
+            Conclusão: {{ curso.data_conclusao }}
+            <br>
+            <a href="{{ url_for('certificado', nome=curso.nome) }}" class="btn-cert">Baixar Certificado</a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>Nenhum curso concluído ainda.</p>
+      {% endif %}
+    </div>
+  </main>
 </body>
 </html>
