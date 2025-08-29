@@ -5,6 +5,7 @@
   <title>Certificado</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #fff;
@@ -13,11 +14,37 @@
       margin: 0;
     }
 
+    /* Barra superior com o botão de download */
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      background-color: #a0e76d;
+      color: black;
+      padding: 10px 16px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(0.95); }
+    .no-print { /* tudo com essa classe some no PDF */
+      display: inline-block;
+    }
+
     .certificado {
       border: 10px solid #1602f1;
       padding: 50px;
       max-width: 900px;
       margin: 0 auto 60px auto;
+      background: #fff;
     }
 
     .logo {
@@ -37,6 +64,7 @@
       font-size: 18px;
       margin-top: 40px;
       margin-bottom: 40px;
+      line-height: 1.5;
     }
 
     .nome {
@@ -56,10 +84,13 @@
       justify-content: space-between;
       margin-top: 60px;
       text-align: center;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
     .assinatura {
       width: 45%;
+      min-width: 260px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -69,6 +100,7 @@
     .assinatura-detalhes {
       text-align: left;
       font-size: 12px;
+      line-height: 1.4;
     }
 
     .assinatura-detalhes strong {
@@ -91,27 +123,39 @@
       max-width: 800px;
       margin: 0 auto;
       white-space: pre-line;
+      line-height: 1.5;
+    }
+
+    /* ===== Configurações de impressão (PDF) ===== */
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+    @media print {
+      body {
+        padding: 0;   /* margens já controladas por @page */
+        background: #fff;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .certificado {
+        border: 8px solid #1602f1; /* um pouco menor pra não “comer” na margem da impressora */
+        margin: 0 auto 0 auto;
+        page-break-inside: avoid;
+      }
+      .pagebreak { page-break-before: always; }
+      a[href]:after { content: ""; } /* evita mostrar URL após links no print de alguns navegadores */
     }
   </style>
 </head>
+<body>
 
-  <div style="text-align: center; margin-top: 40px;">
-    <a href="/" style="
-      background-color: #a0e76d;
-      color: black;
-      padding: 12px 24px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      display: inline-block;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      font-family: 'Poppins', sans-serif;
-    ">
-      ← Voltar para Central do Aluno
-    </a>
+  <!-- Topbar com botões (somem no PDF) -->
+  <div class="topbar no-print">
+    <a href="/" class="btn">← Voltar para Central do Aluno</a>
+    <button class="btn" onclick="window.print()">Baixar Certificado</button>
   </div>
-
-  <body>
 
   <!-- PRIMEIRA PÁGINA - CERTIFICADO -->
   <div class="certificado">
@@ -120,7 +164,9 @@
     <div class="titulo">CERTIFICADO</div>
 
     <div class="texto">
-      Certifico que o tripulante <div class="nome">{{ aluno_nome }}</div> Concluiu com êxito o curso <strong>{{ curso }}</strong> com carga horária de <strong>{{ carga }}</strong> horas. Ministrado pela empresa Ambipar Flyone Serviço Aéreo Especializado.
+      Certifico que o <div class="nome">{{ aluno_nome }}</div>
+      concluiu com êxito o curso <strong>{{ curso }}</strong> com carga horária de
+      <strong>{{ carga }}</strong> horas. Ministrado pela empresa Ambipar Flyone Serviço Aéreo Especializado.
     </div>
 
     <div class="info">
@@ -135,8 +181,8 @@
           <strong>Documento Assinado Digitalmente</strong>
           Nome: {{ instrutor }}<br>
           Data: {{ data_assinatura_instrutor }}<br>
-          Hora: {{ hora_assinatura_instrutor }}
-          IP: {{ ip_instrutor }}
+          Hora: {{ hora_assinatura_instrutor }}<br>
+          IP: {{ ip_instrutor }}<br>
           <strong>Assinatura Instrutor</strong>
         </div>
       </div>
@@ -148,8 +194,8 @@
           <strong>Documento Assinado Digitalmente</strong>
           Aluno: {{ aluno_nome }}<br>
           Data: {{ data_assinatura_aluno }}<br>
-          Hora: {{ hora_assinatura_aluno }}
-          IP: {{ ip_aluno }}
+          Hora: {{ hora_assinatura_aluno }}<br>
+          IP: {{ ip_aluno }}<br>
           <strong>Assinatura Aluno</strong>
         </div>
       </div>
@@ -168,19 +214,3 @@
 
 </body>
 </html>
-
-<div style="text-align: center; margin-top: 40px;">
-  <a href="/" style="
-    background-color: #a0e76d;
-    color: black;
-    padding: 12px 24px;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-family: 'Poppins', sans-serif;
-  ">
-    ← Voltar para Central do Aluno
-  </a>
-</div>
