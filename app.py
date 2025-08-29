@@ -188,11 +188,19 @@ def home():
             else:
                 curso["certificado_disponivel"] = False
 
+            avatar_rel = usuarios.get(email, {}).get("avatar")
+            if avatar_rel:
+                avatar_url = url_for("uploads", filename=avatar_rel)
+           else:
+                avatar_url = url_for("static", filename="avatar_padrao.png")
+                   
         return render_template("home_aluno.html",
                                usuario=usuarios[email]["nome"],
                                cursos=cursos_disp,
                                progresso=progresso,
-                               vencimentos=vencimentos)
+                               vencimentos=vencimentos,
+                               avatar_url=avatar_url
+                             )
 
     return redirect("/login")
 
@@ -1024,6 +1032,48 @@ def editar_curso_form_handler():
         enumerate=enumerate,     # ok usar enumerate no template, se quiser
     )
 
+@app.route("/perfil/foto", methods=["POST"])
+def atualizar_foto_perfil():
+    if "usuario" not in session:
+        return redirect("/login")
+
+    email = session["usuario"].lower()
+    file = request.files.get("foto")
+    if not file or file.filename == "":
+        # nada enviado; volta para a home do aluno
+        return redirect("/")
+
+    # garante a pasta
+    avatar_dir = os.path.join(UPLOAD_FOLDER, "avatars")
+    os.makedirs(avatar_dir, exist_ok=True)
+
+    # nome seguro com timestamp (evita cache e colisão)
+    base, ext = os.path.splitext(secure_filename(file.filename))
+    if ext.lower() not in (".jpg", ".jpeg", ".png", ".gif", ".webp"):
+        # extensão não permitida -> simplesmente ignora e volta
+        return redirect("/")
+
+    fname = f"{email.replace('@','_').replace('.','_')}_{int(datetime.now().timestamp())}{ext.lower()}"
+    save_path = os.path.join(avatar_dir, fname)
+    file.save(save_path)
+
+    # salva caminho relativo para servir via /uploads
+    usuarios[email]["avatar"] = f"avatars/{fname}"
+    salvar_usuarios()
+
+    # opcional: limpa avatares antigos do mesmo usuário (higiênico)
+    try:
+        prefix = f"{email.replace('@','_').replace('.','_')}_"
+        for old in os.listdir(avatar_dir):
+            if old.startswith(prefix) and old != fname:
+                try:
+                    os.remove(os.path.join(avatar_dir, old))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return redirect("/")
 
 @app.route("/editar_curso", endpoint="lista_cursos_para_editar")
 def lista_cursos_para_editar():
