@@ -10,11 +10,10 @@
       font-family: 'Poppins', sans-serif;
       background-color: #fff;
       text-align: center;
-      padding: 60px;
+      padding: 40px;
       margin: 0;
     }
 
-    /* Barra superior com o botão de download */
     .topbar {
       display: flex;
       justify-content: flex-end;
@@ -35,26 +34,24 @@
       cursor: pointer;
     }
     .btn:hover { filter: brightness(0.95); }
-    .no-print { /* tudo com essa classe some no PDF */
-      display: inline-block;
-    }
+    .no-print { display: inline-block; }
 
     .certificado {
       border: 10px solid #1602f1;
-      padding: 50px;
-      max-width: 900px;
-      margin: 0 auto 60px auto;
+      padding: 40px;
+      max-width: 1000px;
+      margin: 0 auto 40px auto;
       background: #fff;
     }
 
     .logo {
-      width: 180px;
+      width: 160px;
       height: auto;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .titulo {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: bold;
       color: #000000;
       margin-bottom: 20px;
@@ -62,8 +59,8 @@
 
     .texto {
       font-size: 18px;
-      margin-top: 40px;
-      margin-bottom: 40px;
+      margin-top: 30px;
+      margin-bottom: 30px;
       line-height: 1.5;
     }
 
@@ -76,13 +73,13 @@
 
     .info {
       font-size: 18px;
-      margin-top: 30px;
+      margin-top: 20px;
     }
 
     .assinaturas-container {
       display: flex;
       justify-content: space-between;
-      margin-top: 60px;
+      margin-top: 50px;
       text-align: center;
       gap: 20px;
       flex-wrap: wrap;
@@ -113,14 +110,12 @@
       height: 80px;
     }
 
-    .pagebreak {
-      page-break-before: always;
-    }
+    .pagebreak { page-break-before: always; }
 
     .conteudo {
       text-align: left;
       font-size: 16px;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
       white-space: pre-line;
       line-height: 1.5;
@@ -128,36 +123,31 @@
 
     /* ===== Configurações de impressão (PDF) ===== */
     @page {
-      size: A4;
+      size: A4 landscape;   /* agora é paisagem */
       margin: 12mm;
     }
     @media print {
-      body {
-        padding: 0;   /* margens já controladas por @page */
-        background: #fff;
-      }
-      .no-print {
-        display: none !important;
-      }
+      body { padding: 0; background: #fff; }
+      .no-print { display: none !important; }
       .certificado {
-        border: 8px solid #1602f1; /* um pouco menor pra não “comer” na margem da impressora */
-        margin: 0 auto 0 auto;
+        border: 8px solid #1602f1;
+        margin: 0 auto;
         page-break-inside: avoid;
       }
       .pagebreak { page-break-before: always; }
-      a[href]:after { content: ""; } /* evita mostrar URL após links no print de alguns navegadores */
+      a[href]:after { content: ""; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Topbar com botões (somem no PDF) -->
+  <!-- Topbar -->
   <div class="topbar no-print">
     <a href="/" class="btn">← Voltar para Central do Aluno</a>
     <button class="btn" onclick="window.print()">Baixar Certificado</button>
   </div>
 
-  <!-- PRIMEIRA PÁGINA - CERTIFICADO -->
+  <!-- PRIMEIRA PÁGINA -->
   <div class="certificado">
     <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo da Empresa">
 
@@ -169,12 +159,10 @@
       <strong>{{ carga }}</strong> horas. Ministrado pela empresa Ambipar Flyone Serviço Aéreo Especializado.
     </div>
 
-    <div class="info">
-      Data de emissão: {{ data_emissao }}
-    </div>
+    <div class="info">Data de emissão: {{ data_emissao }}</div>
 
     <div class="assinaturas-container">
-      <!-- Assinatura do Instrutor -->
+      <!-- Assinatura Instrutor -->
       <div class="assinatura">
         <img src="{{ url_for('static', filename='qrcode_empresa.png') }}" alt="QR Code">
         <div class="assinatura-detalhes">
@@ -187,7 +175,7 @@
         </div>
       </div>
 
-      <!-- Assinatura do Aluno -->
+      <!-- Assinatura Aluno -->
       <div class="assinatura">
         <img src="{{ url_for('static', filename='qrcode_empresa.png') }}" alt="QR Code">
         <div class="assinatura-detalhes">
@@ -202,14 +190,11 @@
     </div>
   </div>
 
-  <!-- SEGUNDA PÁGINA - CONTEÚDO -->
+  <!-- SEGUNDA PÁGINA -->
   <div class="pagebreak"></div>
-
   <div class="certificado">
     <h2>Conteúdo Programático</h2>
-    <div class="conteudo">
-      {{ conteudo }}
-    </div>
+    <div class="conteudo">{{ conteudo }}</div>
   </div>
 
 </body>
