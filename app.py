@@ -427,7 +427,7 @@ def vencimentos_restaurar():
 
     if alterado:
         salvar_vencimentos()
-    return redirect(url_for("vencimentos_arquivados"
+    return redirect(url_for("vencimentos_arquivados"))
     
 # ======================================================================
 #                       ROTAS (PROFESSOR)
