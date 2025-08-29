@@ -1,68 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Alterar Senha</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Área do Aluno</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      min-height: 100vh;
       background-color: #c1f38e;
-      padding: 30px;
     }
-    .box {
-      background-color: #fff;
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: #fff;
+      border-right: 2px solid #ccc;
       padding: 20px;
-      max-width: 400px;
-      margin: auto;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat;
+      margin-bottom: 15px;
     }
-    p {
-      font-weight: bold;
-      margin: 10px 0;
+    .user-name { font-weight: 600; font-size: 16px; color: #333; text-align: center; margin-bottom: 25px; }
+    .sidebar .btn {
+      width: 100%; padding: 10px; margin-bottom: 12px; background: #a0e76d;
+      border: none; border-radius: 8px; font-weight: 600; color: #000; text-align: center;
+      cursor: pointer; transition: background 0.3s;
     }
-    input[type="password"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    .sidebar .btn:hover { background: #8ad858; }
+    .sidebar a.logout {
+      width: 100%; padding: 10px; margin-top: auto; background: #a0e76d;
+      border: none; border-radius: 8px; font-weight: 600; color: #000; text-decoration: none;
+      text-align: center; cursor: pointer; transition: background 0.3s;
     }
-    input[type="submit"] {
-      margin-top: 15px;
-      width: 100%;
-      background-color: #a0e76d;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
+    .sidebar a.logout:hover { background: #8ad858; }
+
+    /* Conteúdo */
+    .content { flex: 1; padding: 40px; background-color: #f5ffe6; }
+    .content h2 { margin-bottom: 20px; color: #333; font-size: 24px; font-weight: 600; }
+
+    /* Seções */
+    .section { margin-top: 26px; }
+    .section-header {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
     }
-    a {
-      display: block;
-      margin-top: 20px;
-      text-align: center;
-      text-decoration: none;
-      color: #333;
+    .section h3 { font-size: 18px; color: #333; }
+    .badge {
+      background: #e8f5d7; border: 1px solid #cfe7b6; color: #2e4a1f; font-size: 12px;
+      padding: 3px 8px; border-radius: 999px; font-weight: 600;
+    }
+
+    /* Cards de curso */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #fff; border-left: 5px solid #a0e76d; padding: 16px; border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .card .title { font-weight: 600; color: #222; }
+    .muted { color: #666; font-size: 13px; }
+
+    /* Ações */
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-action {
+      display: inline-block; padding: 8px 12px; border-radius: 8px; text-decoration: none;
+      font-weight: 600; font-size: 14px; cursor: pointer; border: none;
+    }
+    .btn-green { background: #a0e76d; color: #000; }
+    .btn-green:hover { filter: brightness(0.95); }
+    .btn-blue { background: #0d6efd; color: #fff; }
+    .btn-blue:hover { filter: brightness(0.95); }
+    .btn-gray { background: #6c757d; color: #fff; }
+    .btn-gray:hover { filter: brightness(0.95); }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+        border-right: none; border-bottom: 2px solid #ccc;
+      }
+      .avatar, .user-name { display: none; }
+      .content { padding: 20px; }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Alterar Senha</h2>
-    <p>Nome: {{ usuario.nome }}</p>
-    
-    <form method="post">
-      <label for="senha">Nova Senha:</label>
-      <input type="password" id="senha" name="senha" placeholder="Digite nova senha">
-      <input type="submit" value="Atualizar Senha">
-    </form>
+  <div class="sidebar">
+    <div class="avatar"></div>
+    <div class="user-name">{{ session['nome'] }}</div>
 
-    <a href="/">← Voltar</a>
+    <button type="button" class="btn" onclick="location.href='/perfil'">Alterar Senha</button>
+    <a href="/logout" class="logout">Sair</a>
+  </div>
+
+  <div class="content">
+    <h2>Minha Área</h2>
+
+    <!-- Cursos Matriculados (ainda não iniciados) -->
+    <section class="section">
+      <div class="section-header">
+        <h3>📥 Cursos Matriculados</h3>
+        <span class="badge">{{ cursos_matriculados|length if cursos_matriculados is defined else 0 }}</span>
+      </div>
+      <div class="grid">
+        {% for curso in cursos_matriculados %}
+          <div class="card">
+            <div class="title">{{ curso.nome }}</div>
+            {% if curso.carga_horaria %}<div class="muted">Carga horária: {{ curso.carga_horaria }}</div>{% endif %}
+            <div class="actions">
+              <a class="btn-action btn-green" href="{{ url_for('ver_material', curso=curso.nome) }}">Iniciar</a>
+            </div>
+          </div>
+        {% else %}
+          <div class="muted">Você não tem cursos matriculados pendentes.</div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Cursos em andamento -->
+    <section class="section">
+      <div class="section-header">
+        <h3>⏳ Cursos em Andamento</h3>
+        <span class="badge">{{ cursos_andamento|length if cursos_andamento is defined else 0 }}</span>
+      </div>
+      <div class="grid">
+        {% for curso in cursos_andamento %}
+          <div class="card">
+            <div class="title">{{ curso.nome }}</div>
+            {% if curso.carga_horaria %}<div class="muted">Carga horária: {{ curso.carga_horaria }}</div>{% endif %}
+            <div class="actions">
+              <a class="btn-action btn-green" href="{{ url_for('ver_material', curso=curso.nome) }}">Continuar</a>
+              <a class="btn-action btn-blue" href="{{ url_for('prova', nome=curso.nome) }}">Fazer Prova</a>
+            </div>
+          </div>
+        {% else %}
+          <div class="muted">Nenhum curso em andamento.</div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Cursos concluídos -->
+    <section class="section">
+      <div class="section-header">
+        <h3>🏁 Cursos Concluídos</h3>
+        <span class="badge">{{ cursos_concluidos|length if cursos_concluidos is defined else 0 }}</span>
+      </div>
+      <div class="grid">
+        {% for curso in cursos_concluidos %}
+          <div class="card">
+            <div class="title">{{ curso.nome }}</div>
+            {% if curso.carga_horaria %}<div class="muted">Carga horária: {{ curso.carga_horaria }}</div>{% endif %}
+            <div class="actions">
+              <a class="btn-action btn-gray" href="{{ url_for('ver_material', curso=curso.nome) }}">Rever Material</a>
+              <a class="btn-action btn-blue"
+                 href="{{ url_for('certificado_confirmacao', aluno=session['usuario'], curso=curso.nome) }}">
+                Certificado
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="muted">Você ainda não concluiu nenhum curso.</div>
+        {% endfor %}
+      </div>
+    </section>
+
   </div>
 </body>
 </html>
