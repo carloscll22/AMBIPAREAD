@@ -8,24 +8,37 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Poppins',sans-serif;background:#f5ffe6;color:#333;padding:24px}
     .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-    .title{font-size:22px;font-weight:600}
-    .btn{background:#a0e76d;border:none;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;text-decoration:none;color:#000}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img.logo{height:42px;width:auto}
+    .title{font-size:20px;font-weight:600}
+    .userbox{display:flex;align-items:center;gap:10px}
+    .avatar{width:40px;height:40px;border-radius:50%;background:url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat}
+    .btn{background:#a0e76d;border:none;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;text-decoration:none;color:#000}
     .btn:hover{background:#8ad858}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
     .section{margin-top:22px}
     .section h3{font-size:18px;margin-bottom:10px}
-    .card{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);padding:16px}
+    .card{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);padding:16px;height:100%}
     .course{font-weight:600;margin-bottom:6px}
     .muted{color:#666;font-size:13px}
     .empty{color:#666;background:#fff;border:1px dashed #d9e7c7;border-radius:10px;padding:16px;text-align:center}
+    /* cards clicáveis (matriculados/andamento) */
+    .link-card{display:block;text-decoration:none;color:inherit}
+    .link-card .card:hover{background:#e8f5d7}
+    .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
   </style>
 </head>
 <body>
   <div class="topbar">
-    <div class="title">Olá, {{ usuario }} 👋</div>
-    <div>
+    <div class="brand">
+      <img src="{{ url_for('static', filename='loggo.png') }}" class="logo" alt="Logo">
+      <div class="title">Central do Aluno</div>
+    </div>
+    <div class="userbox">
+      <div>{{ usuario }}</div>
+      <div class="avatar"></div>
       <a href="/alterar_senha" class="btn">Alterar Senha</a>
-      <a href="/logout" class="btn" style="margin-left:8px;">Sair</a>
+      <a href="/logout" class="btn">Sair</a>
     </div>
   </div>
 
@@ -33,9 +46,9 @@
   {% set ns = namespace(matriculados=[], andamento=[], concluidos=[]) %}
   {% for c in cursos %}
     {% set prog = c.progresso if c.progresso is defined and c.progresso else {} %}
-    {% set tempo = prog.tempo if prog is mapping and (prog.tempo is defined) else 0 %}
-    {% set concl = prog.concluido if prog is mapping and (prog.concluido is defined) else false %}
-    {% set cert  = c.certificado_disponivel if c.certificado_disponivel is defined else false %}
+    {% set tempo = (prog.tempo if prog is mapping and (prog.tempo is defined) else 0) %}
+    {% set concl = (prog.concluido if prog is mapping and (prog.concluido is defined) else false) %}
+    {% set cert  = (c.certificado_disponivel if c.certificado_disponivel is defined else false) %}
 
     {% if cert %}
       {% set _ = ns.concluidos.append(c) %}
@@ -52,10 +65,12 @@
     {% if ns.matriculados %}
       <div class="grid">
         {% for c in ns.matriculados %}
-          <div class="card">
-            <div class="course">{{ c.nome }}</div>
-            <div class="muted">Aguardando início</div>
-          </div>
+          <a class="link-card" href="{{ url_for('ver_material', curso=c.nome) }}">
+            <div class="card">
+              <div class="course">{{ c.nome }}</div>
+              <div class="muted">Aguardando início</div>
+            </div>
+          </a>
         {% endfor %}
       </div>
     {% else %}
@@ -65,14 +80,16 @@
 
   <!-- Cursos em Andamento -->
   <div class="section">
-    <h3>Cursos em Andamento</h3>
+    <h3>Cursos Em Andamento</h3>
     {% if ns.andamento %}
       <div class="grid">
         {% for c in ns.andamento %}
-          <div class="card">
-            <div class="course">{{ c.nome }}</div>
-            <div class="muted">Você já começou este curso.</div>
-          </div>
+          <a class="link-card" href="{{ url_for('ver_material', curso=c.nome) }}">
+            <div class="card">
+              <div class="course">{{ c.nome }}</div>
+              <div class="muted">Você já começou este curso.</div>
+            </div>
+          </a>
         {% endfor %}
       </div>
     {% else %}
@@ -89,6 +106,13 @@
           <div class="card">
             <div class="course">{{ c.nome }}</div>
             <div class="muted">Concluído ✓</div>
+            <div class="actions">
+              <a
+                class="btn"
+                href="{{ url_for('emitir_certificado', aluno=session['usuario'], curso=c.nome) }}">
+                Baixar Certificado
+              </a>
+            </div>
           </div>
         {% endfor %}
       </div>
