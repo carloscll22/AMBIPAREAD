@@ -84,16 +84,16 @@
     {% endif %}
   </div>
 
-  <!-- Cursos em Andamento -->
+  <!-- Cursos Matriculados -->
   <div class="section">
-    <h3>Cursos Em Andamento</h3>
+    <h3>Cursos Matriculados</h3>
     {% if ns.andamento %}
       <div class="grid">
         {% for c in ns.andamento %}
           <a class="link-card" href="{{ url_for('ver_material', curso=c.nome) }}">
             <div class="card">
               <div class="course">{{ c.nome }}</div>
-              <div class="muted">Você já começou este curso.</div>
+              <div class="muted">Visualizar Curso.</div>
             </div>
           </a>
         {% endfor %}
@@ -111,7 +111,7 @@
         {% for c in ns.concluidos %}
           <div class="card">
             <div class="course">{{ c.nome }}</div>
-            <div class="muted">Data de Conclusão: {{ c.data_fim or '—' }}</div>
+            <div class="muted">Conclusão: {{ c.data_fim or '—' }}</div>
             <div class="actions">
               <a
                 class="btn"
