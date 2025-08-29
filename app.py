@@ -429,154 +429,127 @@ def cadastrar_curso():
     return render_template("cadastrar_curso.html")
 
 @app.route("/editar_turma")
-def editar_turma_lista():
+def editar_turma_list():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    # Turma não é entidade separada: agregamos pelas matrículas
-    # chave = (curso, turma)
-    grupos = {}
+    # agrupa por (curso, turma)
+    grupos = {}  # {(curso, turma): [matrículas]}
     for m in matriculas:
-        curso_nome = m.get("curso")
-        turma_num  = m.get("turma") or "—"
-        if not curso_nome:
-            continue
-        key = (curso_nome, turma_num)
+        key = (m.get("curso", ""), m.get("turma", ""))
+        grupos.setdefault(key, []).append(m)
 
-        g = grupos.setdefault(key, {
-            "curso": curso_nome,
-            "turma": turma_num,
-            "nrts": set(),
-            "tipos": set(),
-            "professores": set(),
-            "periodicidades": set(),
-            "data_inicio": set(),
-            "data_fim": set(),
-            "alunos": []
-        })
-        if m.get("nrt"): g["nrts"].add(m["nrt"])
-        if m.get("tipo"): g["tipos"].add(m["tipo"])
-        if m.get("professor"): g["professores"].add(m["professor"])
-        if m.get("periodicidade") is not None: g["periodicidades"].add(str(m["periodicidade"]))
-        if m.get("data_inicio"): g["data_inicio"].add(m["data_inicio"])
-        if m.get("data_fim"): g["data_fim"].add(m["data_fim"])
-        g["alunos"].append(m["aluno"])
-
-    # transforma sets em strings amigáveis
+    # monta linhas para a tabela
     linhas = []
-    for (curso_nome, turma_num), g in grupos.items():
-        def one_or_mixed(s):
-            if not s: return "—"
-            return list(s)[0] if len(s) == 1 else "Vários"
+    for (curso_nome, turma_num), regs in sorted(grupos.items()):
+        if not curso_nome or not turma_num:
+            continue
+        ref = regs[0]
         linhas.append({
             "curso": curso_nome,
             "turma": turma_num,
-            "nrt": one_or_mixed(g["nrts"]),
-            "tipo": one_or_mixed(g["tipos"]),
-            "professor": one_or_mixed(g["professores"]),
-            "periodicidade": one_or_mixed(g["periodicidades"]),
-            "data_inicio": one_or_mixed(g["data_inicio"]),
-            "data_fim": one_or_mixed(g["data_fim"]),
-            "qtd_alunos": len(g["alunos"]),
+            "nrt":   ref.get("nrt", "—"),
+            "tipo":  ref.get("tipo", "—"),
+            "professor": ref.get("professor", "—"),
+            "periodicidade": ref.get("periodicidade", "—"),
+            "data_inicio": ref.get("data_inicio", "—"),
+            "data_fim":    ref.get("data_fim", "—"),
+            "qtd_alunos":  len(regs),
         })
-
-    # ordena por curso, depois turma
-    linhas.sort(key=lambda r: (r["curso"].casefold(), r["turma"]))
 
     return render_template("editar_turma.html", linhas=linhas)
 
 
-# --------------------- EDITAR TURMA (FORM) ---------------------
-@app.route("/editar_turma/<curso>/<turma>", methods=["GET", "POST"])
-def editar_turma_form(curso, turma):
+@app.route("/editar_turma/<path:curso>/<turma>", methods=["GET", "POST"])
+def editar_turma_detalhe(curso, turma):
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    # Matrículas da turma alvo
-    ms = [m for m in matriculas if m.get("curso") == curso and (m.get("turma") or "—") == turma]
-    if not ms:
+    # matrículas desta turma
+    regs = [m for m in matriculas if m.get("curso") == curso and m.get("turma") == turma]
+    if not regs:
         return "Turma não encontrada", 404
 
-    # Helper para pegar valor único de um campo (ou vazio se for misto)
-    def unico_ou_vazio(campo):
-        vals = {m.get(campo) for m in ms if m.get(campo)}
-        return list(vals)[0] if len(vals) == 1 else ""
+    ref = regs[0]  # usa como referência dos metadados da turma
+    nrt   = ref.get("nrt", "")
+    tipo  = ref.get("tipo", "")
+    prof  = ref.get("professor", "")
+    per   = ref.get("periodicidade", "")
+    di    = ref.get("data_inicio", "")
+    df    = ref.get("data_fim", "")
 
-    # Exemplar para copiar metadados ao adicionar aluno
-    exemplar = ms[0]
+    # alunos já na turma
+    alunos_da_turma = [m["aluno"] for m in regs]
 
-    # ============== POST: três ações possíveis ===================
-    # acao = save (atualiza metadados) | add (adiciona aluno) | remove (remove aluno)
+    # alunos candidatos = todos os 'aluno' do sistema que NÃO estão na turma deste curso
+    candidatos = [
+        {"email": e, "nome": d["nome"]}
+        for e, d in usuarios.items()
+        if d.get("tipo") == "aluno" and e not in alunos_da_turma
+    ]
+    # ordena por nome
+    candidatos.sort(key=lambda x: x["nome"].casefold())
+
     if request.method == "POST":
-        acao = (request.form.get("acao") or "save").strip()
-
-        if acao == "remove":
-            aluno_email = (request.form.get("aluno") or "").strip().lower()
-            # remove apenas a matrícula desse aluno nessa turma/curso
-            global matriculas
-            antes = len(matriculas)
-            matriculas = [
-                m for m in matriculas
-                if not (m.get("curso") == curso and (m.get("turma") or "—") == turma and m.get("aluno") == aluno_email)
-            ]
-            if len(matriculas) < antes:
-                salvar_dados(CAMINHO_MATRICULAS, matriculas)
-                flash("Aluno removido da turma.", "success")
-            else:
-                flash("Aluno não encontrado na turma.", "warning")
-            return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+        acao = request.form.get("acao")
 
         if acao == "add":
-            aluno_novo = (request.form.get("aluno_novo") or "").strip().lower()
-            if not aluno_novo or aluno_novo not in usuarios or usuarios[aluno_novo].get("tipo") != "aluno":
-                flash("Seleção de aluno inválida.", "warning")
-                return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+            aluno_email = (request.form.get("aluno_novo") or "").strip().lower()
+            if not aluno_email or aluno_email not in usuarios:
+                flash("Selecione um aluno válido.", "erro")
+            else:
+                # impede duplicata na mesma turma
+                existe = any(m for m in matriculas
+                             if m.get("aluno") == aluno_email and
+                                m.get("curso") == curso and
+                                m.get("turma") == turma)
+                if existe:
+                    flash("Este aluno já está nesta turma.", "erro")
+                else:
+                    matriculas.append({
+                        "aluno":       aluno_email,
+                        "curso":       curso,
+                        "professor":   prof,
+                        "tipo":        tipo,
+                        "nrt":         nrt,
+                        "turma":       turma,
+                        "data_inicio": di,
+                        "data_fim":    df,
+                        "periodicidade": per,
+                    })
+                    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+                    flash("Aluno adicionado à turma.", "success")
+            return redirect(url_for("editar_turma_detalhe", curso=curso, turma=turma))
 
-            # Evita duplicidade por (aluno, curso)
-            ja_tem = any(m.get("aluno") == aluno_novo and m.get("curso") == curso for m in matriculas)
-            if ja_tem:
-                flash("Este aluno já está matriculado neste curso.", "warning")
-                return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
-
-            # Copia metadados da turma (NRT, tipo, prof, periodicidade, datas)
-            nova = {
-                "aluno":       aluno_novo,
-                "curso":       curso,
-                "professor":   exemplar.get("professor"),
-                "tipo":        exemplar.get("tipo"),
-                "nrt":         exemplar.get("nrt"),
-                "turma":       turma if turma != "—" else "",   # mantemos "—" como vazio no arquivo
-                "data_inicio": exemplar.get("data_inicio"),
-                "data_fim":    exemplar.get("data_fim"),
-                "periodicidade": exemplar.get("periodicidade"),
-            }
-            matriculas.append(nova)
+        elif acao == "remove":
+            aluno_email = (request.form.get("aluno_email") or "").strip().lower()
+            # remove somente a matrícula deste curso/turma
+            global matriculas
+            matriculas = [
+                m for m in matriculas
+                if not (m.get("aluno") == aluno_email and
+                        m.get("curso") == curso and
+                        m.get("turma") == turma)
+            ]
             salvar_dados(CAMINHO_MATRICULAS, matriculas)
-            flash("Aluno adicionado à turma.", "success")
-            return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+            flash("Aluno removido da turma.", "success")
+            return redirect(url_for("editar_turma_detalhe", curso=curso, turma=turma))
 
-        # acao == "save": atualiza metadados da turma para todos os alunos
-        nrt_new   = (request.form.get("nrt") or "").strip()
-        tipo_new  = (request.form.get("tipo") or "").strip()
-        prof_new  = (request.form.get("professor") or "").strip()
-        per_new   = request.form.get("periodicidade")
-        di_new    = (request.form.get("data_inicio") or "").strip()
-        df_new    = (request.form.get("data_fim") or "").strip()
+    # reconsulta após possíveis alterações
+    regs = [m for m in matriculas if m.get("curso") == curso and m.get("turma") == turma]
+    alunos_da_turma = [{
+        "email": m["aluno"],
+        "nome": usuarios.get(m["aluno"], {}).get("nome", m["aluno"])
+    } for m in regs]
+    alunos_da_turma.sort(key=lambda x: x["nome"].casefold())
 
-        if per_new not in ("", "1", "2", "3", "5"):
-            per_new = ""
-
-        for m in ms:
-            if nrt_new:  m["nrt"] = nrt_new
-            if tipo_new: m["tipo"] = tipo_new
-            if prof_new: m["professor"] = prof_new
-            if per_new != "": m["periodicidade"] = int(per_new)
-            if di_new:   m["data_inicio"] = di_new
-            if df_new:   m["data_fim"] = df_new
-
-        salvar_dados(CAMINHO_MATRICULAS, matriculas)
-        flash("Turma atualizada com sucesso!", "success")
-        return redirect(url_for("editar_turma_form", curso=curso, turma=turma))
+    return render_template(
+        "editar_turma_detalhe.html",
+        curso=curso, turma=turma,
+        nrt=nrt, tipo=tipo, professor=prof,
+        periodicidade=per, data_inicio=di, data_fim=df,
+        alunos=alunos_da_turma, candidatos=candidatos
+    )
 
     # ============== GET: monta contexto ===================
     # Alunos **da turma** (nome + email)
