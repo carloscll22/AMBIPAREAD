@@ -151,27 +151,57 @@ def allowed_file(filename):
 def uploads(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+ALLOWED_EXTS = {"png", "jpg", "jpeg", "webp"}
+
+AVATAR_DIR = os.path.join(app.static_folder, "avatars")
+os.makedirs(AVATAR_DIR, exist_ok=True)
+
 @app.route("/upload_foto", methods=["POST"])
 def upload_foto():
-    if "foto" not in request.files:
-        return redirect(url_for("home_aluno"))
+    # Precisa estar logado
+    email = session.get("email")
+    if not email:
+        # se não estiver logado, manda para a home/login
+        return redirect(url_for("home"))
 
-    file = request.files["foto"]
-    if file.filename == "":
-        return redirect(url_for("home_aluno"))
+    file = request.files.get("foto")
+    if not file or file.filename.strip() == "":
+        flash("Nenhum arquivo escolhido.", "error")
+        return redirect(url_for("home"))
 
-    if file:
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+    # valida extensão
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in ALLOWED_EXTS:
+        flash("Formato inválido. Use PNG, JPG, JPEG ou WEBP.", "error")
+        return redirect(url_for("home"))
 
-        # salva no usuário logado
-        usuario = usuarios.get(session["email"])
-        if usuario:
-            usuario["foto"] = f"uploads/{filename}"
-            salvar_dados(CAMINHO_USUARIOS, usuarios)
+    # monta nome de arquivo estável por usuário
+    safe_email = email.replace("@", "_at_").replace(".", "_")
+    final_name = f"{safe_email}.{ext}"
+    save_path = os.path.join(AVATAR_DIR, final_name)
+    file.save(save_path)
 
-    return redirect(url_for("home_aluno"))
+    # atualiza cadastro do usuário para apontar para o arquivo estático
+    # ex.: 'avatars/fulano_at_gmail_com.jpg'
+    rel_path = f"avatars/{final_name}"
+
+    global usuarios  # vamos alterar o dicionário em memória
+    if email in usuarios:
+        usuarios[email]["foto"] = rel_path
+    else:
+        # fallback defensivo
+        usuarios[email] = {"nome": session.get("nome", ""), "tipo": "aluno", "foto": rel_path}
+
+    # persiste no JSON/armazenamento
+    try:
+        salvar_dados(CAMINHO_USUARIOS, usuarios)
+    except Exception:
+        # mesmo que a persistência falhe, não quebra a navegação
+        pass
+
+    flash("Foto de perfil atualizada!", "success")
+    return redirect(url_for("home"))
 
 @app.route("/")
 def home():
