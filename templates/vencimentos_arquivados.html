@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Vencimentos Arquivados</title>
+  <style>
+    body {
+      background-color: #f5ffe6;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .top-bar a {
+      color: #006400;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .top-bar a:hover { text-decoration: underline; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th { background-color: #fff; }
+    tr:hover { background-color: #f0f8e2; }
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-blue  { background:#0d6efd; color:#fff; border:none; }
+    .btn-red   { background:#dc3545; color:#fff; border:none; }
+    .btn:hover { filter: brightness(0.95); }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h2>Vencimentos Arquivados</h2>
+    <a href="{{ url_for('vencimentos_verificar') }}">← Voltar</a>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Aluno</th>
+        <th>Curso</th>
+        <th>Data de Vencimento</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in linhas %}
+      <tr>
+        <td>{{ l.aluno_nome }}</td>
+        <td>{{ l.curso }}</td>
+        <td>{{ l.data_venc }}</td>
+        <td class="actions">
+          <form method="POST" action="{{ url_for('vencimentos_restaurar') }}" style="margin:0;">
+            <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
+            <input type="hidden" name="curso" value="{{ l.curso }}">
+            <button type="submit" class="btn btn-blue">Restaurar</button>
+          </form>
+          <form method="POST" action="{{ url_for('vencimentos_excluir') }}"
+                onsubmit="return confirm('Excluir definitivamente este vencimento arquivado?');"
+                style="margin:0;">
+            <input type="hidden" name="aluno" value="{{ l.aluno_email }}">
+            <input type="hidden" name="curso" value="{{ l.curso }}">
+            <button type="submit" class="btn btn-red">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
