@@ -151,6 +151,28 @@ def allowed_file(filename):
 def uploads(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+@app.route("/upload_foto", methods=["POST"])
+def upload_foto():
+    if "foto" not in request.files:
+        return redirect(url_for("home_aluno"))
+
+    file = request.files["foto"]
+    if file.filename == "":
+        return redirect(url_for("home_aluno"))
+
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+
+        # salva no usuário logado
+        usuario = usuarios.get(session["email"])
+        if usuario:
+            usuario["foto"] = f"uploads/{filename}"
+            salvar_dados(CAMINHO_USUARIOS, usuarios)
+
+    return redirect(url_for("home_aluno"))
+
 @app.route("/")
 def home():
     if "usuario" in session:
