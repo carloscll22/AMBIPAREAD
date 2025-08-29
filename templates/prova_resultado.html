@@ -15,15 +15,22 @@
     .meta{color:#555;margin-bottom:18px}
     .score{font-weight:600;margin-bottom:18px}
     .q{border-top:1px solid #eee;padding-top:14px;margin-top:14px}
-    .alt{margin:4px 0 0 14px}
-    .ok{font-weight:600}
+    .alt{margin:6px 0 0 14px}
+    .ok{font-weight:600;margin-top:8px}
     .tag{display:inline-block;font-size:12px;background:#eef7e6;border-radius:6px;padding:3px 8px;margin-left:8px}
+    .marked::after{content:"  ×"; font-weight:700; margin-left:6px;}
+    .correct{font-weight:600}
+    @media print{
+      body{background:#fff;padding:0}
+      .topbar{display:none}
+      .paper{box-shadow:none;border-radius:0}
+    }
   </style>
 </head>
 <body>
   <div class="topbar">
     <a class="btn" href="{{ url_for('acompanhamento') }}">← Voltar ao Acompanhamento</a>
-    <button class="btn" onclick="window.print()">Imprimir/Salvar PDF</button>
+    <button class="btn" onclick="window.print()">Baixar PDF</button>
   </div>
 
   <div class="paper">
@@ -40,17 +47,24 @@
       {% endif %}
     </div>
 
+    {# pega o mapa de escolhas salvo (chaves "0","1",...) #}
+    {% set escolhas = (respostas_aluno.escolhas if respostas_aluno and respostas_aluno.escolhas else {}) %}
+
     {% for i, q in enumerate(questoes) %}
+      {% set k = i|string %}
+      {% set marcada = escolhas.get(k, '')|lower %}
       <div class="q">
         <div><strong>Q{{ i+1 }}.</strong> {{ q.enunciado }}</div>
-        <div class="alt">A) {{ q.a }}</div>
-        <div class="alt">B) {{ q.b }}</div>
-        <div class="alt">C) {{ q.c }}</div>
-        <div class="alt">D) {{ q.d }}</div>
+
+        <div class="alt {% if marcada=='a' %}marked{% endif %}">A) {{ q.a }}</div>
+        <div class="alt {% if marcada=='b' %}marked{% endif %}">B) {{ q.b }}</div>
+        <div class="alt {% if marcada=='c' %}marked{% endif %}">C) {{ q.c }}</div>
+        <div class="alt {% if marcada=='d' %}marked{% endif %}">D) {{ q.d }}</div>
+
         <div class="alt ok">
-          Gabarito: {{ q.correta|upper }}
-          {% if respostas_aluno and ('pergunta_' ~ i) in respostas_aluno %}
-            &nbsp;|&nbsp; Marcada: {{ respostas_aluno['pergunta_' ~ i]|upper }}
+          Gabarito: <span class="correct">{{ q.correta|upper }}</span>
+          {% if marcada %}
+            &nbsp;|&nbsp; Marcada: {{ marcada|upper }}
           {% endif %}
         </div>
       </div>
