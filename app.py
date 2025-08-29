@@ -159,9 +159,8 @@ os.makedirs(AVATAR_DIR, exist_ok=True)
 @app.route("/upload_foto", methods=["POST"])
 def upload_foto():
     # Precisa estar logado
-    email = session.get("email")
+    email = session.get("usuario")   # <- usa a MESMA chave que você usa no login
     if not email:
-        # se não estiver logado, manda para a home/login
         return redirect(url_for("home"))
 
     file = request.files.get("foto")
@@ -176,28 +175,22 @@ def upload_foto():
         flash("Formato inválido. Use PNG, JPG, JPEG ou WEBP.", "error")
         return redirect(url_for("home"))
 
-    # monta nome de arquivo estável por usuário
+    # nome de arquivo estável por usuário
     safe_email = email.replace("@", "_at_").replace(".", "_")
     final_name = f"{safe_email}.{ext}"
     save_path = os.path.join(AVATAR_DIR, final_name)
     file.save(save_path)
 
     # atualiza cadastro do usuário para apontar para o arquivo estático
-    # ex.: 'avatars/fulano_at_gmail_com.jpg'
+    # usamos SEMPRE a chave 'foto'
     rel_path = f"avatars/{final_name}"
 
-    global usuarios  # vamos alterar o dicionário em memória
-    if email in usuarios:
-        usuarios[email]["foto"] = rel_path
-    else:
-        # fallback defensivo
-        usuarios[email] = {"nome": session.get("nome", ""), "tipo": "aluno", "foto": rel_path}
-
-    # persiste no JSON/armazenamento
+    global usuarios
+    usuarios.setdefault(email, {})
+    usuarios[email]["foto"] = rel_path
     try:
         salvar_dados(CAMINHO_USUARIOS, usuarios)
     except Exception:
-        # mesmo que a persistência falhe, não quebra a navegação
         pass
 
     flash("Foto de perfil atualizada!", "success")
@@ -209,50 +202,51 @@ def home():
         if session["tipo"] == "professor":
             return render_template("professor_home.html", usuario=session["usuario"])
 
-        # Aluno
+        # ---------- Aluno ----------
         email = session["usuario"]
+
+        # Monta avatar_url com cache-busting
+        avatar_url = url_for("static", filename="avatar_padrao.png")
+        foto_rel = usuarios.get(email, {}).get("foto")  # SEMPRE 'foto'
+        if foto_rel:
+            abs_path = os.path.join(app.static_folder, foto_rel)
+            if os.path.exists(abs_path):
+                ver = str(int(os.path.getmtime(abs_path)))
+                avatar_url = url_for("static", filename=foto_rel) + f"?v={ver}"
+
         cursos_aluno = [m["curso"] for m in matriculas if m["aluno"] == email]
-        cursos_disp = [c for c in cursos if c["nome"] in cursos_aluno]
-        progresso = {}
-        vencimentos = {}
+        cursos_disp = [c for c in cursos if c.get("nome") in cursos_aluno]
+
+        progresso_map = {}
+        venc_map = {}
 
         for curso in cursos_disp:
             # Progresso
             prog = curso.get("progresso", {}).get(email)
-            progresso[curso["nome"]] = prog if prog else {"tempo": 0, "concluido": False}
+            progresso_map[curso["nome"]] = prog if prog else {"tempo": 0, "concluido": False}
 
             # Data limite da matrícula
             matricula = next((m for m in matriculas if m["aluno"] == email and m["curso"] == curso["nome"]), None)
             curso["data_fim"] = matricula.get("data_fim") if matricula else None
-            vencimentos[curso["nome"]] = curso["data_fim"] or "Não Definida"
+            venc_map[curso["nome"]] = curso["data_fim"] or "Não Definida"
 
-            # Verifica se certificado está disponível
+            # Certificado disponível?
             resultado = curso.get("resultados", {}).get(email)
             if resultado and resultado.get("acertos", 0) >= 0.7 * resultado.get("total", 1):
                 curso["certificado_disponivel"] = True
-                # Força conclusão no progresso
-                if curso.get("progresso") is None:
-                    curso["progresso"] = {}
-                if email not in curso["progresso"]:
-                    curso["progresso"][email] = {}
-                curso["progresso"][email]["concluido"] = True
-                progresso[curso["nome"]]["concluido"] = True
+                curso.setdefault("progresso", {}).setdefault(email, {})["concluido"] = True
+                progresso_map[curso["nome"]]["concluido"] = True
             else:
                 curso["certificado_disponivel"] = False
 
-            avatar_rel = usuarios.get(email, {}).get("avatar")
-            if avatar_rel:
-                avatar_url = url_for("uploads", filename=avatar_rel)
-            else:
-                avatar_url = url_for("static", filename="avatar_padrao.png")
-                   
-        return render_template("home_aluno.html",
-                               usuario=usuarios[email]["nome"],
-                               cursos=cursos_disp,
-                               progresso=progresso,
-                               vencimentos=vencimentos,
-                               avatar_url=avatar_url
-                             )
+        return render_template(
+            "home_aluno.html",
+            usuario=usuarios.get(email, {}).get("nome", email),
+            cursos=cursos_disp,
+            progresso=progresso_map,
+            vencimentos=venc_map,
+            avatar_url=avatar_url
+        )
 
     return redirect("/login")
 
