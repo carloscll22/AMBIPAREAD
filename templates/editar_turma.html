@@ -2,29 +2,24 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Editar Turma</title>
+  <title>Editar Turmas</title>
   <style>
-    body { background:#c1f38e; font-family:Arial, sans-serif; padding:30px; }
-    .container { background:#fff; max-width:1000px; margin:auto; padding:20px; border-radius:12px; box-shadow:0 0 12px rgba(0,0,0,.1); }
-    h2 { text-align:center; color:#333; margin-bottom:10px; }
-    .toolbar { display:flex; justify-content:space-between; align-items:center; margin:10px 0 15px; }
-    .toolbar a { text-decoration:none; font-weight:bold; color:#006400; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { border:1px solid #ccc; padding:10px; text-align:left; vertical-align:top; }
-    th { background:#f0f0f0; }
-    .pill { display:inline-block; padding:3px 8px; border-radius:16px; background:#eef6e6; border:1px solid #cfe7b6; font-size:12px; margin-right:6px; }
-    .btn { background:#a0e76d; color:#333; padding:6px 10px; border-radius:6px; text-decoration:none; font-weight:bold; display:inline-block; }
-    .btn:hover { background:#8ad858; }
-    .muted { color:#777; }
+    body{background:#c1f38e;font-family:Arial,sans-serif;padding:24px;}
+    .card{background:#fff;max-width:1000px;margin:0 auto;border-radius:12px;padding:20px;box-shadow:0 0 12px rgba(0,0,0,.08);}
+    h2{text-align:center;margin:0 0 12px;color:#333}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #ddd;padding:10px;text-align:left;vertical-align:top}
+    th{background:#f4f4f4}
+    .btn{display:inline-block;background:#7ed957;color:#083; padding:6px 12px;border-radius:8px;text-decoration:none;font-weight:bold;border:0}
+    .btn:hover{filter:brightness(.95)}
+    .toplink{display:inline-block;margin-bottom:10px;color:#0b5c0b;text-decoration:none;font-weight:bold}
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="card">
+    <a class="toplink" href="/">← Voltar à Home</a>
     <h2>Editar Turmas</h2>
-    <div class="toolbar">
-      <div class="muted">Agrupado por Curso + Turma</div>
-      <a href="/">← Voltar à Home</a>
-    </div>
+    <p style="margin:8px 0 12px;color:#555">Agrupado por Curso + Turma</p>
 
     <table>
       <thead>
@@ -41,27 +36,26 @@
         </tr>
       </thead>
       <tbody>
-        {% for r in linhas %}
+        {% for l in linhas %}
         <tr>
-          <td>{{ r.curso }}</td>
-          <td>{{ r.turma }}</td>
-          <td>{{ r.nrt }}</td>
-          <td>{{ r.tipo }}</td>
-          <td>{{ r.professor }}</td>
-          <td>{{ r.periodicidade if r.periodicidade != 'Vários' else 'Vários' }}</td>
+          <td>{{ l.curso }}</td>
+          <td>{{ l.turma }}</td>
+          <td>{{ l.nrt }}</td>
+          <td>{{ l.tipo }}</td>
+          <td>{{ l.professor }}</td>
+          <td>{{ l.periodicidade }}</td>
           <td>
-            <div class="muted">Início: {{ r.data_inicio }}</div>
-            <div class="muted">Fim: {{ r.data_fim }}</div>
+            Início: {{ l.data_inicio }}<br>
+            Fim: {{ l.data_fim }}
           </td>
-          <td>{{ r.qtd_alunos }}</td>
+          <td>{{ l.qtd_alunos }}</td>
           <td>
-            <a class="btn" href="{{ url_for('editar_turma_form', curso=r.curso, turma=r.turma) }}">Editar</a>
+            <a class="btn" href="{{ url_for('editar_turma_detalhe', curso=l.curso, turma=l.turma) }}">Editar</a>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-
   </div>
 </body>
 </html>
