@@ -22,7 +22,6 @@
     .course{font-weight:600;margin-bottom:6px}
     .muted{color:#666;font-size:13px}
     .empty{color:#666;background:#fff;border:1px dashed #d9e7c7;border-radius:10px;padding:16px;text-align:center}
-    /* cards clicáveis (matriculados/andamento) */
     .link-card{display:block;text-decoration:none;color:inherit}
     .link-card .card:hover{background:#e8f5d7}
     .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
@@ -45,14 +44,21 @@
   {# ---------- Classificação em 3 listas sem mudar rotas ---------- #}
   {% set ns = namespace(matriculados=[], andamento=[], concluidos=[]) %}
   {% for c in cursos %}
+    {# prog é o progresso JÁ filtrado para este aluno quando a rota monta 'cursos' #}
     {% set prog = c.progresso if c.progresso is defined and c.progresso else {} %}
-    {% set tempo = (prog.tempo if prog is mapping and (prog.tempo is defined) else 0) %}
-    {% set concl = (prog.concluido if prog is mapping and (prog.concluido is defined) else false) %}
+    {% set is_mapping = prog is mapping %}
+    {% set tempo = (prog.tempo if is_mapping and (prog.tempo is defined) else 0) %}
+    {% set concl = (prog.concluido if is_mapping and (prog.concluido is defined) else false) %}
     {% set cert  = (c.certificado_disponivel if c.certificado_disponivel is defined else false) %}
 
+    {# Regras:
+       - Concluídos: certificado disponível
+       - Em andamento: se já existe 'prog' do aluno (mesmo tempo==0) OU se tempo>0 OU concl==true
+       - Matriculados: caso contrário
+    #}
     {% if cert %}
       {% set _ = ns.concluidos.append(c) %}
-    {% elif tempo > 0 or concl %}
+    {% elif is_mapping or tempo > 0 or concl %}
       {% set _ = ns.andamento.append(c) %}
     {% else %}
       {% set _ = ns.matriculados.append(c) %}
@@ -105,7 +111,7 @@
         {% for c in ns.concluidos %}
           <div class="card">
             <div class="course">{{ c.nome }}</div>
-            <div class="muted">Concluído ✓</div>
+            <div class="muted">Data de Conclusão: {{ c.data_fim or '—' }}</div>
             <div class="actions">
               <a
                 class="btn"
