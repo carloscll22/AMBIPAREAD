@@ -310,6 +310,7 @@ def vencimentos_adicionar():
         erro=None
     )
 
+# --- AJUSTE na rota existente: pular arquivados ---
 @app.route("/vencimentos/verificar")
 def vencimentos_verificar():
     if session.get("tipo") != "professor":
@@ -318,14 +319,15 @@ def vencimentos_verificar():
     hoje = datetime.now(TZ).date()
     linhas = []
     for v in vencimentos:
+        if v.get("arquivado"):  # <-- NOVO: não mostrar aqui
+            continue
+
         aluno_email = v.get("aluno")
         curso_nome  = v.get("curso")
         data_str    = v.get("data_vencimento")  # YYYY-MM-DD
 
-        # nome do aluno
         aluno_nome = usuarios.get(aluno_email, {}).get("nome", aluno_email)
 
-        # parse da data
         try:
             data_venc = datetime.strptime(data_str, "%Y-%m-%d").date()
         except Exception:
@@ -334,13 +336,11 @@ def vencimentos_verificar():
         if data_venc:
             dias = (data_venc - hoje).days
             vencido = dias < 0
-            em_alerta = dias <= 90  # 90 dias ou menos
+            em_alerta = dias <= 90
             status = "Vencido" if vencido else f"Vence em {dias} dias"
         else:
-            dias = None
-            vencido = False
-            em_alerta = False
             status = "Data inválida"
+            em_alerta = False
 
         linhas.append({
             "aluno_email": aluno_email,
@@ -348,10 +348,9 @@ def vencimentos_verificar():
             "curso": curso_nome,
             "data_venc": data_str,
             "status": status,
-            "mostrar_matricular": (em_alerta or vencido) and data_venc is not None
+            "mostrar_matricular": em_alerta and (data_venc is not None)
         })
 
-    # opcionalmente, ordenar por data de vencimento
     def _key(l):
         try:
             return datetime.strptime(l["data_venc"], "%Y-%m-%d")
@@ -360,6 +359,75 @@ def vencimentos_verificar():
     linhas.sort(key=_key)
 
     return render_template("vencimentos_verificar.html", linhas=linhas)
+
+@app.route("/vencimentos/arquivar", methods=["POST"])
+def vencimentos_arquivar():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    aluno = (request.form.get("aluno") or "").strip().lower()
+    curso = (request.form.get("curso") or "").strip()
+
+    alterado = False
+    for v in vencimentos:
+        if v.get("aluno") == aluno and v.get("curso") == curso:
+            v["arquivado"] = True
+            alterado = True
+            break
+
+    if alterado:
+        salvar_vencimentos()
+    return redirect(url_for("vencimentos_verificar"))
+
+@app.route("/vencimentos/arquivados")
+def vencimentos_arquivados():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    linhas = []
+    for v in vencimentos:
+        if not v.get("arquivado"):
+            continue
+        aluno_email = v.get("aluno")
+        curso_nome  = v.get("curso")
+        data_str    = v.get("data_vencimento")
+        aluno_nome  = usuarios.get(aluno_email, {}).get("nome", aluno_email)
+
+        linhas.append({
+            "aluno_email": aluno_email,
+            "aluno_nome": aluno_nome,
+            "curso": curso_nome,
+            "data_venc": data_str,
+        })
+
+    # opcional: ordenar
+    def _key(l):
+        try:
+            return datetime.strptime(l["data_venc"], "%Y-%m-%d")
+        except Exception:
+            return datetime(2100,1,1)
+    linhas.sort(key=_key)
+
+    return render_template("vencimentos_arquivados.html", linhas=linhas)
+
+@app.route("/vencimentos/restaurar", methods=["POST"])
+def vencimentos_restaurar():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    aluno = (request.form.get("aluno") or "").strip().lower()
+    curso = (request.form.get("curso") or "").strip()
+
+    alterado = False
+    for v in vencimentos:
+        if v.get("aluno") == aluno and v.get("curso") == curso and v.get("arquivado"):
+            v["arquivado"] = False
+            alterado = True
+            break
+
+    if alterado:
+        salvar_vencimentos()
+    return redirect(url_for("vencimentos_arquivados"
     
 # ======================================================================
 #                       ROTAS (PROFESSOR)
