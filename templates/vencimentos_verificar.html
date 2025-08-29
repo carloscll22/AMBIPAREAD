@@ -11,6 +11,7 @@
       padding: 20px;
     }
     h2 { text-align: center; color: #333; margin-bottom: 20px; }
+
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -20,10 +21,13 @@
     .top-bar a { color: #006400; text-decoration: none; font-weight: bold; }
     .top-bar a:hover { text-decoration: underline; }
 
+    /* Filtros */
     .filters {
       display: flex;
       gap: 10px;
       margin-bottom: 15px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .filters input, .filters select {
       padding: 6px 10px;
@@ -39,7 +43,20 @@
     }
     .filters .apply { background: #8dd24a; color: #000; }
     .filters .clear { background: #ccc; color: #000; }
-    .filters .archived { background: #0d6efd; color: #fff; }
+
+    /* Deixa o link "Arquivados" com o MESMO visual dos botões */
+    .filters a.archived {
+      display: inline-block;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      background: #0d6efd;
+      color: #fff;
+    }
+    .filters a.archived:hover { filter: brightness(0.95); }
 
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
@@ -91,7 +108,7 @@
     </select>
     <button class="apply" onclick="aplicarFiltro()">Aplicar</button>
     <button class="clear" onclick="limparFiltro()">Limpar</button>
-    <a href="{{ url_for('vencimentos_arquivados') }}" class="filters archived">Arquivados</a>
+    <a href="{{ url_for('vencimentos_arquivados') }}" class="archived">Arquivados</a>
   </div>
 
   <!-- Legenda -->
