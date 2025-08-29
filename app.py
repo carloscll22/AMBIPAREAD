@@ -191,7 +191,7 @@ def home():
             avatar_rel = usuarios.get(email, {}).get("avatar")
             if avatar_rel:
                 avatar_url = url_for("uploads", filename=avatar_rel)
-           else:
+            else:
                 avatar_url = url_for("static", filename="avatar_padrao.png")
                    
         return render_template("home_aluno.html",
