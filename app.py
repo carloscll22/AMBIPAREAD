@@ -464,7 +464,8 @@ def editar_turma_list():
 def editar_turma_detalhe(curso, turma):
     if session.get("tipo") != "professor":
         return redirect("/login")
-
+    global matriculas
+        
     # matrículas desta turma
     regs = [m for m in matriculas if m.get("curso") == curso and m.get("turma") == turma]
     if not regs:
@@ -524,7 +525,7 @@ def editar_turma_detalhe(curso, turma):
         elif acao == "remove":
             aluno_email = (request.form.get("aluno_email") or "").strip().lower()
             # remove somente a matrícula deste curso/turma
-            global matriculas
+            
             matriculas = [
                 m for m in matriculas
                 if not (m.get("aluno") == aluno_email and
