@@ -21,14 +21,44 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 12px;
+    }
+
+    /* Avatar no mesmo tamanho/estilo que você já tinha */
+    .avatar-wrap {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
     }
     .avatar {
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat;
-      margin-bottom: 15px;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      border: 2px solid #cce7b3;
     }
+    .avatar-btn {
+      position: absolute;
+      right: -6px;
+      bottom: -6px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .avatar-btn:hover { filter: brightness(0.95); }
+
     .user-name {
       font-weight: 600;
       font-size: 16px;
@@ -36,7 +66,8 @@
       text-align: center;
       margin-bottom: 25px;
     }
-    /* Botões padrão da sidebar */
+
+    /* Botões padrão da sidebar (mantidos) */
     .sidebar .btn {
       width: 100%;
       padding: 10px;
@@ -66,6 +97,7 @@
       transition: background 0.3s;
     }
     .sidebar a.logout:hover { background: #8ad858; }
+
     .content {
       flex: 1;
       padding: 40px;
@@ -96,6 +128,7 @@
       transition: background 0.3s;
     }
     .actions a.card-btn:hover { background: #e8f5d7; }
+
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar {
@@ -105,13 +138,34 @@
         border-right: none;
         border-bottom: 2px solid #ccc;
       }
-      .avatar, .user-name { display: none; }
+      .logo, .user-name { display: none; }
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <div class="avatar"></div>
+    <!-- LOGO (igual do aluno) -->
+    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
+
+    <!-- AVATAR clicável para trocar foto (mesma posição e tamanho) -->
+    <div class="avatar-wrap">
+      <div
+        class="avatar"
+        style="
+          background-image:
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+            url('{{ url_for('static', filename='avatar_padrao.png') }}');
+        ">
+      </div>
+      <button class="avatar-btn" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
+      <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+        <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
+      </form>
+    </div>
+
     <div class="user-name">{{ session['nome'] }}</div>
 
     <button type="button" class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
