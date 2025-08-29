@@ -6,8 +6,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body { font-family:'Poppins',sans-serif; background:#c1f38e; margin:0; }
-    .box { background:#fff; max-width:600px; margin:40px auto; padding:30px; border-radius:12px; }
+    .box { background:#fff; max-width:600px; margin:40px auto; padding:30px; border-radius:12px; position:relative; }
     h2 { text-align:center; margin-bottom:20px; }
+    .top-right { position:absolute; right:30px; top:30px; }
     .info { font-size:14px; margin:6px 0; }
     table { width:100%; border-collapse:collapse; margin-top:20px; }
     th,td { border:1px solid #ccc; padding:8px; text-align:left; }
@@ -16,18 +17,32 @@
     .pendente { color:red; font-weight:bold; }
     .btn { display:inline-block; margin-top:20px; background:#a0e76d; padding:10px 20px;
            color:#000; text-decoration:none; border-radius:8px; }
+    .btn-ghost { background:#a0e76d; padding:8px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .btn-ghost:hover { filter:brightness(0.95); }
+
+    /* Impressão limpa */
+    @media print {
+      body { background:#fff; }
+      .top-right, .btn { display:none !important; }
+      .box { box-shadow:none; margin:0; border-radius:0; }
+    }
   </style>
 </head>
 <body>
   <div class="box">
+    <!-- Botão superior direito -->
+    <div class="top-right">
+      <button class="btn-ghost" onclick="window.print()">Baixar PDF</button>
+    </div>
+
     <h2>Lista de Presença</h2>
 
     <p class="info"><strong>Curso:</strong> {{ curso.nome }}</p>
     <p class="info"><strong>Carga Horária:</strong> {{ carga_horaria }}</p>
     <p class="info"><strong>NRT:</strong> {{ nrt }}</p>
     <p class="info"><strong>Instrutor:</strong> {{ instrutor }}</p>
-    <p class="info"><strong>Data:</strong> {{ data }} 
-    
+    <p class="info"><strong>Data:</strong> {{ data }}</p>
+
     <table>
       <thead>
         <tr><th>Aluno</th><th>Status</th></tr>
