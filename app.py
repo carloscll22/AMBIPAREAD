@@ -294,8 +294,9 @@ def cadastro_bloqueado():
     return redirect("/login")
 
 @app.route("/alterar_senha", methods=["GET", "POST"])
-def alterar_senha_professor():
-    if session.get("tipo") != "professor":
+def alterar_senha():
+    # precisa estar logado
+    if "usuario" not in session:
         return redirect("/login")
 
     email = session["usuario"]
@@ -305,9 +306,12 @@ def alterar_senha_professor():
         if nova_senha:
             usuarios[email]["senha"] = nova_senha
             salvar_usuarios()
-        return redirect("/")
+            flash("Senha alterada com sucesso!", "success")
+            return redirect("/")  # volta para home (professor ou aluno)
 
-    return render_template("perfil_aluno.html", usuario=usuarios[email])
+    # GET → abre a página
+    return render_template("alterar_senha.html", usuario=usuarios[email])
+
 
 @app.route("/controle_vencimentos")
 def controle_vencimentos():
