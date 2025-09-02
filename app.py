@@ -255,6 +255,27 @@ for email, d in usuarios.items():
 salvar_usuarios()
 # ==== FIM DO PATCH DE CATEGORIAS ====
 
+# ==== FORÇA FILTRO DE VISIBILIDADE POR E-MAIL DO PROFESSOR ====
+_forcar_prof_por_email = {
+    "tuany.oliveira@ambipar.com": "piloto",    # Tuany vê só pilotos
+    "leandro.michelin@ambipar.com": "piloto",  # Leandro vê só pilotos
+    "carlos.lopes@ambipar.com": "piloto",      # Carlos vê só pilotos
+    "larissafr.ctm@gmail.com": "mecanico",     # Larissa vê só mecânicos
+}
+
+mudou = False
+for email, cat in _forcar_prof_por_email.items():
+    u = usuarios.get(email)
+    if u and u.get("tipo") == "professor":
+        if u.get("ver_categoria") != cat:
+            u["ver_categoria"] = cat
+            mudou = True
+
+if mudou:
+    salvar_usuarios()
+# ===============================================================
+
+
 # --- Helpers de categoria do professor/aluno ---
 def prof_categoria_atual():
     """Retorna 'piloto' ou 'mecanico' para o professor logado. Para aluno ou sem filtro, retorna None."""
