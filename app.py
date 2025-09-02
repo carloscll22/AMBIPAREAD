@@ -122,6 +122,152 @@ def salvar_usuarios():
     with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
+# ==== INÍCIO DO PATCH DE CATEGORIAS ====
+
+def _title_from_email(email: str) -> str:
+    base = (email.split("@")[0] if "@" in email else email)
+    base = base.replace(".", " ").replace("_", " ").strip()
+    return " ".join(p.capitalize() for p in base.split())
+
+PILOTOS_SET = {
+    "cmte.siqueira@ambipar.com",
+    "cmte.taskilas@ambipar.com",
+    "andre.gustavo@ambipar.com",
+    "cmte.sales@ambipar.com",
+    "andre.lyra@ambipar.com",
+    "antonio.jorge@ambipar.com",
+    "bruna.tasca@ambipar.com",
+    "carlos.negreiros@ambipar.com",
+    "carlos.maria@ambipar.com",
+    "carlos.moraes@ambipar.com",
+    "cmte.franck@ambipar.com",
+    "cmte.rubens@ambipar.com",
+    "cmte.celio@ambipar.com",
+    "charles.pannain@ambipar.com",
+    "cmte.cleyton@ambipar.com",
+    "daniel.telles@ambipar.com",
+    "danielle.pereira@ambipar.com",
+    "djalma.neto@ambipar.com",
+    "eduardo.antonio@ambipar.com",
+    "eduardo.worm@ambipar.com",
+    "fabio.araujo@ambipar.com",
+    "fernando.telles@ambipar.com",
+    "flavio.santos@ambipar.com",
+    "hazafe.alencar@ambipar.com",
+    "cmte.isaac@ambipar.com",
+    "jairodop@hotmail.com",
+    "cmte.trajano@ambipar.com",
+    "leonardo.rapini@ambipar.com",
+    "lohana.tose@ambipar.com",
+    "cmte.mattara@ambipar.com",
+    "cmte.pessoa@ambipar.com",
+    "cmte.marron@ambipar.com",
+    "luiz.lima@ambipar.com",
+    "manollo.jordao@ambipar.com",
+    "cmte.metre@ambipar.com",
+    "marcelo.hashizume@ambipar.com",
+    "mateus.sousa@ambipar.com",
+    "matheus.fraga@ambipar.com",
+    "cmte.mauricio@ambipar.com",
+    "paulo.claudino@ambipar.com",
+    "p.jalmeida@yahoo.com.br",
+    "cmte.paulinho@ambipar.com",
+    "cmte.chacon@ambipar.com",
+    "ricardo.ramos@ambipar.com",
+    "rodrigo.vasconcelos@ambipar.com",
+    "cmte.romanato@ambipar.com",
+    "romulo.equey@ambipar.com",
+    "cmte.ronaldo@ambipar.com",
+    "thiago.cury@ambipar.com",
+    "victor.soares@ambipar.com",
+    "cmte.welner@ambipar.com",
+}
+
+MECANICOS_SET = {
+    "alan.araujo@ambipar.com",
+    "aleksandro.inacio@ambipar.com",
+    "allan.silva@ambipar.com",
+    "andre.jales@ambipar.com",
+    "ari.pinho@ambipar.com",
+    "bruno.marins@ambipar.com",
+    "carlos.ferezin@ambipar.com",
+    "carlos.nunes@ambipar.com",
+    "cesar.dupin@ambipar.com",
+    "clayton.luis@ambipar.com",
+    "daniel.levandeira@ambipar.com",
+    "diego.campagnaro@ambipar.com",
+    "eliomar.bruno@ambipar.com",
+    "barbosa.fernando@ambipar.com",
+    "frederico.malta@ambipar.com",
+    "helio.souza@ambipar.com",
+    "joao.augusto@ambipar.com",
+    "joao.goncalves@ambipar.com",
+    "jorge.figueiredo@ambipar.com",
+    "jorge.dias@ambipar.com",
+    "jurandyr.neto@ambipar.com",
+    "laerte.lima@ambipar.com",
+    "leandro.ribeiro@ambipar.com",
+    "leandro.volk@ambipar.com",
+    "luizvaldo.santos@ambipar.com",
+    "marcelo.prado@ambipar.com",
+    "marcelo.soares@ambipar.com",
+    "nivaldo.lima@ambipar.com",
+    "ricardo.jesus@ambipar.com",
+    "robson.veiga@ambipar.com",
+    "ronaldo.nicolli@ambipar.com",
+    "bogomilrj@hotmail.com",
+    "samuel.santarem@ambipar.com",
+    "thalys.martins@ambipar.com",
+    "thiago.rocha@ambipar.com",
+    "valdecir.macedo@ambipar.com",
+}
+
+# Garante que existam registros para todos listados (se não existir, cria como aluno)
+for email in sorted(PILOTOS_SET | MECANICOS_SET):
+    if email not in usuarios:
+        usuarios[email] = {
+            "senha": "Ambipar2025",
+            "tipo": "aluno",
+            "nome": _title_from_email(email),
+        }
+
+# Atribui a categoria correta sem mexer no resto
+for email, d in usuarios.items():
+    if d.get("tipo") == "aluno":
+        if email in PILOTOS_SET:
+            d["categoria"] = "piloto"
+        elif email in MECANICOS_SET:
+            d["categoria"] = "mecanico"
+
+# Filtro de visibilidade para professores por NOME
+_prof_filtro_por_nome = {
+    "Tuany Vasques": "piloto",
+    "Leandro Michelin": "piloto",
+    "Carlos Lourenço": "piloto",
+    "Larissa Furtado": "mecanico",
+}
+for email, d in usuarios.items():
+    if d.get("tipo") == "professor":
+        alvo = _prof_filtro_por_nome.get(d.get("nome", ""))
+        if alvo in ("piloto", "mecanico"):
+            d["ver_categoria"] = alvo
+
+salvar_usuarios()
+# ==== FIM DO PATCH DE CATEGORIAS ====
+
+# --- Helpers de categoria do professor/aluno ---
+def prof_categoria_atual():
+    """Retorna 'piloto' ou 'mecanico' para o professor logado. Para aluno ou sem filtro, retorna None."""
+    user = usuarios.get(session.get("usuario", ""), {})
+    return user.get("ver_categoria")
+
+def _aluno_e_da_categoria(email, cat):
+    """True se cat is None (sem filtro) ou se o aluno tem usuarios[email]['categoria'] == cat."""
+    if not cat:
+        return True
+    return usuarios.get(email, {}).get("categoria") == cat
+
+
 def add_years(d: date, years: int) -> date:
     """Soma 'years' anos à data d, ajustando 29/02 -> 28/02 quando necessário."""
     try:
@@ -331,8 +477,10 @@ def vencimentos_adicionar():
     nomes_validos = {n for n in (nomes_cadastrados | nomes_fixos) if n}  # união
 
     cursos_para_select = [{"nome": n} for n in sorted(nomes_validos, key=str.casefold)]
+    cat = prof_categoria_atual()
     alunos_para_select = [{"email": e, "nome": d["nome"]}
-                          for e, d in usuarios.items() if d.get("tipo") == "aluno"]
+                      for e, d in usuarios.items()
+                      if d.get("tipo") == "aluno" and _aluno_e_da_categoria(e, cat)]
 
     if request.method == "POST":
         aluno_email = (request.form.get("aluno") or "").strip().lower()
@@ -385,15 +533,19 @@ def vencimentos_verificar():
         return redirect("/login")
 
     hoje = datetime.now(TZ).date()
+    cat = prof_categoria_atual()
     linhas = []
+
     for v in vencimentos:
-        if v.get("arquivado"):  # <-- NOVO: não mostrar aqui
+        if v.get("arquivado"):
             continue
 
         aluno_email = v.get("aluno")
-        curso_nome  = v.get("curso")
-        data_str    = v.get("data_vencimento")  # YYYY-MM-DD
+        if not _aluno_e_da_categoria(aluno_email, cat):
+            continue
 
+        curso_nome = v.get("curso")
+        data_str   = v.get("data_vencimento")  # YYYY-MM-DD
         aluno_nome = usuarios.get(aluno_email, {}).get("nome", aluno_email)
 
         try:
@@ -423,10 +575,11 @@ def vencimentos_verificar():
         try:
             return datetime.strptime(l["data_venc"], "%Y-%m-%d")
         except Exception:
-            return datetime(2100,1,1)
+            return datetime(2100, 1, 1)
     linhas.sort(key=_key)
 
     return render_template("vencimentos_verificar.html", linhas=linhas)
+
 
 @app.route("/vencimentos/arquivar", methods=["POST"])
 def vencimentos_arquivar():
@@ -452,14 +605,19 @@ def vencimentos_arquivados():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
+    cat = prof_categoria_atual()
     linhas = []
+
     for v in vencimentos:
         if not v.get("arquivado"):
             continue
         aluno_email = v.get("aluno")
-        curso_nome  = v.get("curso")
-        data_str    = v.get("data_vencimento")
-        aluno_nome  = usuarios.get(aluno_email, {}).get("nome", aluno_email)
+        if not _aluno_e_da_categoria(aluno_email, cat):
+            continue
+
+        curso_nome = v.get("curso")
+        data_str   = v.get("data_vencimento")
+        aluno_nome = usuarios.get(aluno_email, {}).get("nome", aluno_email)
 
         linhas.append({
             "aluno_email": aluno_email,
@@ -468,15 +626,15 @@ def vencimentos_arquivados():
             "data_venc": data_str,
         })
 
-    # opcional: ordenar
     def _key(l):
         try:
             return datetime.strptime(l["data_venc"], "%Y-%m-%d")
         except Exception:
-            return datetime(2100,1,1)
+            return datetime(2100, 1, 1)
     linhas.sort(key=_key)
 
     return render_template("vencimentos_arquivados.html", linhas=linhas)
+
 
 @app.route("/vencimentos/restaurar", methods=["POST"])
 def vencimentos_restaurar():
@@ -570,10 +728,14 @@ def editar_turma_list():
         return redirect("/login")
 
     # agrupa por (curso, turma)
-    grupos = {}  # {(curso, turma): [matrículas]}
+    
+    cat = prof_categoria_atual()
+    grupos = {}
     for m in matriculas:
-        key = (m.get("curso", ""), m.get("turma", ""))
-        grupos.setdefault(key, []).append(m)
+            if not _aluno_e_da_categoria(m.get("aluno",""), cat):
+                continue
+            key = (m.get("curso", ""), m.get("turma", ""))
+            grupos.setdefault(key, []).append(m)
 
     # monta linhas para a tabela
     linhas = []
@@ -601,6 +763,7 @@ def editar_turma_detalhe(curso, turma):
     if session.get("tipo") != "professor":
         return redirect("/login")
     global matriculas
+    cat = prof_categoria_atual()
         
     # matrículas desta turma
     regs = [m for m in matriculas if m.get("curso") == curso and m.get("turma") == turma]
@@ -619,11 +782,15 @@ def editar_turma_detalhe(curso, turma):
     alunos_da_turma = [m["aluno"] for m in regs]
 
     # alunos candidatos = todos os 'aluno' do sistema que NÃO estão na turma deste curso
+        
     candidatos = [
-        {"email": e, "nome": d["nome"]}
-        for e, d in usuarios.items()
-        if d.get("tipo") == "aluno" and e not in alunos_da_turma
+            {"email": e, "nome": d["nome"]}
+            for e, d in usuarios.items()
+            if d.get("tipo") == "aluno"
+               and e not in alunos_da_turma
+               and _aluno_e_da_categoria(e, cat)
     ]
+        
     # ordena por nome
     candidatos.sort(key=lambda x: x["nome"].casefold())
 
@@ -796,13 +963,16 @@ def matricular():
     if session.get("tipo") != "professor":
         return redirect("/")
 
+    # Categoria que este professor pode ver: "piloto" ou "mecanico" (ou None se sem filtro)
+    cat = prof_categoria_atual()
+
     if request.method == "POST":
-        alunos_email = request.form.getlist("alunos[]")  # agora lista de alunos
-        curso_nome   = request.form["curso"]
-        professor    = request.form["professor"]
-        nrt_turma    = request.form.get("nrt")
-        data_inicio  = request.form.get("data_inicio")
-        data_fim     = request.form.get("data_fim")
+        alunos_email = request.form.getlist("alunos[]")  # lista de emails selecionados
+        curso_nome   = request.form.get("curso", "")
+        professor    = request.form.get("professor", "")
+        nrt_turma    = request.form.get("nrt", "")
+        data_inicio  = request.form.get("data_inicio", "")
+        data_fim     = request.form.get("data_fim", "")
 
         try:
             periodicidade_anos = int(request.form.get("periodicidade", "1"))
@@ -814,6 +984,7 @@ def matricular():
         tipo_matricula = (request.form.get("tipo") or "").strip()
         turma_form     = (request.form.get("turma") or "").strip()
 
+        # resolve o número da turma
         turma_num = None
         if turma_form:
             if turma_form.isdigit():
@@ -821,13 +992,19 @@ def matricular():
             if len(turma_form) == 3 and turma_form.isdigit():
                 turma_num = turma_form
 
+        # se já existir essa turma para o curso, força criar próxima automaticamente
         if turma_num and any(m.get("curso") == curso_nome and m.get("turma") == turma_num for m in matriculas):
-            turma_num = None  # evita duplicação
+            turma_num = None
 
         if not turma_num:
             last = int(turmas_ctrl.get(curso_nome, 0))
             if last >= 250:
-                alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+                # Remonta a página com erro e listas certas (respeitando categoria)
+                alunos_ctx = [
+                    {"email": e, "nome": d["nome"]}
+                    for e, d in usuarios.items()
+                    if d.get("tipo") == "aluno" and _aluno_e_da_categoria(e, cat)
+                ]
                 professores = [
                     "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
                     "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
@@ -851,18 +1028,23 @@ def matricular():
                 }
                 return render_template(
                     "matricular.html",
-                    alunos=alunos, cursos=cursos, professores=professores,
+                    alunos=alunos_ctx,
+                    cursos=cursos,
+                    professores=professores,
                     sugestoes_por_curso=sugestoes_por_curso,
                     erro="Limite máximo de 250 turmas atingido para este curso."
                 )
 
+            # cria próxima turma automaticamente
             nxt = last + 1
             turmas_ctrl[curso_nome] = nxt
             salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
             turma_num = f"{nxt:03d}"
 
-        # 🔹 Matricula todos os alunos enviados
+        # Matricula, mas só alunos da categoria permitida para este professor
         for aluno_email in alunos_email:
+            if not _aluno_e_da_categoria(aluno_email, cat):
+                continue
             if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
                 matriculas.append({
                     "aluno":       aluno_email,
@@ -877,12 +1059,16 @@ def matricular():
                 })
 
         salvar_dados(CAMINHO_MATRICULAS, matriculas)
-
         flash("Matriculado com Sucesso!", "success")
         return redirect(url_for("home"))
 
     # --- GET ---
-    alunos = [{"email": e, "nome": d["nome"]} for e, d in usuarios.items() if d["tipo"] == "aluno"]
+    # Aqui a lista de alunos exibida já respeita a categoria do professor
+    alunos = [
+        {"email": e, "nome": d["nome"]}
+        for e, d in usuarios.items()
+        if d.get("tipo") == "aluno" and _aluno_e_da_categoria(e, cat)
+    ]
     professores = [
         "Airton Benedito de Siqueira Junior", "Alexandre Kopfer Martins", "Andre Gustavo Chialastri Altounian",
         "Andre Luis Damazio de Sales", "André Palazzo Lyra", "Antonio Jorge de Souza Neto", "Bruna Maria Tasca",
@@ -901,7 +1087,6 @@ def matricular():
         "Rodrigo Romanato de Castro", "Ronaldo de Albuquerque Filho", "Romulo Leonardo Equey Gomes",
         "Thiago Falcão Cury", "Victor Lucas Pereira Soares", "Welner Silva Lima"
     ]
-
     sugestoes_por_curso = {
         c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
     }
@@ -913,6 +1098,7 @@ def matricular():
         professores=professores,
         sugestoes_por_curso=sugestoes_por_curso
     )
+
 
 
                   
@@ -1097,43 +1283,28 @@ def atualizar_foto_perfil():
     if "usuario" not in session:
         return redirect("/login")
 
-    email = session["usuario"].lower()
+    email = session["usuario"]
     file = request.files.get("foto")
-    if not file or file.filename == "":
-        # nada enviado; volta para a home do aluno
+    if not file or file.filename.strip() == "":
         return redirect("/")
 
-    # garante a pasta
-    avatar_dir = os.path.join(UPLOAD_FOLDER, "avatars")
-    os.makedirs(avatar_dir, exist_ok=True)
-
-    # nome seguro com timestamp (evita cache e colisão)
-    base, ext = os.path.splitext(secure_filename(file.filename))
-    if ext.lower() not in (".jpg", ".jpeg", ".png", ".gif", ".webp"):
-        # extensão não permitida -> simplesmente ignora e volta
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in {"png", "jpg", "jpeg", "webp"}:
         return redirect("/")
 
-    fname = f"{email.replace('@','_').replace('.','_')}_{int(datetime.now().timestamp())}{ext.lower()}"
-    save_path = os.path.join(avatar_dir, fname)
+    safe_email = email.replace("@", "_at_").replace(".", "_")
+    final_name = f"{safe_email}.{ext}"
+    save_path = os.path.join(AVATAR_DIR, final_name)
     file.save(save_path)
 
-    # salva caminho relativo para servir via /uploads
-    usuarios[email]["avatar"] = f"avatars/{fname}"
-    salvar_usuarios()
-
-    # opcional: limpa avatares antigos do mesmo usuário (higiênico)
-    try:
-        prefix = f"{email.replace('@','_').replace('.','_')}_"
-        for old in os.listdir(avatar_dir):
-            if old.startswith(prefix) and old != fname:
-                try:
-                    os.remove(os.path.join(avatar_dir, old))
-                except Exception:
-                    pass
-    except Exception:
-        pass
+    rel_path = f"avatars/{final_name}"
+    usuarios.setdefault(email, {})
+    usuarios[email]["foto"] = rel_path
+    salvar_dados(CAMINHO_USUARIOS, usuarios)
 
     return redirect("/")
+
 
 @app.route("/editar_curso", endpoint="lista_cursos_para_editar")
 def lista_cursos_para_editar():
@@ -1692,8 +1863,13 @@ def acompanhamento():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
+    cat = prof_categoria_atual()
     enrollments = []
     for m in matriculas:
+        # 🔽 respeita a categoria (piloto/mecanico) do professor
+        if not _aluno_e_da_categoria(m.get("aluno",""), cat):
+            continue
+
         curso_nome = m.get("curso")
         if not curso_nome:
             continue
@@ -1711,17 +1887,16 @@ def acompanhamento():
         nota_num = (res["acertos"] / res["total"] * 100) if res.get("total") else 0.0
         nota     = f"{round(nota_num,1)}%" if res.get("total") else "---"
         aprovado = (res.get("total", 0) > 0 and res.get("acertos", 0) >= 0.7 * res["total"])
-
         cert_emitido = bool(curso_obj.get("certificados_emitidos", {}).get(m["aluno"]))
 
         enrollments.append({
             "curso":        curso_obj,
-            "aluno":        usuarios[m["aluno"]]["nome"],
+            "aluno":        usuarios.get(m["aluno"], {}).get("nome", m["aluno"]),
             "email":        m["aluno"],
             "tempo":        prog.get("tempo", "---"),
             "concluido":    bool(prog.get("concluido")),
             "nota":         nota,
-            "nota_num":     nota_num,          # útil se quiser ordenar depois
+            "nota_num":     nota_num,
             "nrt":          nrt_val,
             "turma":        turma_num,
             "tipo":         tipo_val,
@@ -1732,6 +1907,7 @@ def acompanhamento():
     salvar_dados(CAMINHO_CURSOS, cursos)
     salvar_dados(CAMINHO_MATRICULAS, matriculas)
     return render_template("acompanhamento.html", enrollments=enrollments)
+
 
 @app.route("/prova_resultado/<aluno>/<curso>")
 def prova_resultado(aluno, curso):
