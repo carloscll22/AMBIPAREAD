@@ -1066,10 +1066,10 @@ return render_template(
 
             # cria próxima turma automaticamente
             
-            nxt = last + 1        
-            turmas_ctrl[curso_nome] = nxt
-            salvar_dados(CAMINHO_TURMAS, turmas_ctrl)           
-            turma_num = f"{nxt:03d}"
+nxt = last + 1        
+turmas_ctrl[curso_nome] = nxt
+salvar_dados(CAMINHO_TURMAS, turmas_ctrl)           
+turma_num = f"{nxt:03d}"
 
         # Matricula, mas só alunos da categoria permitida para este professor
         for aluno_email in alunos_email:
