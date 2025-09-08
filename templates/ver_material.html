@@ -35,6 +35,7 @@
       padding: 20px 24px;
     }
 
+    /* Menu lateral */
     .menu-lateral {
       background:#ffffff;
       border-radius:12px;
@@ -60,6 +61,7 @@
       padding-left:8px;
     }
 
+    /* Conteúdo */
     .conteudo {
       background:#ffffff;
       border-radius:12px;
@@ -67,16 +69,35 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
-    /* Iframe com rolagem e responsividade */
-    iframe {
+    /* Viewer PDF com rolagem */
+    .pdf-wrap { position:relative; }
+    .pdf-viewer,
+    .pdf-viewer embed {
       width:100%;
-      min-height: 70vh;
-      max-height: 85vh;
+      min-height:70vh;
+      max-height:85vh;
       border:1px solid #e6e6e6;
       border-radius:10px;
-      overflow:auto;
+      overflow:auto;                  /* rolagem interna */
+      -webkit-overflow-scrolling:touch;/* suaviza no iOS */
+      display:block;
     }
 
+    /* Botão abrir em tela cheia (fallback/mobile) */
+    .open-full {
+      margin-top:8px;
+      display:none;
+      background:#a0e76d;
+      color:#1b1b1b;
+      padding:10px 14px;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:700;
+      box-shadow:0 2px 5px rgba(0,0,0,.06);
+    }
+    .open-full:hover { background:#8dd24a; }
+
+    /* Progresso */
     .progress { margin-top:16px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative; }
     .progress-bar { height:100%; background:#4CAF50; transition:width .4s; }
     .progress::after {
@@ -85,9 +106,8 @@
       font-weight:700; color:#1b1b1b; font-size:12px; line-height:20px;
     }
 
-    .nav-buttons {
-      margin-top:16px; display:flex; gap:12px; justify-content:flex-end;
-    }
+    /* Navegação */
+    .nav-buttons { margin-top:16px; display:flex; gap:12px; justify-content:flex-end; }
     .btn {
       padding:10px 16px; background:#a0e76d; border:none; border-radius:8px;
       font-weight:700; color:#1b1b1b; cursor:pointer; transition:background .25s;
@@ -99,10 +119,11 @@
     @media (max-width: 992px) {
       .container { grid-template-columns: 1fr; }
       .menu-lateral { height:auto; margin-bottom:16px; }
-      iframe { min-height:65vh; max-height:70vh; }
+      .pdf-viewer, .pdf-viewer embed { min-height:65vh; max-height:70vh; }
+      .open-full { display:inline-block; } /* mostra botão no mobile */
     }
     @media (max-width: 600px) {
-      iframe { min-height:60vh; max-height:65vh; }
+      .pdf-viewer, .pdf-viewer embed { min-height:60vh; max-height:65vh; }
     }
   </style>
 </head>
@@ -114,6 +135,8 @@
   </div>
 
   <div class="container">
+
+    <!-- Menu lateral -->
     <div class="menu-lateral">
       <ul>
         {% for mod in curso.modulos %}
@@ -128,22 +151,41 @@
       </ul>
     </div>
 
+    <!-- Conteúdo -->
     <div class="conteudo">
       {% if curso.modulos and modulo_atual is not none %}
         {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
         {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
         {% set parts = cleaned.split('/') %}
         {% set fname = parts[-1] %}
+        {% set pdf_url = url_for('uploads', filename=fname) %}
 
-        <!-- Scroll interno ativo -->
-        <iframe src="{{ url_for('uploads', filename=fname) }}" frameborder="0"></iframe>
+        <!-- Viewer com fallback -->
+        <div class="pdf-wrap">
+          <object
+            data="{{ pdf_url }}#toolbar=1&zoom=page-width"
+            type="application/pdf"
+            class="pdf-viewer">
+            <embed
+              src="{{ pdf_url }}#toolbar=1&zoom=page-width"
+              type="application/pdf" />
+            <p>Seu navegador não conseguiu exibir o PDF.
+              <a class="open-full" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir em tela cheia</a>
+            </p>
+          </object>
+        </div>
 
-        <small style="opacity:.6">URL DEBUG: {{ url_for('uploads', filename=fname) }}</small>
+        <!-- Botão extra para mobile (sempre visível em telas pequenas) -->
+        <a class="open-full" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir em tela cheia</a>
 
+        <small style="opacity:.6; display:block; margin-top:6px;">URL DEBUG: {{ pdf_url }}</small>
+
+        <!-- Barra de progresso -->
         <div class="progress" data-label="{{ progresso }}%">
           <div class="progress-bar" style="width: {{ progresso }}%"></div>
         </div>
 
+        <!-- Botões de navegação -->
         <div class="nav-buttons">
           <form method="get" id="form-anterior">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
@@ -174,6 +216,8 @@
         <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
       {% endif %}
     </div>
+
   </div>
+
 </body>
 </html>
