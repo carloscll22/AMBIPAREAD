@@ -69,33 +69,16 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
-    /* Viewer PDF com rolagem */
+    /* Viewer */
     .pdf-wrap { position:relative; }
-    .pdf-viewer,
-    .pdf-viewer embed {
+    #pdfFrame {
       width:100%;
       min-height:70vh;
       max-height:85vh;
       border:1px solid #e6e6e6;
       border-radius:10px;
-      overflow:auto;                  /* rolagem interna */
-      -webkit-overflow-scrolling:touch;/* suaviza no iOS */
       display:block;
     }
-
-    /* Botão abrir em tela cheia (fallback/mobile) */
-    .open-full {
-      margin-top:8px;
-      display:none;
-      background:#a0e76d;
-      color:#1b1b1b;
-      padding:10px 14px;
-      border-radius:8px;
-      text-decoration:none;
-      font-weight:700;
-      box-shadow:0 2px 5px rgba(0,0,0,.06);
-    }
-    .open-full:hover { background:#8dd24a; }
 
     /* Progresso */
     .progress { margin-top:16px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative; }
@@ -119,11 +102,10 @@
     @media (max-width: 992px) {
       .container { grid-template-columns: 1fr; }
       .menu-lateral { height:auto; margin-bottom:16px; }
-      .pdf-viewer, .pdf-viewer embed { min-height:65vh; max-height:70vh; }
-      .open-full { display:inline-block; } /* mostra botão no mobile */
+      #pdfFrame { min-height:65vh; max-height:70vh; }
     }
     @media (max-width: 600px) {
-      .pdf-viewer, .pdf-viewer embed { min-height:60vh; max-height:65vh; }
+      #pdfFrame { min-height:60vh; max-height:65vh; }
     }
   </style>
 </head>
@@ -160,23 +142,10 @@
         {% set fname = parts[-1] %}
         {% set pdf_url = url_for('uploads', filename=fname) %}
 
-        <!-- Viewer com fallback -->
         <div class="pdf-wrap">
-          <object
-            data="{{ pdf_url }}#toolbar=1&zoom=page-width"
-            type="application/pdf"
-            class="pdf-viewer">
-            <embed
-              src="{{ pdf_url }}#toolbar=1&zoom=page-width"
-              type="application/pdf" />
-            <p>Seu navegador não conseguiu exibir o PDF.
-              <a class="open-full" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir em tela cheia</a>
-            </p>
-          </object>
+          <!-- o src será definido via JS abaixo -->
+          <iframe id="pdfFrame" title="Material do módulo"></iframe>
         </div>
-
-        <!-- Botão extra para mobile (sempre visível em telas pequenas) -->
-        <a class="open-full" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir em tela cheia</a>
 
         <small style="opacity:.6; display:block; margin-top:6px;">URL DEBUG: {{ pdf_url }}</small>
 
@@ -219,5 +188,45 @@
 
   </div>
 
+  <!-- Lógica para escolher o melhor viewer no dispositivo -->
+  <script>
+    (function () {
+      // URL do PDF vindo do Jinja
+      var pdfUrl = "{{ pdf_url }}";
+      // Detecta iOS / Mobile
+      var ua = navigator.userAgent || navigator.vendor || window.opera;
+      var isIOS = /iPad|iPhone|iPod/.test(ua);
+      var isMobile = isIOS || /Android/i.test(ua);
+
+      // No iOS (e em alguns mobile), use o Google Docs Viewer (scroll de todas as páginas na mesma aba)
+      var frame = document.getElementById('pdfFrame');
+      if (isMobile) {
+        var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(pdfUrl);
+        frame.src = gdocs;
+      } else {
+        // Desktop: deixa o PDF direto (navegador rola normal)
+        // Dica: usar page-width ajuda no fit inicial
+        frame.src = pdfUrl + "#zoom=page-width";
+      }
+    })();
+  </script>
+
+  <!-- Atalhos de teclado (mantidos) -->
+  <script>
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "ArrowLeft") {
+        const btnAnterior = document.querySelector("#form-anterior button");
+        if (btnAnterior && !btnAnterior.disabled) {
+          document.getElementById("form-anterior").submit();
+        }
+      }
+      if (event.key === "ArrowRight") {
+        const btnProximo = document.querySelector("#form-proximo button");
+        if (btnProximo && !btnProximo.disabled) {
+          document.getElementById("form-proximo").submit();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
