@@ -1,152 +1,163 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Visualizar Material</title>
   <style>
-    body { background:#f5ffe6; font-family: Arial, sans-serif; margin:0; }
-
-    .top-bar {
-      background:#c1f38e;
-      padding:16px 24px;
-      font-weight:bold;
-      font-size:20px;
-      position: relative; /* permite posicionar o botão à direita */
+    :root{
+      --bg:#f5ffe6;
+      --brand:#c1f38e;
+      --accent:#a0e76d;
+      --accent-strong:#8dd24a;
+      --text:#1b1b1b;
+      --card:#fff;
+      --shadow:0 2px 8px rgba(0,0,0,.06);
+      --radius:12px;
     }
-    .btn-back {
-      position:absolute;
-      right:24px;
-      top:50%;
-      transform: translateY(-50%);
-      background:#a0e76d;
-      color:#1b1b1b;
-      padding:8px 14px;
-      border-radius:8px;
-      text-decoration:none;
-      font-weight:700;
-      box-shadow:0 2px 5px rgba(0,0,0,.1);
-    }
-    .btn-back:hover { background:#8dd24a; }
-
-    .container {
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      gap:24px;
-      padding: 20px 24px;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Menu lateral */
-    .menu-lateral {
-      background:#ffffff;
-      border-radius:12px;
-      padding:16px;
-      height: calc(100vh - 120px);
-      overflow-y:auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    /* Topo */
+    .top-bar{
+      position:sticky; top:0; z-index:30;
+      background:var(--brand); padding:14px 20px; font-weight:700; font-size:clamp(16px,2.5vw,20px);
+      display:flex; align-items:center; gap:12px;
     }
-    .menu-lateral ul { list-style:none; margin:0; padding:0; }
-    .menu-lateral li + li { margin-top:8px; }
-    .menu-lateral a {
-      display:block;
-      padding:10px 12px;
-      border-radius:8px;
-      color:#222;
-      text-decoration:none;
-      font-weight:600;
+    .btn-back{
+      margin-left:auto; background:var(--accent); color:var(--text);
+      padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:700; box-shadow:var(--shadow);
     }
-    .menu-lateral a:hover { background:#f0fadf; }
-    .menu-lateral a.is-active {
-      background:#e8f5d7;
-      border-left:4px solid #97de66;
-      padding-left:8px;
+    .btn-back:hover{background:var(--accent-strong)}
+
+    /* Layout base */
+    .container{
+      display:grid; grid-template-columns:280px 1fr; gap:24px; padding:20px 24px;
+      align-items:start;
     }
+
+    /* Drawer (menu) */
+    .drawer{
+      background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .drawer__header{
+      display:none; /* só mobile */
+      align-items:center; justify-content:space-between; padding:12px 14px; background:#f0fadf; font-weight:700;
+    }
+    .drawer__toggle{
+      appearance:none; border:1px solid #dfe9cf; background:var(--accent); font-weight:700;
+      padding:6px 10px; border-radius:8px; cursor:pointer;
+    }
+    .drawer__content{
+      max-height:calc(100dvh - 140px);
+      overflow:auto; padding:12px 12px;
+      -webkit-overflow-scrolling:touch;
+    }
+    .menu{
+      list-style:none; padding:0; margin:0;
+    }
+    .menu li+li{margin-top:8px}
+    .menu a{
+      display:block; padding:10px 12px; border-radius:8px; color:#222; text-decoration:none; font-weight:600;
+    }
+    .menu a:hover{background:#f0fadf}
+    .menu a.is-active{background:#e8f5d7; border-left:4px solid #97de66; padding-left:8px}
 
     /* Conteúdo */
-    .conteudo {
-      background:#ffffff;
-      border-radius:12px;
-      padding:16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    .content{
+      background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:var(--shadow);
     }
-    iframe {
+    .viewer{
       width:100%;
-      height: calc(100vh - 220px);
-      border:1px solid #e6e6e6;
-      border-radius:10px;
+      /* fallbacks + mobile-safe viewport units */
+      height:calc(100dvh - 240px);
+      border:1px solid #e6e6e6; border-radius:10px;
+      background:#fff;
     }
 
     /* Progresso */
-    .progress { margin-top:16px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative; }
-    .progress-bar { height:100%; background:#4CAF50; transition:width .4s; }
-    .progress::after {
-      content: attr(data-label);
-      position:absolute; left:50%; top:0; transform:translateX(-50%);
-      font-weight:700; color:#1b1b1b; font-size:12px; line-height:20px;
+    .progress{margin-top:12px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative}
+    .progress-bar{height:100%; background:#4CAF50; transition:width .35s}
+    .progress::after{
+      content:attr(data-label); position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:12px; color:var(--text);
     }
 
-    /* Navegação */
-    .nav-buttons {
-      margin-top:16px; display:flex; gap:12px; justify-content:flex-end;
+    /* Navegação + concluir */
+    .actions{
+      position:sticky; bottom:8px; margin-top:12px;
+      display:flex; gap:12px; justify-content:flex-end; background:transparent;
     }
-    .btn {
-      padding:10px 16px; background:#a0e76d; border:none; border-radius:8px;
-      font-weight:700; color:#1b1b1b; cursor:pointer; transition:background .25s;
+    .btn{
+      padding:10px 16px; background:var(--accent); border:none; border-radius:8px;
+      font-weight:700; color:var(--text); cursor:pointer; transition:background .25s;
     }
-    .btn:hover { background:#8dd24a; }
-    .btn:disabled { background:#dcdcdc; cursor:not-allowed; }
+    .btn:hover{background:var(--accent-strong)}
+    .btn:disabled{background:#dcdcdc; cursor:not-allowed}
 
-    /* Responsivo */
-    @media (max-width: 992px) {
-      .container { grid-template-columns: 1fr; }
-      .menu-lateral { height:auto; }
-      iframe { height: 62vh; }
+    small.debug{opacity:.55; display:block; margin-top:6px}
+
+    /* ========= Responsivo ========= */
+    @media (max-width: 992px){
+      .container{grid-template-columns:1fr; gap:16px; padding:14px}
+      .drawer__header{display:flex}
+      .drawer__content{max-height:none; padding:8px 10px; display:none}
+      .drawer.is-open .drawer__content{display:block}
+      .viewer{height:65svh} /* ocupa bem em iOS/Android */
+      small.debug{display:none}
     }
   </style>
 </head>
 <body>
 
   <div class="top-bar">
-    Inicial - {{ curso.nome }}
-    <!-- Botão Voltar (home do aluno) -->
+    Inicial – {{ curso.nome }}
     <a class="btn-back" href="{{ url_for('home') }}">⬅ Voltar</a>
   </div>
 
   <div class="container">
-
-    <!-- Menu lateral -->
-    <div class="menu-lateral">
-      <ul>
-        {% for mod in curso.modulos %}
-          {% set idx = loop.index0 %}
-          <li>
-            <a href="?modulo={{ idx }}" class="{{ 'is-active' if modulo_atual==idx else '' }}">
-              Módulo {{ idx + 1 }} - {{ mod.titulo }}
-              {% if progresso_individual and progresso_individual[idx] == 100 %} ✅{% endif %}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
+    <!-- Drawer / Menu -->
+    <section class="drawer" id="drawer">
+      <div class="drawer__header">
+        <span>Módulos</span>
+        <button class="drawer__toggle" type="button" onclick="toggleDrawer()">Abrir/Fechar</button>
+      </div>
+      <div class="drawer__content">
+        <ul class="menu">
+          {% for mod in curso.modulos %}
+            {% set idx = loop.index0 %}
+            <li>
+              <a href="?modulo={{ idx }}" class="{{ 'is-active' if modulo_atual==idx else '' }}">
+                Módulo {{ idx + 1 }} – {{ mod.titulo }}
+                {% if progresso_individual and progresso_individual[idx] == 100 %} ✅{% endif %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
 
     <!-- Conteúdo -->
-    <div class="conteudo">
+    <section class="content">
       {% if curso.modulos and modulo_atual is not none %}
-        {# pega o valor salvo #}
         {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
         {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
         {% set parts = cleaned.split('/') %}
         {% set fname = parts[-1] %}
 
-        <iframe src="{{ url_for('uploads', filename=fname) }}" frameborder="0"></iframe>
-        <small style="opacity:.6">URL DEBUG: {{ url_for('uploads', filename=fname) }}</small>
+        <iframe class="viewer" src="{{ url_for('uploads', filename=fname) }}" frameborder="0" allowfullscreen></iframe>
+        <small class="debug">URL DEBUG: {{ url_for('uploads', filename=fname) }}</small>
 
-        <!-- Barra de progresso -->
         <div class="progress" data-label="{{ progresso }}%">
           <div class="progress-bar" style="width: {{ progresso }}%"></div>
         </div>
 
-        <!-- Botões de navegação -->
-        <div class="nav-buttons">
+        <div class="actions">
           <form method="get" id="form-anterior">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
             <button class="btn" type="submit"
@@ -163,38 +174,36 @@
           </form>
         </div>
 
-        <!-- Botão Concluir (último módulo + 100%) -->
         {% if curso.modulos and modulo_atual is not none
               and (modulo_atual + 1) == (curso.modulos|length)
               and (progresso|int) >= 100 %}
-          <div class="concluir" style="margin-top:16px; text-align:right;">
+          <div class="actions" style="justify-content:flex-end;">
             <form method="post" action="/concluir/{{ curso.nome }}">
               <button id="concluirBtn" type="submit" class="btn">Concluído</button>
             </form>
           </div>
         {% endif %}
-
       {% else %}
-        <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
+        <p>Selecione um módulo para visualizar o conteúdo.</p>
       {% endif %}
-    </div>
-
+    </section>
   </div>
 
-  <!-- Atalhos de teclado -->
   <script>
-    document.addEventListener("keydown", function(event) {
-      if (event.key === "ArrowLeft") {
-        const btnAnterior = document.querySelector("#form-anterior button");
-        if (btnAnterior && !btnAnterior.disabled) {
-          document.getElementById("form-anterior").submit();
-        }
+    function toggleDrawer(){
+      const el = document.getElementById('drawer');
+      el.classList.toggle('is-open');
+    }
+
+    // atalhos ← →
+    document.addEventListener("keydown", function(ev){
+      if(ev.key === "ArrowLeft"){
+        const b = document.querySelector("#form-anterior button");
+        if(b && !b.disabled){ document.getElementById("form-anterior").submit(); }
       }
-      if (event.key === "ArrowRight") {
-        const btnProximo = document.querySelector("#form-proximo button");
-        if (btnProximo && !btnProximo.disabled) {
-          document.getElementById("form-proximo").submit();
-        }
+      if(ev.key === "ArrowRight"){
+        const b = document.querySelector("#form-proximo button");
+        if(b && !b.disabled){ document.getElementById("form-proximo").submit(); }
       }
     });
   </script>
