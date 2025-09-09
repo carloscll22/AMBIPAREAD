@@ -69,7 +69,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
-    /* Viewer */
     .pdf-wrap { position:relative; }
     #pdfFrame {
       width:100%;
@@ -78,9 +77,9 @@
       border:1px solid #e6e6e6;
       border-radius:10px;
       display:block;
+      background:#2b2b2b; /* evita “flash” branco */
     }
 
-    /* Progresso */
     .progress { margin-top:16px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative; }
     .progress-bar { height:100%; background:#4CAF50; transition:width .4s; }
     .progress::after {
@@ -89,7 +88,6 @@
       font-weight:700; color:#1b1b1b; font-size:12px; line-height:20px;
     }
 
-    /* Navegação */
     .nav-buttons { margin-top:16px; display:flex; gap:12px; justify-content:flex-end; }
     .btn {
       padding:10px 16px; background:#a0e76d; border:none; border-radius:8px;
@@ -98,7 +96,6 @@
     .btn:hover { background:#8dd24a; }
     .btn:disabled { background:#dcdcdc; cursor:not-allowed; }
 
-    /* Responsivo */
     @media (max-width: 992px) {
       .container { grid-template-columns: 1fr; }
       .menu-lateral { height:auto; margin-bottom:16px; }
@@ -117,7 +114,6 @@
   </div>
 
   <div class="container">
-
     <!-- Menu lateral -->
     <div class="menu-lateral">
       <ul>
@@ -143,18 +139,15 @@
         {% set pdf_url = url_for('uploads', filename=fname) %}
 
         <div class="pdf-wrap">
-          <!-- o src será definido via JS abaixo -->
-          <iframe id="pdfFrame" title="Material do módulo"></iframe>
+          <iframe id="pdfFrame" title="Material do módulo" allow="fullscreen"></iframe>
         </div>
 
         <small style="opacity:.6; display:block; margin-top:6px;">URL DEBUG: {{ pdf_url }}</small>
 
-        <!-- Barra de progresso -->
         <div class="progress" data-label="{{ progresso }}%">
           <div class="progress-bar" style="width: {{ progresso }}%"></div>
         </div>
 
-        <!-- Botões de navegação -->
         <div class="nav-buttons">
           <form method="get" id="form-anterior">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
@@ -185,33 +178,45 @@
         <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
       {% endif %}
     </div>
-
   </div>
 
-  <!-- Lógica para escolher o melhor viewer no dispositivo -->
+  <!-- Escolhe o viewer correto e garante URL ABSOLUTA -->
   <script>
     (function () {
-      // URL do PDF vindo do Jinja
-      var pdfUrl = "{{ pdf_url }}";
-      // Detecta iOS / Mobile
+      // URL gerada pelo Flask (pode vir relativa, ex: /uploads/arquivo.pdf)
+      var rel = "{{ pdf_url }}";
+      // Garanta HTTPS + host (ex: https://ambiparead.onrender.com/uploads/arquivo.pdf)
+      var abs = /^https?:\/\//i.test(rel) ? rel : (location.origin + rel);
+
+      var frame = document.getElementById('pdfFrame');
+
+      // Detecta mobile (iOS e Android)
       var ua = navigator.userAgent || navigator.vendor || window.opera;
       var isIOS = /iPad|iPhone|iPod/.test(ua);
-      var isMobile = isIOS || /Android/i.test(ua);
+      var isAndroid = /Android/i.test(ua);
+      var isMobile = isIOS || isAndroid;
 
-      // No iOS (e em alguns mobile), use o Google Docs Viewer (scroll de todas as páginas na mesma aba)
-      var frame = document.getElementById('pdfFrame');
       if (isMobile) {
-        var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(pdfUrl);
+        // Em mobile usamos o Google Viewer com URL ABSOLUTA (rolagem OK)
+        var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(abs);
         frame.src = gdocs;
       } else {
-        // Desktop: deixa o PDF direto (navegador rola normal)
-        // Dica: usar page-width ajuda no fit inicial
-        frame.src = pdfUrl + "#zoom=page-width";
+        // Desktop: PDF nativo
+        frame.src = abs + "#zoom=page-width";
       }
+
+      // Fallback simples: se der erro de carga, mostra link para abrir em nova aba
+      frame.addEventListener('error', function () {
+        frame.outerHTML =
+          '<div style="padding:12px;background:#fff;border:1px solid #e6e6e6;border-radius:10px;">' +
+          'Não foi possível carregar o visualizador. ' +
+          '<a href="'+ abs +'" target="_blank" style="font-weight:bold;color:#2a6;">Abrir o PDF em nova aba</a>' +
+          '</div>';
+      });
     })();
   </script>
 
-  <!-- Atalhos de teclado (mantidos) -->
+  <!-- Atalhos de teclado -->
   <script>
     document.addEventListener("keydown", function(event) {
       if (event.key === "ArrowLeft") {
