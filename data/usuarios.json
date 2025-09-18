@@ -56,5 +56,7 @@
   "larissafr.ctm@gmail.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "LARISSA FURTADO"},
   "araujo.tiago@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Tiago Araujo"},
   "samuel.borges@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Samuel Borges"},
-  "felipe.pires@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Felipe Pires"}
+  "felipe.pires@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Felipe Pires"},
+  "jeferson.jose@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Jeferson Jose"},
+  "guilherme.azevedo@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Guilherme Azevedo"}
 }
