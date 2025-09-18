@@ -220,6 +220,9 @@ MECANICOS_SET = {
     "thalys.martins@ambipar.com",
     "thiago.rocha@ambipar.com",
     "valdecir.macedo@ambipar.com",
+    "araujo.tiago@ambipar.com",
+    "samuel.borges@ambipar.com",
+    "felipe.pires@ambipar.com",
 }
 
 # Garante que existam registros para todos listados (se não existir, cria como aluno)
