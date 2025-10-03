@@ -129,7 +129,7 @@
 
   {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
 
-  {# Calcula o maior prefixo 100% liberado SEM usar break (Jinja puro) #}
+  {# Calcula prefixo 100% (sem break) #}
   {% set ns = namespace(unlocked_idx=0, stop=false) %}
   {% if total_mods > 0 %}
     {% for i in range(total_mods) %}
@@ -220,10 +220,8 @@
           <form method="get" id="form-proximo">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
             <button class="btn" type="submit"
-              {# Próximo só habilita se o próximo índice estiver liberado e existir #}
-              {% if (not curso.modulos) or (modulo_atual is none)
-                    or ((modulo_atual + 1) >= (curso.modulos|length))
-                    or ((modulo_atual + 1) > ns.unlocked_idx) %}disabled{% endif %}>
+              {# >>> HABILITA PRÓXIMO PARA AVANÇAR PASSO-A-PASSO (sem depender do unlocked_idx) <<< #}
+              {% if (not curso.modulos) or (modulo_atual is none) or ((modulo_atual + 1) >= (curso.modulos|length)) %}disabled{% endif %}>
               Próximo →
             </button>
           </form>
