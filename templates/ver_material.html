@@ -129,20 +129,6 @@
 
   {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
 
-  {# Calcula prefixo 100% (sem break) #}
-  {% set ns = namespace(unlocked_idx=0, stop=false) %}
-  {% if total_mods > 0 %}
-    {% for i in range(total_mods) %}
-      {% if not ns.stop %}
-        {% if progresso_individual and progresso_individual[i] == 100 %}
-          {% set ns.unlocked_idx = i + 1 %}
-        {% else %}
-          {% set ns.stop = true %}
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-
   <div class="top-bar">
     Treinamento - {{ curso.nome }}
 
@@ -168,7 +154,8 @@
       <ul>
         {% for mod in curso.modulos %}
           {% set idx = loop.index0 %}
-          {% set is_unlocked = (idx <= ns.unlocked_idx) %}
+          {# Desbloqueia tudo até o módulo atual (inclusive) ou módulos já 100% #}
+          {% set is_unlocked = (modulo_atual is not none and idx <= modulo_atual) or (progresso_individual and progresso_individual[idx] == 100) %}
           {% set is_active = (modulo_atual==idx) %}
           <li>
             {% if is_unlocked %}
@@ -220,7 +207,6 @@
           <form method="get" id="form-proximo">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
             <button class="btn" type="submit"
-              {# >>> HABILITA PRÓXIMO PARA AVANÇAR PASSO-A-PASSO (sem depender do unlocked_idx) <<< #}
               {% if (not curso.modulos) or (modulo_atual is none) or ((modulo_atual + 1) >= (curso.modulos|length)) %}disabled{% endif %}>
               Próximo →
             </button>
