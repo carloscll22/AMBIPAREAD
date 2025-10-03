@@ -13,20 +13,32 @@
       font-size:20px;
       position: relative;
     }
-    .btn-back {
+
+    /* Ações no topo (Concluído + Voltar) alinhadas à direita */
+    .top-actions{
       position:absolute;
       right:24px;
       top:50%;
       transform: translateY(-50%);
-      background:#a0e76d;
-      color:#1b1b1b;
-      padding:8px 14px;
-      border-radius:8px;
-      text-decoration:none;
-      font-weight:700;
-      box-shadow:0 2px 5px rgba(0,0,0,.1);
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .btn-top{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:700;
+      box-shadow:0 2px 5px rgba(0,0,0,.1); border:0; cursor:pointer;
+    }
+    .btn-back {
+      background:#a0e76d; color:#1b1b1b;
     }
     .btn-back:hover { background:#8dd24a; }
+
+    .btn-concluir-top{
+      background:#16a34a; color:#fff; border:0;
+    }
+    .btn-concluir-top:hover{ filter: brightness(1.05); }
 
     .container {
       display:grid;
@@ -46,20 +58,32 @@
     }
     .menu-lateral ul { list-style:none; margin:0; padding:0; }
     .menu-lateral li + li { margin-top:8px; }
-    .menu-lateral a {
-      display:block;
-      padding:10px 12px;
-      border-radius:8px;
-      color:#222;
-      text-decoration:none;
-      font-weight:600;
+
+    .item-modulo{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; padding:10px 12px; border-radius:8px; font-weight:600;
     }
-    .menu-lateral a:hover { background:#f0fadf; }
-    .menu-lateral a.is-active {
+    .item-modulo a{
+      color:#222; text-decoration:none; display:block; width:100%;
+    }
+    .item-modulo:hover { background:#f0fadf; }
+
+    .is-active {
       background:#e8f5d7;
       border-left:4px solid #97de66;
       padding-left:8px;
     }
+
+    /* Bloqueado (cadeado) */
+    .locked{
+      background:#f6f6f6;
+      color:#9a9a9a;
+      cursor:not-allowed;
+      border-left:4px solid #d9d9d9;
+      padding-left:8px;
+    }
+    .locked:hover{ background:#f6f6f6; }
+    .lock-icon{ margin-left:8px; opacity:.8; font-weight:700; }
 
     /* Conteúdo */
     .conteudo {
@@ -96,28 +120,6 @@
     .btn:hover { background:#8dd24a; }
     .btn:disabled { background:#dcdcdc; cursor:not-allowed; }
 
-    /* Botão Concluído fixo no topo direito */
-    .btn-concluir-fixed{
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 1000;
-      padding: 10px 16px;
-      border: 0;
-      border-radius: 12px;
-      background: #16a34a; /* verde elegante */
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      transition: transform .06s ease, filter .15s ease, opacity .15s ease;
-      opacity: 0.98;
-    }
-    .btn-concluir-fixed:hover{ transform: translateY(-1px); filter: brightness(1.05); }
-    .btn-concluir-fixed:active{ transform: translateY(0); filter: brightness(0.98); }
-    /* Evita sobrepor a top-bar */
-    .has-topbar .btn-concluir-fixed{ top: 64px; }
-
     @media (max-width: 992px) {
       .container { grid-template-columns: 1fr; }
       .menu-lateral { height:auto; margin-bottom:16px; }
@@ -128,11 +130,40 @@
     }
   </style>
 </head>
-<body class="has-topbar">
+<body>
+
+  {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
+  {# Calcula o maior prefixo concluído 100% (0..k) e libera o k+1 #}
+  {% set unlocked_idx = 0 %}
+  {% if total_mods > 0 %}
+    {% set unlocked_idx = 0 %}
+    {% for i in range(total_mods) %}
+      {% if progresso_individual and progresso_individual[i] == 100 %}
+        {% set unlocked_idx = i + 1 %}
+      {% else %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+    {# unlocked_idx agora é o primeiro módulo ainda não 100% (ou total_mods se todos 100%) #}
+  {% endif %}
 
   <div class="top-bar">
     Treinamento - {{ curso.nome }}
-    <a class="btn-back" href="{{ url_for('home') }}">⬅ Voltar</a>
+
+    <div class="top-actions">
+      {# Botão Concluído aparece à ESQUERDA do Voltar quando estiver no último módulo e 100% #}
+      {% if curso.modulos and modulo_atual is not none
+            and (modulo_atual + 1) == (curso.modulos|length)
+            and (progresso|int) >= 100 %}
+        <form method="post" action="/concluir/{{ curso.nome }}">
+          <button type="submit" class="btn-top btn-concluir-top" aria-label="Concluir e ir para a prova">
+            Concluído
+          </button>
+        </form>
+      {% endif %}
+
+      <a class="btn-top btn-back" href="{{ url_for('home') }}">⬅ Voltar</a>
+    </div>
   </div>
 
   <div class="container">
@@ -141,11 +172,24 @@
       <ul>
         {% for mod in curso.modulos %}
           {% set idx = loop.index0 %}
+          {% set is_unlocked = (idx <= unlocked_idx) %}
+          {% set is_active = (modulo_atual==idx) %}
           <li>
-            <a href="?modulo={{ idx }}" class="{{ 'is-active' if modulo_atual==idx else '' }}">
-              Módulo {{ idx + 1 }} - {{ mod.titulo }}
-              {% if progresso_individual and progresso_individual[idx] == 100 %} ✅{% endif %}
-            </a>
+            {% if is_unlocked %}
+              <div class="item-modulo {{ 'is-active' if is_active else '' }}">
+                <a href="?modulo={{ idx }}">
+                  Módulo {{ idx + 1 }} - {{ mod.titulo }}
+                  {% if progresso_individual and progresso_individual[idx] == 100 %} ✅{% endif %}
+                </a>
+              </div>
+            {% else %}
+              <div class="item-modulo locked" title="Módulo bloqueado (complete os anteriores)">
+                <span>
+                  Módulo {{ idx + 1 }} - {{ mod.titulo }}
+                </span>
+                <span class="lock-icon">🔒</span>
+              </div>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
@@ -178,32 +222,22 @@
               ← Anterior
             </button>
           </form>
+
           <form method="get" id="form-proximo">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
             <button class="btn" type="submit"
-              {% if not curso.modulos or modulo_atual is none or (modulo_atual + 1) >= (curso.modulos|length) %}disabled{% endif %}>
+              {# Próximo só habilita se o próximo índice estiver <= unlocked_idx #}
+              {% if not curso.modulos or modulo_atual is none or (modulo_atual + 1) > unlocked_idx or (modulo_atual + 1) >= (curso.modulos|length) %}disabled{% endif %}>
               Próximo →
             </button>
           </form>
         </div>
 
-        {# REMOVIDO o bloco de botão no rodapé para evitar duplicidade #}
       {% else %}
         <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
       {% endif %}
     </div>
   </div>
-
-  {# Botão Concluído FIXO no topo direito (mesma condição de antes) #}
-  {% if curso.modulos and modulo_atual is not none
-        and (modulo_atual + 1) == (curso.modulos|length)
-        and (progresso|int) >= 100 %}
-    <form method="post" action="/concluir/{{ curso.nome }}">
-      <button id="concluirBtn" type="submit" class="btn-concluir-fixed" aria-label="Concluir e ir para a prova">
-        Concluído
-      </button>
-    </form>
-  {% endif %}
 
   <!-- Escolhe o viewer correto e garante URL ABSOLUTA -->
   <script>
@@ -233,6 +267,21 @@
           '</div>';
       });
     })();
+  </script>
+
+  <!-- Bloqueio de clique em módulos trancados (defesa no front) -->
+  <script>
+    document.addEventListener('click', function(e){
+      var lockedItem = e.target.closest('.locked');
+      if (lockedItem){
+        e.preventDefault();
+        e.stopPropagation();
+        // opcional: feedback visual rápido
+        lockedItem.style.transition = 'filter .15s';
+        lockedItem.style.filter = 'grayscale(30%)';
+        setTimeout(function(){ lockedItem.style.filter = 'none'; }, 180);
+      }
+    });
   </script>
 
   <!-- Atalhos de teclado -->
