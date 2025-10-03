@@ -30,14 +30,9 @@
       padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:700;
       box-shadow:0 2px 5px rgba(0,0,0,.1); border:0; cursor:pointer;
     }
-    .btn-back {
-      background:#a0e76d; color:#1b1b1b;
-    }
+    .btn-back { background:#a0e76d; color:#1b1b1b; }
     .btn-back:hover { background:#8dd24a; }
-
-    .btn-concluir-top{
-      background:#16a34a; color:#fff; border:0;
-    }
+    .btn-concluir-top{ background:#16a34a; color:#fff; border:0; }
     .btn-concluir-top:hover{ filter: brightness(1.05); }
 
     .container {
@@ -133,25 +128,26 @@
 <body>
 
   {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
-  {# Calcula o maior prefixo concluído 100% (0..k) e libera o k+1 #}
-  {% set unlocked_idx = 0 %}
+
+  {# Calcula o maior prefixo 100% liberado SEM usar break (Jinja puro) #}
+  {% set ns = namespace(unlocked_idx=0, stop=false) %}
   {% if total_mods > 0 %}
-    {% set unlocked_idx = 0 %}
     {% for i in range(total_mods) %}
-      {% if progresso_individual and progresso_individual[i] == 100 %}
-        {% set unlocked_idx = i + 1 %}
-      {% else %}
-        {% break %}
+      {% if not ns.stop %}
+        {% if progresso_individual and progresso_individual[i] == 100 %}
+          {% set ns.unlocked_idx = i + 1 %}
+        {% else %}
+          {% set ns.stop = true %}
+        {% endif %}
       {% endif %}
     {% endfor %}
-    {# unlocked_idx agora é o primeiro módulo ainda não 100% (ou total_mods se todos 100%) #}
   {% endif %}
 
   <div class="top-bar">
     Treinamento - {{ curso.nome }}
 
     <div class="top-actions">
-      {# Botão Concluído aparece à ESQUERDA do Voltar quando estiver no último módulo e 100% #}
+      {# Concluído à ESQUERDA do Voltar, só no último módulo e 100% #}
       {% if curso.modulos and modulo_atual is not none
             and (modulo_atual + 1) == (curso.modulos|length)
             and (progresso|int) >= 100 %}
@@ -172,7 +168,7 @@
       <ul>
         {% for mod in curso.modulos %}
           {% set idx = loop.index0 %}
-          {% set is_unlocked = (idx <= unlocked_idx) %}
+          {% set is_unlocked = (idx <= ns.unlocked_idx) %}
           {% set is_active = (modulo_atual==idx) %}
           <li>
             {% if is_unlocked %}
@@ -184,9 +180,7 @@
               </div>
             {% else %}
               <div class="item-modulo locked" title="Módulo bloqueado (complete os anteriores)">
-                <span>
-                  Módulo {{ idx + 1 }} - {{ mod.titulo }}
-                </span>
+                <span>Módulo {{ idx + 1 }} - {{ mod.titulo }}</span>
                 <span class="lock-icon">🔒</span>
               </div>
             {% endif %}
@@ -226,8 +220,10 @@
           <form method="get" id="form-proximo">
             <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
             <button class="btn" type="submit"
-              {# Próximo só habilita se o próximo índice estiver <= unlocked_idx #}
-              {% if not curso.modulos or modulo_atual is none or (modulo_atual + 1) > unlocked_idx or (modulo_atual + 1) >= (curso.modulos|length) %}disabled{% endif %}>
+              {# Próximo só habilita se o próximo índice estiver liberado e existir #}
+              {% if (not curso.modulos) or (modulo_atual is none)
+                    or ((modulo_atual + 1) >= (curso.modulos|length))
+                    or ((modulo_atual + 1) > ns.unlocked_idx) %}disabled{% endif %}>
               Próximo →
             </button>
           </form>
@@ -276,7 +272,6 @@
       if (lockedItem){
         e.preventDefault();
         e.stopPropagation();
-        // opcional: feedback visual rápido
         lockedItem.style.transition = 'filter .15s';
         lockedItem.style.filter = 'grayscale(30%)';
         setTimeout(function(){ lockedItem.style.filter = 'none'; }, 180);
