@@ -96,6 +96,28 @@
     .btn:hover { background:#8dd24a; }
     .btn:disabled { background:#dcdcdc; cursor:not-allowed; }
 
+    /* Botão Concluído fixo no topo direito */
+    .btn-concluir-fixed{
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 1000;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: #16a34a; /* verde elegante */
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transition: transform .06s ease, filter .15s ease, opacity .15s ease;
+      opacity: 0.98;
+    }
+    .btn-concluir-fixed:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    .btn-concluir-fixed:active{ transform: translateY(0); filter: brightness(0.98); }
+    /* Evita sobrepor a top-bar */
+    .has-topbar .btn-concluir-fixed{ top: 64px; }
+
     @media (max-width: 992px) {
       .container { grid-template-columns: 1fr; }
       .menu-lateral { height:auto; margin-bottom:16px; }
@@ -106,7 +128,7 @@
     }
   </style>
 </head>
-<body>
+<body class="has-topbar">
 
   <div class="top-bar">
     Treinamento - {{ curso.nome }}
@@ -165,47 +187,44 @@
           </form>
         </div>
 
-        {% if curso.modulos and modulo_atual is not none
-              and (modulo_atual + 1) == (curso.modulos|length)
-              and (progresso|int) >= 100 %}
-          <div class="concluir" style="margin-top:16px; text-align:right;">
-            <form method="post" action="/concluir/{{ curso.nome }}">
-              <button id="concluirBtn" type="submit" class="btn">Concluído</button>
-            </form>
-          </div>
-        {% endif %}
+        {# REMOVIDO o bloco de botão no rodapé para evitar duplicidade #}
       {% else %}
         <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
       {% endif %}
     </div>
   </div>
 
+  {# Botão Concluído FIXO no topo direito (mesma condição de antes) #}
+  {% if curso.modulos and modulo_atual is not none
+        and (modulo_atual + 1) == (curso.modulos|length)
+        and (progresso|int) >= 100 %}
+    <form method="post" action="/concluir/{{ curso.nome }}">
+      <button id="concluirBtn" type="submit" class="btn-concluir-fixed" aria-label="Concluir e ir para a prova">
+        Concluído
+      </button>
+    </form>
+  {% endif %}
+
   <!-- Escolhe o viewer correto e garante URL ABSOLUTA -->
   <script>
     (function () {
-      // URL gerada pelo Flask (pode vir relativa, ex: /uploads/arquivo.pdf)
       var rel = "{{ pdf_url }}";
-      // Garanta HTTPS + host (ex: https://ambiparead.onrender.com/uploads/arquivo.pdf)
       var abs = /^https?:\/\//i.test(rel) ? rel : (location.origin + rel);
 
       var frame = document.getElementById('pdfFrame');
 
-      // Detecta mobile (iOS e Android)
       var ua = navigator.userAgent || navigator.vendor || window.opera;
       var isIOS = /iPad|iPhone|iPod/.test(ua);
       var isAndroid = /Android/i.test(ua);
       var isMobile = isIOS || isAndroid;
 
       if (isMobile) {
-        // Em mobile usamos o Google Viewer com URL ABSOLUTA (rolagem OK)
         var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(abs);
         frame.src = gdocs;
       } else {
-        // Desktop: PDF nativo
         frame.src = abs + "#zoom=page-width";
       }
 
-      // Fallback simples: se der erro de carga, mostra link para abrir em nova aba
       frame.addEventListener('error', function () {
         frame.outerHTML =
           '<div style="padding:12px;background:#fff;border:1px solid #e6e6e6;border-radius:10px;">' +
