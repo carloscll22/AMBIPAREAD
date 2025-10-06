@@ -122,6 +122,62 @@ def salvar_usuarios():
     with open(CAMINHO_USUARIOS, "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=2, ensure_ascii=False)
 
+# --- RESET de histórico do aluno em um curso ---------------------------
+def reset_aluno_no_curso(aluno_email: str, curso_nome: str):
+    """
+    Apaga todo rastro do aluno no curso: progresso, conclusão, prova, certificado,
+    respostas e vencimentos. Idempotente (pode chamar quantas vezes quiser).
+    """
+    aluno_email = (aluno_email or "").strip().lower()
+    curso_nome = (curso_nome or "").strip()
+    if not aluno_email or not curso_nome:
+        return
+
+    # 1) progresso_por_aluno (arquivo progresso.json)
+    try:
+        if aluno_email in progresso_por_aluno:
+            progresso_por_aluno[aluno_email].pop(curso_nome, None)
+            if not progresso_por_aluno[aluno_email]:
+                progresso_por_aluno.pop(aluno_email, None)
+    except Exception:
+        pass
+
+    # 2) estruturas dentro do próprio curso (arquivo cursos.json)
+    try:
+        curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
+        if curso_obj:
+            for key in ("progresso", "resultados", "respostas", "certificados_emitidos"):
+                d = curso_obj.get(key)
+                if isinstance(d, dict):
+                    d.pop(aluno_email, None)
+    except Exception:
+        pass
+
+    # 3) vencimentos (arquivo vencimentos.json)
+    try:
+        global vencimentos
+        vencimentos = [
+            v for v in vencimentos
+            if not (v.get("aluno") == aluno_email and v.get("curso") == curso_nome)
+        ]
+    except Exception:
+        pass
+
+    # 4) persistência
+    try:
+        salvar_dados(CAMINHO_PROGRESSO, progresso_por_aluno)
+    except Exception:
+        pass
+    try:
+        salvar_dados(CAMINHO_CURSOS, cursos)
+    except Exception:
+        pass
+    try:
+        salvar_vencimentos()
+    except Exception:
+        pass
+
+
 # ==== INÍCIO DO PATCH DE CATEGORIAS ====
 
 def _title_from_email(email: str) -> str:
@@ -880,7 +936,6 @@ def editar_turma_detalhe(curso, turma):
         elif acao == "remove":
             aluno_email = (request.form.get("aluno_email") or "").strip().lower()
             # remove somente a matrícula deste curso/turma
-            
             matriculas = [
                 m for m in matriculas
                 if not (m.get("aluno") == aluno_email and
@@ -888,8 +943,13 @@ def editar_turma_detalhe(curso, turma):
                         m.get("turma") == turma)
             ]
             salvar_dados(CAMINHO_MATRICULAS, matriculas)
-            flash("Aluno removido da turma.", "success")
+
+            # 🔴 ZERA rastro do aluno neste curso
+            reset_aluno_no_curso(aluno_email, curso)
+
+            flash("Aluno removido da turma e histórico zerado.", "success")
             return redirect(url_for("editar_turma_detalhe", curso=curso, turma=turma))
+
 
     # reconsulta após possíveis alterações
     regs = [m for m in matriculas if m.get("curso") == curso and m.get("turma") == turma]
@@ -1077,9 +1137,16 @@ def matricular():
             turma_num = f"{nxt:03d}"
 
         # ---------- matrícula (⚠️ este FOR precisa estar DESALINHADO UM NÍVEL para a ESQUERDA) ----------
+                # ---------- matrícula ----------
         for aluno_email in alunos_email:
+            aluno_email = (aluno_email or "").strip().lower()
             if not _aluno_e_da_categoria(aluno_email, cat):
                 continue
+
+            # 🔴 Sempre zera rastro anterior desse aluno no curso (caso tenha sido teste)
+            reset_aluno_no_curso(aluno_email, curso_nome)
+
+            # evita duplicar matrícula no mesmo curso (mantém sua regra atual)
             if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
                 matriculas.append({
                     "aluno":         aluno_email,
@@ -1340,15 +1407,22 @@ def lista_cursos_para_editar():
 
 @app.route("/remover_matricula", methods=["POST"])
 def remover_matricula():
-    curso_nome = request.form["curso"]
-    aluno_id = request.form["aluno"]
+    curso_nome = (request.form.get("curso") or "").strip()
+    aluno_id   = (request.form.get("aluno") or "").strip().lower()
 
     global matriculas
-    matriculas = [m for m in matriculas if not (m["curso"] == curso_nome and m["aluno"] == aluno_id)]
+    matriculas = [
+        m for m in matriculas
+        if not (m.get("curso") == curso_nome and m.get("aluno") == aluno_id)
+    ]
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
 
-    salvar_dados(CAMINHO_MATRICULAS, matriculas)  # <- salvando a alteração no disco
+    # 🔴 ZERA rastro do aluno neste curso (progresso, prova, certificado, vencimento)
+    reset_aluno_no_curso(aluno_id, curso_nome)
 
+    flash("Matrícula removida e histórico zerado.", "success")
     return redirect(url_for("lista_cursos_para_editar"))
+
 
     
 @app.route("/remover_curso", methods=["POST"])
