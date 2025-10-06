@@ -4,124 +4,215 @@
   <meta charset="UTF-8">
   <title>Visualizar Material</title>
   <style>
-    body { background:#f5ffe6; font-family: Arial, sans-serif; margin:0; }
-
-    .top-bar {
-      background:#c1f38e;
-      padding:16px 24px;
-      font-weight:bold;
-      font-size:20px;
-      position: relative;
+    :root{
+      --bg:#f5ffe6;
+      --brand:#c1f38e;
+      --btn:#a0e76d;
+      --btnHover:#8dd24a;
+      --accent:#97de66;
+      --ink:#1b1b1b;
+      --card:#ffffff;
+      --muted:#667085;
+      --bord:#e6e6e6;
+      --ok:#16a34a;
+      --lock:#9a9a9a;
     }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      background:var(--bg);
+      color:var(--ink);
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      line-height:1.45;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Top bar sticky com sombra no scroll */
+    .top-bar{
+      position:sticky; top:0; z-index:50;
+      background:var(--brand);
+      padding:16px 24px;
+      font-weight:700;
+      font-size:20px;
+      display:flex; align-items:center; justify-content:space-between;
+      transition: box-shadow .2s ease;
+    }
+    .top-bar.is-scrolled{ box-shadow:0 6px 16px rgba(0,0,0,.08); }
 
     /* Ações no topo (Concluído + Voltar) alinhadas à direita */
     .top-actions{
-      position:absolute;
-      right:24px;
-      top:50%;
-      transform: translateY(-50%);
-      display:flex;
-      gap:12px;
-      align-items:center;
+      display:flex; gap:12px; align-items:center;
     }
-
     .btn-top{
       display:inline-flex; align-items:center; justify-content:center;
-      padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:700;
+      padding:8px 14px; border-radius:10px; text-decoration:none; font-weight:700;
       box-shadow:0 2px 5px rgba(0,0,0,.1); border:0; cursor:pointer;
+      transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
     }
-    .btn-back { background:#a0e76d; color:#1b1b1b; }
-    .btn-back:hover { background:#8dd24a; }
-    .btn-concluir-top{ background:#16a34a; color:#fff; border:0; }
+    .btn-top:active{ transform: translateY(1px); }
+    .btn-back { background:var(--btn); color:#1b1b1b; }
+    .btn-back:hover { background:var(--btnHover); }
+    .btn-concluir-top{ background:var(--ok); color:#fff; border:0; }
     .btn-concluir-top:hover{ filter: brightness(1.05); }
+    .btn-top:focus-visible{ outline:3px solid rgba(0,0,0,.2); outline-offset:2px; }
 
+    /* Container central com largura máxima */
+    .page{
+      max-width:1200px; margin:0 auto; padding: 20px 24px;
+    }
     .container {
       display:grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 300px 1fr;
       gap:24px;
-      padding: 20px 24px;
     }
 
     /* Menu lateral */
     .menu-lateral {
-      background:#ffffff;
-      border-radius:12px;
+      background:var(--card);
+      border-radius:16px;
       padding:16px;
-      height: calc(100vh - 120px);
+      height: calc(100vh - 150px);
       overflow-y:auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      border:1px solid var(--bord);
     }
+
+    /* estética do scrollbar (suave) */
+    .menu-lateral::-webkit-scrollbar{width:10px}
+    .menu-lateral::-webkit-scrollbar-track{background:transparent}
+    .menu-lateral::-webkit-scrollbar-thumb{background:#e9f7d8; border-radius:10px; border:2px solid #fff}
+
+    .menu-title{
+      font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+      color:var(--muted); margin:0 0 8px 0; font-weight:700;
+    }
+
     .menu-lateral ul { list-style:none; margin:0; padding:0; }
     .menu-lateral li + li { margin-top:8px; }
 
     .item-modulo{
       display:flex; align-items:center; justify-content:space-between;
-      gap:8px; padding:10px 12px; border-radius:8px; font-weight:600;
+      gap:10px; padding:10px 12px; border-radius:10px; font-weight:600;
+      border:1px solid transparent;
+      transition: background .2s ease, border-color .2s ease, transform .06s ease;
     }
     .item-modulo a{
-      color:#222; text-decoration:none; display:block; width:100%;
+      color:#222; text-decoration:none; display:flex; gap:10px; align-items:center; width:100%;
     }
-    .item-modulo:hover { background:#f0fadf; }
+    .item-modulo:hover { background:#f0fadf; border-color:#e6f6d7; }
+    .item-modulo:focus-within{ outline:3px solid rgba(0,0,0,.15); outline-offset:2px; }
 
     .is-active {
       background:#e8f5d7;
-      border-left:4px solid #97de66;
+      border-left:4px solid var(--accent);
       padding-left:8px;
+      border-color:#dcefc5;
+      box-shadow:0 1px 0 rgba(0,0,0,.02) inset;
     }
+
+    .mod-index{
+      min-width:28px; height:28px; border-radius:8px;
+      background:#eef7df; display:inline-flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:800; color:#2a2a2a; border:1px solid #e1f0cf;
+    }
+    .status-emoji{ margin-left:auto; }
 
     /* Bloqueado (cadeado) */
     .locked{
-      background:#f6f6f6;
-      color:#9a9a9a;
+      background:#f7f7f7;
+      color:var(--lock);
       cursor:not-allowed;
-      border-left:4px solid #d9d9d9;
+      border-left:4px solid #dcdcdc;
       padding-left:8px;
+      border:1px dashed #e7e7e7;
     }
-    .locked:hover{ background:#f6f6f6; }
-    .lock-icon{ margin-left:8px; opacity:.8; font-weight:700; }
+    .locked:hover{ background:#f7f7f7; }
+    .lock-icon{ margin-left:8px; opacity:.9; font-weight:700; }
 
     /* Conteúdo */
     .conteudo {
-      background:#ffffff;
-      border-radius:12px;
+      background:var(--card);
+      border-radius:16px;
       padding:16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      border:1px solid var(--bord);
     }
 
-    .pdf-wrap { position:relative; }
+    .content-head{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-bottom:10px;
+    }
+    .content-title{
+      margin:0; font-size: clamp(18px, 2.2vw, 22px); font-weight:800;
+      letter-spacing:.2px;
+    }
+    .content-sub{
+      margin:0; font-size:12px; color:var(--muted); font-weight:700;
+    }
+
+    .pdf-wrap { position:relative; border-radius:12px; overflow:hidden; }
     #pdfFrame {
       width:100%;
       min-height:70vh;
       max-height:85vh;
-      border:1px solid #e6e6e6;
-      border-radius:10px;
+      border:1px solid var(--bord);
+      border-radius:12px;
       display:block;
-      background:#2b2b2b; /* evita “flash” branco */
+      background:#2b2b2b; /* evita flash branco */
     }
 
-    .progress { margin-top:16px; background:#eef5e0; border-radius:10px; height:20px; overflow:hidden; position:relative; }
-    .progress-bar { height:100%; background:#4CAF50; transition:width .4s; }
-    .progress::after {
-      content: attr(data-label);
-      position:absolute; left:50%; top:0; transform:translateX(-50%);
-      font-weight:700; color:#1b1b1b; font-size:12px; line-height:20px;
+    /* Skeleton enquanto o PDF carrega */
+    .skeleton{
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, #ebf6d8 0%, #f4fbeb 50%, #ebf6d8 100%);
+      animation: shimmer 1.1s infinite;
+    }
+    @keyframes shimmer{
+      0%{ background-position: -200px 0; }
+      100%{ background-position: calc(200px + 100%) 0; }
+    }
+
+    .progress {
+      margin-top:16px; background:#eef5e0; border-radius:12px; height:22px;
+      overflow:hidden; position:relative; border:1px solid #e2e9d7;
+    }
+    .progress-bar {
+      height:100%; background:linear-gradient(90deg, #4CAF50 0%, #7ed957 100%);
+      transition:width .45s ease;
+    }
+    .progress .label {
+      position:absolute; right:10px; top:0; height:100%; display:flex; align-items:center;
+      font-weight:800; color:#1b1b1b; font-size:12px; letter-spacing:.3px;
     }
 
     .nav-buttons { margin-top:16px; display:flex; gap:12px; justify-content:flex-end; }
     .btn {
-      padding:10px 16px; background:#a0e76d; border:none; border-radius:8px;
-      font-weight:700; color:#1b1b1b; cursor:pointer; transition:background .25s;
+      padding:10px 16px; background:var(--btn); border:none; border-radius:10px;
+      font-weight:800; color:#1b1b1b; cursor:pointer; transition:background .2s ease, transform .06s ease;
+      box-shadow:0 1px 0 rgba(0,0,0,.05);
     }
-    .btn:hover { background:#8dd24a; }
+    .btn:hover { background:var(--btnHover); }
+    .btn:active{ transform: translateY(1px); }
     .btn:disabled { background:#dcdcdc; cursor:not-allowed; }
 
-    @media (max-width: 992px) {
-      .container { grid-template-columns: 1fr; }
-      .menu-lateral { height:auto; margin-bottom:16px; }
-      #pdfFrame { min-height:65vh; max-height:70vh; }
+    small.helper{ color:var(--muted); }
+
+    @media (max-width: 1100px){
+      .container{ grid-template-columns: 1fr; }
+      .menu-lateral{ height:auto; }
     }
     @media (max-width: 600px) {
-      #pdfFrame { min-height:60vh; max-height:65vh; }
+      #pdfFrame { min-height:60vh; max-height:68vh; }
+      .top-actions{ gap:8px; }
+      .btn-top{ padding:8px 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .btn-top,.btn,.progress-bar{ transition:none !important; }
+      .skeleton{ animation:none !important; }
     }
   </style>
 </head>
@@ -129,8 +220,8 @@
 
   {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
 
-  <div class="top-bar">
-    Treinamento - {{ curso.nome }}
+  <div class="top-bar" id="topbar">
+    <div>Treinamento - {{ curso.nome }}</div>
 
     <div class="top-actions">
       {# Concluído à ESQUERDA do Voltar, só no último módulo e 100% #}
@@ -143,89 +234,118 @@
           </button>
         </form>
       {% endif %}
-
-      <a class="btn-top btn-back" href="{{ url_for('home') }}">⬅ Voltar</a>
+      <a class="btn-top btn-back" href="{{ url_for('home') }}" aria-label="Voltar para a página inicial">⬅ Voltar</a>
     </div>
   </div>
 
-  <div class="container">
-    <!-- Menu lateral -->
-    <div class="menu-lateral">
-      <ul>
-        {% for mod in curso.modulos %}
-          {% set idx = loop.index0 %}
-          {# Desbloqueia tudo até o módulo atual (inclusive) ou módulos já 100% #}
-          {% set is_unlocked = (modulo_atual is not none and idx <= modulo_atual) or (progresso_individual and progresso_individual[idx] == 100) %}
-          {% set is_active = (modulo_atual==idx) %}
-          <li>
-            {% if is_unlocked %}
-              <div class="item-modulo {{ 'is-active' if is_active else '' }}">
-                <a href="?modulo={{ idx }}">
-                  Módulo {{ idx + 1 }} - {{ mod.titulo }}
-                  {% if progresso_individual and progresso_individual[idx] == 100 %} ✅{% endif %}
-                </a>
-              </div>
-            {% else %}
-              <div class="item-modulo locked" title="Módulo bloqueado (complete os anteriores)">
-                <span>Módulo {{ idx + 1 }} - {{ mod.titulo }}</span>
-                <span class="lock-icon">🔒</span>
-              </div>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
+  <div class="page">
+    <div class="container">
+      <!-- Menu lateral -->
+      <aside class="menu-lateral">
+        <p class="menu-title">Conteúdo do curso</p>
+        <ul>
+          {% for mod in curso.modulos %}
+            {% set idx = loop.index0 %}
+            {# Desbloqueia até o módulo atual (inclusive) ou módulos já 100% #}
+            {% set is_unlocked = (modulo_atual is not none and idx <= modulo_atual) or (progresso_individual and progresso_individual[idx] == 100) %}
+            {% set is_active = (modulo_atual==idx) %}
+            <li>
+              {% if is_unlocked %}
+                <div class="item-modulo {{ 'is-active' if is_active else '' }}">
+                  <a href="?modulo={{ idx }}">
+                    <span class="mod-index">{{ idx + 1 }}</span>
+                    <span>Módulo {{ idx + 1 }} — {{ mod.titulo }}</span>
+                    {% if progresso_individual and progresso_individual[idx] == 100 %}
+                      <span class="status-emoji" aria-label="Módulo concluído">✅</span>
+                    {% endif %}
+                  </a>
+                </div>
+              {% else %}
+                <div class="item-modulo locked" title="Módulo bloqueado (complete os anteriores)">
+                  <span class="mod-index" aria-hidden="true">{{ idx + 1 }}</span>
+                  <span>Módulo {{ idx + 1 }} — {{ mod.titulo }}</span>
+                  <span class="lock-icon" aria-label="Bloqueado">🔒</span>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </aside>
 
-    <!-- Conteúdo -->
-    <div class="conteudo">
-      {% if curso.modulos and modulo_atual is not none %}
-        {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
-        {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
-        {% set parts = cleaned.split('/') %}
-        {% set fname = parts[-1] %}
-        {% set pdf_url = url_for('uploads', filename=fname) %}
+      <!-- Conteúdo -->
+      <main class="conteudo">
+        {% if curso.modulos and modulo_atual is not none %}
+          {% set raw = (curso.modulos[modulo_atual].arquivo or '') %}
+          {% set cleaned = raw.replace('static/','').replace('conteudos/','').lstrip('/') %}
+          {% set parts = cleaned.split('/') %}
+          {% set fname = parts[-1] %}
+          {% set pdf_url = url_for('uploads', filename=fname) %}
 
-        <div class="pdf-wrap">
-          <iframe id="pdfFrame" title="Material do módulo" allow="fullscreen"></iframe>
-        </div>
+          <div class="content-head">
+            <h2 class="content-title">
+              {{ curso.modulos[modulo_atual].titulo or ('Módulo ' ~ (modulo_atual + 1)) }}
+            </h2>
+            <p class="content-sub">Módulo {{ modulo_atual + 1 }}/{{ total_mods }}</p>
+          </div>
 
-        <small style="opacity:.6; display:block; margin-top:6px;">URL DEBUG: {{ pdf_url }}</small>
+          <div class="pdf-wrap">
+            <div class="skeleton" id="pdfSkeleton" aria-hidden="true"></div>
+            <iframe id="pdfFrame" title="Material do módulo" allow="fullscreen"></iframe>
+          </div>
 
-        <div class="progress" data-label="{{ progresso }}%">
-          <div class="progress-bar" style="width: {{ progresso }}%"></div>
-        </div>
+          <small class="helper" style="display:block; margin-top:8px;">URL DEBUG: {{ pdf_url }}</small>
 
-        <div class="nav-buttons">
-          <form method="get" id="form-anterior">
-            <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
-            <button class="btn" type="submit"
-              {% if not curso.modulos or modulo_atual is none or modulo_atual <= 0 %}disabled{% endif %}>
-              ← Anterior
-            </button>
-          </form>
+          <div class="progress" aria-label="Progresso do curso">
+            <div class="progress-bar" style="width: {{ progresso }}%"></div>
+            <div class="label">{{ progresso }}%</div>
+          </div>
 
-          <form method="get" id="form-proximo">
-            <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
-            <button class="btn" type="submit"
-              {% if (not curso.modulos) or (modulo_atual is none) or ((modulo_atual + 1) >= (curso.modulos|length)) %}disabled{% endif %}>
-              Próximo →
-            </button>
-          </form>
-        </div>
+          <div class="nav-buttons">
+            <form method="get" id="form-anterior">
+              <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
+              <button class="btn" type="submit"
+                {% if not curso.modulos or modulo_atual is none or modulo_atual <= 0 %}disabled{% endif %}
+                aria-label="Ir para o módulo anterior">
+                ← Anterior
+              </button>
+            </form>
 
-      {% else %}
-        <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
-      {% endif %}
+            <form method="get" id="form-proximo">
+              <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
+              <button class="btn" type="submit"
+                {% if (not curso.modulos) or (modulo_atual is none) or ((modulo_atual + 1) >= (curso.modulos|length)) %}disabled{% endif %}
+                aria-label="Ir para o próximo módulo">
+                Próximo →
+              </button>
+            </form>
+          </div>
+
+        {% else %}
+          <p>Selecione um módulo ao lado para visualizar o conteúdo.</p>
+        {% endif %}
+      </main>
     </div>
   </div>
 
-  <!-- Escolhe o viewer correto e garante URL ABSOLUTA -->
+  <!-- JS: Topbar sombra no scroll + loader do PDF + viewer -->
   <script>
+    (function () {
+      var topbar = document.getElementById('topbar');
+      var last = 0;
+      window.addEventListener('scroll', function(){
+        var y = window.scrollY || document.documentElement.scrollTop;
+        if (y > 4 && last <= 4) topbar.classList.add('is-scrolled');
+        if (y <= 4 && last > 4) topbar.classList.remove('is-scrolled');
+        last = y;
+      });
+    })();
+
     (function () {
       var rel = "{{ pdf_url }}";
       var abs = /^https?:\/\//i.test(rel) ? rel : (location.origin + rel);
 
       var frame = document.getElementById('pdfFrame');
+      var skel  = document.getElementById('pdfSkeleton');
 
       var ua = navigator.userAgent || navigator.vendor || window.opera;
       var isIOS = /iPad|iPhone|iPod/.test(ua);
@@ -239,13 +359,18 @@
         frame.src = abs + "#zoom=page-width";
       }
 
+      function removeSkeleton(){ if(skel){ skel.style.display='none'; } }
+      frame.addEventListener('load', removeSkeleton);
       frame.addEventListener('error', function () {
+        removeSkeleton();
         frame.outerHTML =
-          '<div style="padding:12px;background:#fff;border:1px solid #e6e6e6;border-radius:10px;">' +
+          '<div style="padding:12px;background:#fff;border:1px solid var(--bord);border-radius:12px;">' +
           'Não foi possível carregar o visualizador. ' +
           '<a href="'+ abs +'" target="_blank" style="font-weight:bold;color:#2a6;">Abrir o PDF em nova aba</a>' +
           '</div>';
       });
+      // timeout de segurança: some com skeleton caso o evento não dispare
+      setTimeout(removeSkeleton, 3000);
     })();
   </script>
 
@@ -256,9 +381,8 @@
       if (lockedItem){
         e.preventDefault();
         e.stopPropagation();
-        lockedItem.style.transition = 'filter .15s';
-        lockedItem.style.filter = 'grayscale(30%)';
-        setTimeout(function(){ lockedItem.style.filter = 'none'; }, 180);
+        lockedItem.animate([{filter:'grayscale(0%)'},{filter:'grayscale(30%)'},{filter:'grayscale(0%)'}],
+                           {duration:180,iterations:1});
       }
     });
   </script>
