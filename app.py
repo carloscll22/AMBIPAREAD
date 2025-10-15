@@ -237,6 +237,7 @@ PILOTOS_SET = {
     "thiago.cury@ambipar.com",
     "victor.soares@ambipar.com",
     "cmte.welner@ambipar.com",
+    "thalys.martins@ambipar.com",  
 }
 
 MECANICOS_SET = {
@@ -282,7 +283,7 @@ MECANICOS_SET = {
     "jeferson.jose@ambipar.com",
     "guilherme.azevedo@ambipar.com",
     "juliana.furtado@ambipar.com",
-    "pereira.mar.mil@hotmail.com",
+    "mauricio.lopes@ambipar.com",
 }
 
 # Garante que existam registros para todos listados (se não existir, cria como aluno)
