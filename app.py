@@ -25,7 +25,7 @@ CURSOS_FIXOS = [
         "Conhecimentos Gerais",
         "Emergências Gerais",
         "SGSO",
-        "Transporte Aeromédico"
+        "Transporte Aeromédico",
         "Sobrevivência na Selva",
         "Instrutor de Voo",
         "Examinador",
