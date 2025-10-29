@@ -38,6 +38,7 @@ CURSOS_FIXOS = [
         "AS350B2-B3",
         "Arriel1 Series",
         "RR250-C20 Series",
+        "AS350 Ground",
 ]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
