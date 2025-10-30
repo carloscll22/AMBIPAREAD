@@ -153,6 +153,16 @@
       margin:0; font-size:12px; color:var(--muted); font-weight:700;
     }
 
+    /* Toolbar do conteúdo */
+    .content-toolbar{
+      display:flex; gap:8px; align-items:center; margin:8px 0 12px 0; flex-wrap:wrap;
+    }
+    .tool-btn{
+      padding:8px 12px; border:1px solid var(--bord); background:var(--card);
+      border-radius:10px; cursor:pointer; font-weight:700;
+    }
+    .tool-btn:active{ transform:translateY(1px); }
+
     .pdf-wrap { position:relative; border-radius:12px; overflow:hidden; }
     #pdfFrame {
       width:100%;
@@ -214,6 +224,56 @@
       .btn-top,.btn,.progress-bar{ transition:none !important; }
       .skeleton{ animation:none !important; }
     }
+
+    /* --- Dark mode ----------------------------------------------------------- */
+    :root[data-theme="dark"]{
+      --bg:#0f1310; --brand:#23331b; --btn:#2c4d22; --btnHover:#375e2b;
+      --accent:#3f6c2e; --ink:#f8faf7; --card:#171c17; --muted:#aeb7a7; --bord:#263026;
+      --ok:#22c55e; --lock:#7a7a7a;
+    }
+    @media (prefers-color-scheme: dark){
+      :root:not([data-theme]){ color-scheme:dark; }
+    }
+    .theme-toggle{
+      display:inline-flex; gap:8px; align-items:center; font-weight:700;
+      background:rgba(255,255,255,.35); border:1px solid rgba(0,0,0,.08);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
+    }
+    :root[data-theme="dark"] .theme-toggle{ background:rgba(255,255,255,.08); border-color:#334; }
+
+    /* Badge/minibarra de progresso por módulo */
+    .item-modulo .mod-progress{
+      margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted);
+    }
+    .item-modulo .mod-progressbar{
+      width:70px; height:6px; background:#eef5e0; border-radius:999px; overflow:hidden; border:1px solid #e2e9d7;
+    }
+    .item-modulo .mod-progressbar > span{ display:block; height:100%; background:linear-gradient(90deg,#4CAF50,#7ed957); }
+
+    /* Busca de módulos */
+    .search-wrap{ position:sticky; top:0; background:var(--card); padding-bottom:8px; margin-bottom:8px; }
+    #modSearch{
+      width:100%; padding:10px 12px; border:1px solid var(--bord); border-radius:10px;
+    }
+
+    /* Barra inferior mobile */
+    .bottom-bar{
+      position:fixed; left:0; right:0; bottom:0; z-index:60; display:none;
+      background:var(--card); border-top:1px solid var(--bord); padding:10px;
+    }
+    .bottom-inner{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .bottom-progress{ flex:1; display:flex; align-items:center; gap:8px; }
+    .bottom-progress .progress-mini{ flex:1; height:8px; background:#eef5e0; border-radius:999px; overflow:hidden; border:1px solid #e2e9d7; }
+    .bottom-progress .progress-mini > span{ display:block; height:100%; background:linear-gradient(90deg,#4CAF50,#7ed957); }
+    @media (max-width: 800px){ .bottom-bar{ display:block; } body{ padding-bottom:68px; } }
+
+    /* Toast */
+    .toast{
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:#111; color:#fff; padding:10px 14px; border-radius:10px; opacity:0;
+      transition:opacity .2s ease, transform .2s ease;
+    }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(-4px); }
   </style>
 </head>
 <body>
@@ -221,7 +281,10 @@
   {% set total_mods = (curso.modulos|length) if curso.modulos else 0 %}
 
   <div class="top-bar" id="topbar">
-    <div>Treinamento - {{ curso.nome }}</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar tema">🌓 Tema</button>
+      <div>Treinamento - {{ curso.nome }}</div>
+    </div>
 
     <div class="top-actions">
       {# Concluído à ESQUERDA do Voltar, só no último módulo e 100% #}
@@ -242,22 +305,28 @@
     <div class="container">
       <!-- Menu lateral -->
       <aside class="menu-lateral">
+        <div class="search-wrap">
+          <input id="modSearch" type="search" placeholder="Buscar módulo..." aria-label="Buscar módulo">
+        </div>
         <p class="menu-title">Conteúdo do curso</p>
-        <ul>
+        <ul id="modList">
           {% for mod in curso.modulos %}
             {% set idx = loop.index0 %}
             {# Desbloqueia até o módulo atual (inclusive) ou módulos já 100% #}
             {% set is_unlocked = (modulo_atual is not none and idx <= modulo_atual) or (progresso_individual and progresso_individual[idx] == 100) %}
             {% set is_active = (modulo_atual==idx) %}
-            <li>
+            {% set p = (progresso_individual[idx] if progresso_individual else 0) | int %}
+            <li data-title="{{ ('Módulo ' ~ (idx+1) ~ ' ' ~ mod.titulo) | lower }}">
               {% if is_unlocked %}
                 <div class="item-modulo {{ 'is-active' if is_active else '' }}">
-                  <a href="?modulo={{ idx }}">
+                  <a href="?modulo={{ idx }}" aria-current="{{ 'page' if is_active else 'false' }}">
                     <span class="mod-index">{{ idx + 1 }}</span>
                     <span>Módulo {{ idx + 1 }} — {{ mod.titulo }}</span>
-                    {% if progresso_individual and progresso_individual[idx] == 100 %}
-                      <span class="status-emoji" aria-label="Módulo concluído">✅</span>
-                    {% endif %}
+                    <span class="mod-progress">
+                      <span>{{ p }}%</span>
+                      <span class="mod-progressbar" aria-hidden="true"><span style="width:{{ p }}%"></span></span>
+                      {% if p == 100 %}<span class="status-emoji" aria-label="Módulo concluído">✅</span>{% endif %}
+                    </span>
                   </a>
                 </div>
               {% else %}
@@ -288,12 +357,22 @@
             <p class="content-sub">Módulo {{ modulo_atual + 1 }}/{{ total_mods }}</p>
           </div>
 
+          <!-- Toolbar do conteúdo -->
+          <div class="content-toolbar" role="toolbar" aria-label="Ferramentas do material">
+            <button class="tool-btn" id="openNew" type="button">↗ Abrir em nova aba</button>
+            <a class="tool-btn" id="downloadPdf" href="{{ pdf_url }}" download>⬇ Download</a>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="tool-btn" id="zoomOut" type="button" aria-label="Diminuir zoom">−</button>
+              <button class="tool-btn" id="zoomIn" type="button" aria-label="Aumentar zoom">＋</button>
+            </div>
+            <button class="tool-btn" id="fsToggle" type="button">⛶ Tela cheia</button>
+          </div>
+
           <div class="pdf-wrap">
             <div class="skeleton" id="pdfSkeleton" aria-hidden="true"></div>
             <iframe id="pdfFrame" title="Material do módulo" allow="fullscreen"></iframe>
           </div>
 
-          
           <div class="progress" aria-label="Progresso do curso">
             <div class="progress-bar" style="width: {{ progresso }}%"></div>
             <div class="label">{{ progresso }}%</div>
@@ -326,7 +405,31 @@
     </div>
   </div>
 
-  <!-- JS: Topbar sombra no scroll + loader do PDF + viewer -->
+  <!-- Barra inferior fixa (mobile) -->
+  {% if curso.modulos and modulo_atual is not none %}
+  <div class="bottom-bar" aria-hidden="false">
+    <div class="bottom-inner">
+      <form method="get" id="form-anterior-bottom">
+        <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else 0) - 1 }}">
+        <button class="btn" type="submit" {% if not curso.modulos or modulo_atual is none or modulo_atual <= 0 %}disabled{% endif %}>← Anterior</button>
+      </form>
+
+      <div class="bottom-progress" aria-label="Progresso do curso">
+        <span style="font-weight:800; font-size:12px;">{{ progresso }}%</span>
+        <div class="progress-mini"><span style="width:{{ progresso }}%"></span></div>
+      </div>
+
+      <form method="get" id="form-proximo-bottom">
+        <input type="hidden" name="modulo" value="{{ (modulo_atual if modulo_atual is not none else -1) + 1 }}">
+        <button class="btn" type="submit" {% if (not curso.modulos) or (modulo_atual is none) or ((modulo_atual + 1) >= (curso.modulos|length)) %}disabled{% endif %}>Próximo →</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- JS: Topbar sombra no scroll -->
   <script>
     (function () {
       var topbar = document.getElementById('topbar');
@@ -338,50 +441,74 @@
         last = y;
       });
     })();
+  </script>
 
+  <!-- PDF loader + viewer hash -->
+  <script>
     (function () {
+      {% if curso.modulos and modulo_atual is not none %}
       var rel = "{{ pdf_url }}";
+      {% else %}
+      var rel = "";
+      {% endif %}
       var abs = /^https?:\/\//i.test(rel) ? rel : (location.origin + rel);
 
       var frame = document.getElementById('pdfFrame');
       var skel  = document.getElementById('pdfSkeleton');
 
-      var ua = navigator.userAgent || navigator.vendor || window.opera;
-      var isIOS = /iPad|iPhone|iPod/.test(ua);
-      var isAndroid = /Android/i.test(ua);
-      var isMobile = isIOS || isAndroid;
+      if(frame){
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isIOS = /iPad|iPhone|iPod/.test(ua);
+        var isAndroid = /Android/i.test(ua);
+        var isMobile = isIOS || isAndroid;
 
-      if (isMobile) {
-        var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(abs);
-        frame.src = gdocs;
-      } else {
-        frame.src = abs + "#zoom=page-width";
+        if (isMobile) {
+          var gdocs = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + encodeURIComponent(abs);
+          frame.src = gdocs;
+        } else {
+          if(rel) frame.src = abs + "#zoom=page-width";
+        }
+
+        function removeSkeleton(){ if(skel){ skel.style.display='none'; } }
+        frame.addEventListener('load', removeSkeleton);
+        frame.addEventListener('error', function () {
+          removeSkeleton();
+          frame.outerHTML =
+            '<div style="padding:12px;background:#fff;border:1px solid var(--bord);border-radius:12px;">' +
+            'Não foi possível carregar o visualizador. ' +
+            '<a href="'+ abs +'" target="_blank" style="font-weight:bold;color:#2a6;">Abrir o PDF em nova aba</a>' +
+            '</div>';
+        });
+        setTimeout(removeSkeleton, 3000);
       }
-
-      function removeSkeleton(){ if(skel){ skel.style.display='none'; } }
-      frame.addEventListener('load', removeSkeleton);
-      frame.addEventListener('error', function () {
-        removeSkeleton();
-        frame.outerHTML =
-          '<div style="padding:12px;background:#fff;border:1px solid var(--bord);border-radius:12px;">' +
-          'Não foi possível carregar o visualizador. ' +
-          '<a href="'+ abs +'" target="_blank" style="font-weight:bold;color:#2a6;">Abrir o PDF em nova aba</a>' +
-          '</div>';
-      });
-      // timeout de segurança: some com skeleton caso o evento não dispare
-      setTimeout(removeSkeleton, 3000);
     })();
   </script>
 
-  <!-- Bloqueio de clique em módulos trancados (defesa no front) -->
+  <!-- Bloqueio de clique em módulos trancados + toast -->
   <script>
+    function showToast(msg, onClick){
+      const t = document.getElementById('toast');
+      if(!t) return;
+      t.textContent = '';
+      if(onClick){
+        const a = document.createElement('a');
+        a.href = 'javascript:void(0)'; a.textContent = msg;
+        a.style.color = '#a7f3d0'; a.style.textDecoration = 'underline';
+        a.onclick = onClick;
+        t.appendChild(a);
+      }else{
+        t.textContent = msg;
+      }
+      t.classList.add('show');
+      setTimeout(()=> t.classList.remove('show'), 4500);
+    }
+
     document.addEventListener('click', function(e){
       var lockedItem = e.target.closest('.locked');
       if (lockedItem){
         e.preventDefault();
         e.stopPropagation();
-        lockedItem.animate([{filter:'grayscale(0%)'},{filter:'grayscale(30%)'},{filter:'grayscale(0%)'}],
-                           {duration:180,iterations:1});
+        showToast('Complete o módulo anterior para desbloquear este.');
       }
     });
   </script>
@@ -402,6 +529,112 @@
         }
       }
     });
+  </script>
+
+  <!-- Tema, toolbar (abrir/zoom/FS), busca, retomada, sincronia bottom bar -->
+  <script>
+    // --- Tema (dark/light)
+    (function(){
+      const root = document.documentElement;
+      const saved = localStorage.getItem('ead-theme');
+      if(saved) root.setAttribute('data-theme', saved);
+
+      const btn = document.getElementById('themeToggle');
+      if(btn){
+        btn.addEventListener('click', ()=>{
+          const cur = root.getAttribute('data-theme');
+          const next = (cur === 'dark') ? 'light' : 'dark';
+          root.setAttribute('data-theme', next);
+          localStorage.setItem('ead-theme', next);
+        });
+      }
+    })();
+
+    // --- Toolbar: abrir/baixar/zoom/tela cheia
+    (function(){
+      const frame = document.getElementById('pdfFrame');
+      const btnOpen = document.getElementById('openNew');
+      const btnIn   = document.getElementById('zoomIn');
+      const btnOut  = document.getElementById('zoomOut');
+      const btnFS   = document.getElementById('fsToggle');
+
+      // URL absoluto do PDF atual
+      {% if curso.modulos and modulo_atual is not none %}
+      const abs = (function(){
+        var rel = "{{ pdf_url }}";
+        return /^https?:\/\//i.test(rel) ? rel : (location.origin + rel);
+      })();
+      {% else %}
+      const abs = '';
+      {% endif %}
+
+      if(btnOpen && abs){ btnOpen.onclick = ()=> window.open(abs, '_blank'); }
+
+      function setZoom(val){
+        if(!frame || !abs) return;
+        try{
+          const url = new URL(frame.src || abs, location.origin);
+          url.hash = 'zoom=' + val;
+          frame.src = url.toString();
+        }catch(e){
+          frame.src = abs + '#zoom=' + val;
+        }
+      }
+      if(btnIn){ btnIn.onclick = ()=> setZoom('125'); }
+      if(btnOut){ btnOut.onclick = ()=> setZoom('page-width'); }
+
+      if(btnFS){
+        btnFS.onclick = ()=>{
+          const wrap = document.querySelector('.pdf-wrap');
+          if(!document.fullscreenElement){ wrap.requestFullscreen?.(); }
+          else{ document.exitFullscreen?.(); }
+        };
+      }
+    })();
+
+    // --- Busca de módulos
+    (function(){
+      const input = document.getElementById('modSearch');
+      const list  = document.getElementById('modList');
+      if(!input || !list) return;
+
+      input.addEventListener('input', ()=>{
+        const q = input.value.trim().toLowerCase();
+        list.querySelectorAll('li').forEach(li=>{
+          const t = li.getAttribute('data-title') || '';
+          li.style.display = t.includes(q) ? '' : 'none';
+        });
+      });
+    })();
+
+    // --- “Continuar de onde parei” + salvar último módulo
+    (function(){
+      const key = 'ead-ultimo-mod-' + "{{ curso.nome|replace(' ','_') }}";
+      const atual = {{ modulo_atual if modulo_atual is not none else 'null' }};
+
+      if(atual !== null){ localStorage.setItem(key, String(atual)); }
+
+      const url = new URL(location.href);
+      if(!url.searchParams.has('modulo')){
+        const last = localStorage.getItem(key);
+        if(last !== null){
+          showToast(`Retomar do módulo ${Number(last)+1}? Clique aqui`, ()=> {
+            url.searchParams.set('modulo', last);
+            location.href = url.toString();
+          });
+        }
+      }
+    })();
+
+    // --- Sincroniza estados dos botões da bottom bar
+    (function(){
+      const topPrevBtn  = document.querySelector("#form-anterior button");
+      const topNextBtn  = document.querySelector("#form-proximo button");
+      const botPrevBtn  = document.querySelector("#form-anterior-bottom button");
+      const botNextBtn  = document.querySelector("#form-proximo-bottom button");
+      if(botPrevBtn && topPrevBtn) botPrevBtn.disabled = topPrevBtn.disabled;
+      if(botNextBtn && topNextBtn) botNextBtn.disabled = topNextBtn.disabled;
+    })();
   </script>
 </body>
 </html>
