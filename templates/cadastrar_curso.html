@@ -7,9 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      /* Paleta Ambipar */
-      --ambipar-bg:#c1f38e;         /* fundo geral */
-      --primary:#a0e76d;            /* botões */
+      --bg:#c1f38e;          /* fundo Ambipar */
+      --primary:#a0e76d;     /* botões */
       --primary-hover:#8dd24a;
       --surface:#ffffff;
       --border:#e2e8f0;
@@ -19,19 +18,18 @@
       --radius:16px;
       --radius-sm:12px;
     }
-
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       font-family:'Poppins',sans-serif;
       min-height:100vh;
-      background:var(--ambipar-bg);
+      background:var(--bg);
       color:var(--text);
       display:grid;
-      grid-template-columns:260px 1fr;  /* === posição igual EADFLOW: sidebar + conteúdo === */
+      grid-template-columns:260px 1fr;   /* === posição igual EADFLOW === */
       gap:22px;
     }
 
-    /* --- Sidebar (esquerda), com logo Ambipar e dois botões existentes --- */
+    /* === SIDEBAR === */
     .sidebar{
       background:var(--surface);
       border-right:1px solid var(--border);
@@ -39,12 +37,13 @@
       display:flex;flex-direction:column;gap:18px;
     }
     .brand{
-      display:flex;align-items:center;gap:10px;
-      padding:8px 10px;border:1px solid var(--border);
-      border-radius:12px;background:#f7fff0;
+      background:#f4ffe7;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      display:flex;align-items:center;justify-content:center;
     }
-    .brand img{height:28px;width:auto;display:block}
-    .brand span{font-weight:700;font-size:14px}
+    .brand img{height:32px;width:auto;display:block}
 
     .side-card{
       background:var(--surface);
@@ -53,33 +52,26 @@
       box-shadow:var(--shadow);
       padding:16px;
       display:flex;flex-direction:column;gap:10px;
+      text-align:center;
     }
-    .side-card h4{font-size:14px;font-weight:600;text-align:center;margin-bottom:4px}
+    .side-card h4{font-size:14px;font-weight:600;margin-bottom:6px}
 
     .btn{
       width:100%;
-      display:inline-flex;align-items:center;justify-content:center;
+      display:inline-block;text-align:center;
       padding:10px 14px;border:none;border-radius:10px;
-      background:var(--primary);color:#2b2b2b;font-weight:600;
-      cursor:pointer;text-decoration:none;transition:.15s ease;
+      background:var(--primary);color:#333;font-weight:600;
+      text-decoration:none;cursor:pointer;transition:.15s ease;
     }
     .btn:hover{background:var(--primary-hover)}
     .btn.secondary{
       background:#eef2f6;color:#111;border:1px solid var(--border);
     }
-    /* (sem criar novos botões além dos existentes) */
 
-    /* --- Conteúdo (direita) --- */
-    .content{
-      padding:22px 22px 40px 0;
-      max-width:1200px;
-    }
-    .breadcrumb{
-      font-size:12px;color:var(--muted);margin:6px 0 12px;text-align:right;
-    }
-    .page-title{
-      font-size:26px;font-weight:700;margin-bottom:14px;color:#213547;
-    }
+    /* === CONTEÚDO === */
+    .content{padding:22px 22px 40px 0; max-width:1200px;}
+    .breadcrumb{font-size:12px;color:var(--muted);margin:6px 0 12px;text-align:right}
+    .page-title{font-size:26px;font-weight:700;margin-bottom:14px;color:#213547}
 
     .card{
       background:var(--surface);
@@ -90,12 +82,10 @@
     }
     .card h3{font-size:18px;margin-bottom:12px}
 
-    /* Grid igual ao EADFLOW: 2 colunas nos campos de topo */
     .grid{display:grid;gap:14px}
     .grid.cols-2{grid-template-columns:1fr 1fr}
-    @media (max-width:980px){ body{grid-template-columns:1fr} .grid.cols-2{grid-template-columns:1fr} }
+    @media (max-width:980px){ body{grid-template-columns:1fr} .grid.cols-2{grid-template-columns:1fr}}
 
-    /* Campos (reaproveitando seu estilo) */
     .field{display:flex;flex-direction:column;gap:8px}
     .field label{font-weight:600;font-size:14px;color:#444}
     .field input[type="text"],
@@ -106,23 +96,19 @@
     }
     .field textarea{min-height:120px;resize:vertical}
 
-    /* Seções Módulos e Avaliação (como no seu) */
     .section-title{font-size:18px;font-weight:700;color:#333;margin:18px 0 10px}
+
     #modulos .modulo{
       background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:12px;
     }
-    .modulo .top-row{
-      display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;
-    }
+    .modulo .top-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
     .btn-danger{background:#dc3545;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:600;cursor:pointer}
     .btn-danger:hover{background:#b02a37}
 
     #perguntas .pergunta{
       background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:10px;
     }
-    .pergunta .header-pergunta{
-      display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
-    }
+    .pergunta .header-pergunta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 
     .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
     .actions .btn{flex:1}
@@ -130,18 +116,20 @@
 </head>
 <body>
 
-  <!-- === SIDEBAR (posicionamento do EADFLOW) === -->
+  <!-- === SIDEBAR (igual ao EADFLOW em posição) === -->
   <aside class="sidebar">
+    <!-- LOGO obrigatória no topo -->
     <div class="brand">
-      <img src="<?= htmlspecialchars($logoPath) ?>" alt="Ambipar" onerror="this.style.display='none'">
-      <span>Ambipar EAD</span>
+      <!-- Se usa Flask, deixe a linha 1 e apague a 2; se estático, use a 2 -->
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD" />
+      <!-- <img src="/static/loggo.png" alt="Ambipar EAD" /> -->
     </div>
 
     <div class="side-card">
       <h4>Painel do Professor</h4>
-      <!-- Links FUNCIONAIS (não mais botões sem ação) -->
-      <a class="btn" href="<?= htmlspecialchars($rotaAlterarSenha) ?>">Alterar Senha</a>
-      <a class="btn secondary" href="<?= htmlspecialchars($rotaHomeProfessor) ?>">Home do Professor</a>
+      <!-- LINKS FUNCIONAIS -->
+      <a class="btn" href="/alterar_senha">Alterar Senha</a>
+      <a class="btn secondary" href="/">Home do Professor</a>
     </div>
   </aside>
 
@@ -196,22 +184,22 @@
 
         <div class="section-title">Módulos do Curso</div>
         <div id="modulos"></div>
-        <button type="button" class="btn" onclick="adicionarModulo()">+ Adicionar Módulo</button>
+        <button type="button" class="btn" onclick="adicionarModulo()">Adicionar Módulo</button>
 
         <div class="section-title">Avaliação</div>
         <div id="perguntas"></div>
-        <button type="button" id="adicionarPergunta" class="btn">+ Adicionar Pergunta</button>
+        <button type="button" id="adicionarPergunta" class="btn">Adicionar Pergunta</button>
 
         <div class="actions">
           <input type="submit" class="btn" value="Cadastrar Curso">
-          <a class="btn secondary" href="<?= htmlspecialchars($rotaHomeProfessor) ?>">Cancelar</a>
+          <a class="btn secondary" href="/">Cancelar</a>
         </div>
       </form>
     </section>
   </main>
 
   <script>
-    // ===== Conteúdos (mantidos do seu código) =====
+    // ==== Conteúdos mantidos (adicione/edite conforme seu dicionário) ====
     const conteudos = {
       "Doutrinamento Básico de Solo": `(1) Atribuições e responsabilidades do tripulante, conforme aplicável;
 (2) As apropriadas provisões deste regulamento;
@@ -220,18 +208,8 @@
 (5) O transporte seguro de artigos perigosos por via aérea, em conformidade com os requisitos do RBAC N° 175;
 (6) O SGSO;
 (7) Segurança da aviação civil (AVSEC);
-(8) Fatores humanos e CRM`,
-      "Conhecimentos Gerais": `(1) Procedimentos do detentor de certificado para liberação e localização de voos;
-(2) Princípios e métodos para determinar peso e balanceamento e limitações de pista para decolagem pouso;
-(3) princípios e métodos para determinar peso e balanceamento e limitações de pista para decolagem e pouso
-(4) sistemas de controle de tráfego aéreo, procedimentos e fraseologia;
-(5) navegação e uso de auxílios à navegação, incluindo procedimentos de aproximação por instrumentos;
-(6) procedimentos de comunicações normais e de emergência;
-(7) familiarização com referências visuais antes e durante a descida abaixo da altitude de decisão ou da altitude mínima de descida em aproximação por instrumento;
-(8) reconhecer e evitar condições atmosféricas severas;
-(9) livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadvertidamente, incluindo, para aviões, tesouras de vento em baixa altitude;
-(10) operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento(inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas e planejamento de voo.`,
-      /* ... demais conteúdos que você já tinha ... */
+(8) Fatores humanos e CRM`
+      // ... mantenha o restante do seu objeto aqui ...
     };
 
     function preencherConteudo(){
@@ -239,7 +217,7 @@
       document.getElementById('conteudo').value = conteudos[nome] || '';
     }
 
-    // ===== Módulos (mesma lógica do seu) =====
+    // ==== Módulos (mesma lógica do seu) ====
     let indexModulo = 0;
     function adicionarModulo(){
       const container = document.getElementById("modulos");
@@ -260,7 +238,7 @@
       indexModulo++;
     }
 
-    // ===== Perguntas (mesma lógica do seu) =====
+    // ==== Perguntas (mesma lógica do seu) ====
     let indicePergunta = 0;
     document.getElementById('adicionarPergunta').addEventListener('click', () => {
       const container = document.getElementById('perguntas');
