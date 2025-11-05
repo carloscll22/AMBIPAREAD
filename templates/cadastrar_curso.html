@@ -1,188 +1,383 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro de Curso</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ambipar | Cadastro de Curso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #c1f38e;
-      display: flex;
-      justify-content: center;
-      padding: 40px 0;
-      min-height: 100vh;
+    :root{
+      /* Mantém a paleta verde já usada na Ambipar */
+      --brand-bg:#c1f38e;              /* fundo geral já usado */
+      --brand-primary:#a0e76d;         /* botões e destaques */
+      --brand-primary-strong:#8dd24a;  /* hover */
+      --surface:#ffffff;
+      --surface-muted:#f9f9f9;
+      --border:#e2e8f0;
+      --text:#1f2937;
+      --text-dim:#475569;
+      --sidebar:#ffffff;
+      --sidebar-border:#dfe3e7;
+      --shadow:0 6px 20px rgba(0,0,0,.08);
+      --radius-xl:16px;
+      --radius-lg:12px;
+      --radius-md:10px;
+      --radius-sm:8px;
     }
-    .container {
-      background-color: #fff;
-      border-radius: 12px;
-      padding: 30px 40px;
-      width: 100%;
-      max-width: 720px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(180deg, var(--brand-bg) 0%, #e9ffd2 100%);
+      color:var(--text);
+      display:flex;
+      min-height:100vh;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-      font-size: 24px;
-      font-weight: 600;
+
+    /* ---------- Shell (EADFlow-like) ---------- */
+    .shell{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 72px 1fr;
+      grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
+      width:100%;
+      max-width:1400px;
+      margin:0 auto;
+      gap:16px;
+      padding:20px;
     }
-    .field { margin-bottom: 20px; display: flex; flex-direction: column; }
-    .field label { font-weight: 600; margin-bottom: 8px; color: #444; font-size: 14px; }
+
+    /* Sidebar */
+    .sidebar{
+      grid-area:sidebar;
+      background:var(--sidebar);
+      border:1px solid var(--sidebar-border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:sticky;
+      top:20px;
+      height:calc(100vh - 40px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 12px;
+      border-radius:var(--radius-lg);
+      background:var(--surface-muted);
+      border:1px solid var(--border);
+    }
+    .brand-badge{
+      width:36px;height:36px;border-radius:10px;
+      background:var(--brand-primary);
+      display:grid;place-items:center;
+      font-weight:700;color:#2b2b2b;
+    }
+    .brand h1{
+      font-size:16px;line-height:1.1;
+    }
+    .brand small{
+      display:block;color:var(--text-dim);font-weight:500;
+    }
+
+    .nav-section{margin-top:6px}
+    .nav-title{
+      font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin:12px 6px 8px;
+    }
+    .nav{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    .nav a{
+      text-decoration:none;color:var(--text);
+      padding:10px 12px;border-radius:10px;
+      display:flex;align-items:center;gap:10px;
+      border:1px solid transparent;
+      transition:.2s ease;
+    }
+    .nav a:hover{background:var(--surface-muted);border-color:var(--border)}
+    .nav a.active{
+      background:var(--brand-primary);
+      border-color:transparent;
+      font-weight:600;
+    }
+
+    .sidebar-foot{
+      margin-top:auto;
+      font-size:12px;color:var(--text-dim);
+      border-top:1px dashed var(--sidebar-border);
+      padding-top:12px;
+    }
+
+    /* Topbar */
+    .topbar{
+      grid-area:topbar;
+      background:var(--surface);
+      border-radius:var(--radius-xl);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 16px 12px 14px;
+      gap:12px;
+    }
+    .breadcrumbs{
+      display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim);
+    }
+    .breadcrumbs span.current{color:var(--text);font-weight:600}
+    .top-actions{display:flex;gap:10px;align-items:center}
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 14px;border:none;border-radius:10px;
+      background:var(--brand-primary);color:#2b2b2b;
+      font-weight:600;cursor:pointer;transition:.2s ease;
+    }
+    .btn:hover{background:var(--brand-primary-strong)}
+    .btn.secondary{
+      background:#e9ecef;color:#222;border:1px solid #dfe3e7;
+    }
+    .btn.secondary:hover{background:#dfe3e7}
+    .btn.danger{background:#dc3545;color:#fff}
+    .btn.danger:hover{background:#b02a37}
+    .btn.ghost{
+      background:transparent;border:1px dashed var(--border);color:var(--text);
+    }
+    .icon{font-weight:700;display:inline-block;width:16px;text-align:center}
+
+    /* Main */
+    .main{
+      grid-area:main;
+      display:grid;grid-template-columns:1fr;gap:16px;
+    }
+
+    /* Page header card */
+    .page-head{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      padding:18px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .page-title h2{font-size:20px}
+    .page-title p{font-size:13px;color:var(--text-dim);margin-top:4px}
+
+    /* Form card */
+    .card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    .card h3{
+      font-size:16px;margin-bottom:12px;color:var(--text);
+    }
+    .grid{
+      display:grid;gap:14px;
+    }
+    .grid.cols-2{grid-template-columns:1fr 1fr}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    @media (max-width: 960px){
+      .shell{grid-template-columns:1fr;grid-template-areas:"topbar" "main";padding:14px}
+      .sidebar{display:none}
+      .grid.cols-2,.grid.cols-3{grid-template-columns:1fr}
+    }
+
+    /* Fields */
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:13px;color:var(--text-dim);font-weight:600}
     .field input[type="text"],
     .field input[type="date"],
     .field select,
     .field textarea,
-    .field input[type="file"] {
-      padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; color: #333;
+    .field input[type="file"]{
+      padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;color:var(--text);
+      background:#fff;outline:none;transition:border-color .2s ease, box-shadow .2s ease;
     }
-    .field textarea { resize: vertical; min-height: 100px; }
-
-    /* Botões padrão */
-    .btn {
-      display: inline-block;
-      padding: 12px 16px;
-      background-color: #a0e76d;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
-      color: #333;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .btn:hover { background-color: #8dd24a; }
-
-    .btn-secondary {
-      background: #e9ecef; color: #222;
-    }
-    .btn-secondary:hover { background: #dfe3e7; }
-
-    .btn-danger {
-      background: #dc3545; color: #fff;
-    }
-    .btn-danger:hover { background: #b02a37; }
-
-    .actions { margin-top: 25px; display: flex; gap: 12px; }
-    .actions .btn { flex: 1; }
-
-    /* Módulos */
-    #modulos .modulo {
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    .modulo .top-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: start;
-    }
-    .modulo .top-row .btn-danger {
-      padding: 8px 10px;
-      font-size: 14px;
-      border-radius: 6px;
+    .field textarea{min-height:120px;resize:vertical}
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:#94a3b8; box-shadow:0 0 0 3px rgba(160,231,109,.25);
     }
 
-    /* Prova */
-    .prova-section { margin-top: 30px; }
-    .prova-section h3 { margin-bottom: 15px; font-size: 18px; color: #333; font-weight: 600; }
-
-    #perguntas .pergunta {
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
-      position: relative;
+    /* Modules */
+    .section-title{
+      display:flex;align-items:center;justify-content:space-between;margin-top:6px;margin-bottom:10px;
     }
-    .pergunta .header-pergunta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+    .hint{font-size:12px;color:var(--text-dim)}
+    #modulos .modulo{
+      background:var(--surface-muted);
+      border:1px dashed #d1d5db;
+      border-radius:var(--radius-lg);
+      padding:14px;margin-bottom:12px;
     }
-    .pergunta .btn-danger {
-      padding: 6px 10px;
-      font-size: 14px;
-      border-radius: 6px;
+    .modulo .top-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;align-items:start;
     }
 
-    /* ⬇️ NOVO: alternativas em colunas (uma embaixo da outra) */
-    .pergunta label { display: block; margin-top: 6px; font-size: 14px; color: #222; }
-    .pergunta input[type="text"] { display: block; width: 100%; margin-top: 4px; margin-bottom: 8px; }
-    .pergunta select { margin-top: 6px; }
-    
-    /* Navegação */
-    .top-actions { display: flex; gap: 10px; margin-bottom: 15px; }
+    /* Exam */
+    .prova-section h3{margin-bottom:8px}
+    #perguntas .pergunta{
+      background:var(--surface-muted);
+      border:1px dashed #d1d5db;
+      border-radius:var(--radius-lg);
+      padding:14px;margin-bottom:10px;
+    }
+    .pergunta .header-pergunta{
+      display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;
+    }
+    .pergunta label{display:block;margin-top:6px;font-size:14px;color:#222}
+    .pergunta input[type="text"]{display:block;width:100%;margin-top:4px;margin-bottom:8px}
+    .pergunta select{margin-top:6px}
+
+    .form-actions{
+      display:flex;gap:10px;flex-wrap:wrap;margin-top:8px
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Cadastro de Curso</h2>
-
-    <div class="top-actions">
-      <a href="/" class="btn btn-secondary">← Voltar para Home</a>
-    </div>
-
-    <form method="post" enctype="multipart/form-data">
-      <div class="field">
-        <label for="nome">Nome do Curso</label>
-        <select id="nome" name="nome" required onchange="preencherConteudo()">
-          <option value="">-- Selecione --</option>
-          <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
-          <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
-          <option value="Emergências Gerais">Emergências Gerais</option>
-          <option value="SGSO">SGSO</option>
-          <option value="Transporte Aeromédico">Transporte Aeromédico</option>
-          <option value="Sobrevivência na Selva">Sobrevivência na Selva</option>
-          <option value="Instrutor de Voo">Instrutor de Voo</option>
-          <option value="Examinador">Examinador</option>
-          <option value="BELL 206-B06">BELL 206-B06</option>
-          <option value="AS350 SERIES-B,BA,B2,AS50">AS350 SERIES-B,BA,B2,AS50</option>
-          <option value="AS 365 SERIES (N,N1,N2)/AS65">AS 365 SERIES-N,N1,N2-AS65</option>
-          <option value="AS 355 SERIES (F,F1,F2,NP)/AS55">AS 355 SERIES-F,F1,F2,NP-AS55</option>
-          <option value="AS330J">AS330J</option>
-          <option value="AS350B-BA">AS350B-BA</option>
-          <option value="AS350B2-B3">AS350B2-B3</option>
-          <option value="Arriel1 Series">Arriel1 Series</option>
-          <option value="RR250-C20 Series">RR250-C20 Series</option>
-          <option value="AS355 Series">AS355 Series</option>
-          <option value="Treinamento Solo AS350">Treinamento Solo AS350</option>
-          <option value="Treinamento Solo BH06">Treinamento Solo BH06</option>
-          <option value="Treinamento Solo AS355">Treinamento Solo AS355</option>
-        </select>
-
-        <label for="carga_horaria">Carga Horária:</label>
-        <input type="text" id="carga_horaria" name="carga_horaria" required>
-
-        <label for="conteudo">Conteúdo Programático:</label>
-        <textarea id="conteudo" name="conteudo" required></textarea>
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">A</div>
+        <div>
+          <h1>Ambipar EAD</h1>
+          <small>EADFlow layout</small>
+        </div>
       </div>
 
-      <h3>Módulos do Curso</h3>
-      <div id="modulos"></div>
-      <button type="button" class="btn" onclick="adicionarModulo()">Adicionar Módulo</button>
-
-      <div class="prova-section">
-        <h3>Avaliação</h3>
-        <div id="perguntas"></div>
+      <div class="nav-section">
+        <div class="nav-title">Home</div>
+        <nav class="nav">
+          <a href="/" class="active"><span class="icon">🏠</span>Início</a>
+          <a href="/cursos"><span class="icon">📚</span>Meus Cursos</a>
+          <a href="/config"><span class="icon">⚙️</span>Configurações</a>
+        </nav>
       </div>
 
-      <div class="actions">
-        <button type="button" id="adicionarPergunta" class="btn">Adicionar Pergunta</button>
-        <input type="submit" class="btn" value="Cadastrar Curso">
+      <div class="nav-section">
+        <div class="nav-title">Gestão</div>
+        <nav class="nav">
+          <a href="/cadastrar-curso"><span class="icon">➕</span>Novo Curso</a>
+          <a href="/alunos"><span class="icon">👥</span>Alunos</a>
+          <a href="/relatorios"><span class="icon">📈</span>Relatórios</a>
+        </nav>
       </div>
-    </form>
+
+      <div class="sidebar-foot">
+        Você está na Home. Todas as configurações ficam acessíveis aqui, no mesmo layout.
+      </div>
+    </aside>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="breadcrumbs">
+        <a href="/" class="btn ghost" style="padding:8px 10px"><span class="icon">←</span>Home</a>
+        <span>›</span>
+        <span class="current">Cadastro de Curso</span>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="btn secondary" onclick="window.location.href='/cursos'"><span class="icon">📄</span>Listar Cursos</button>
+        <button type="button" class="btn" onclick="document.getElementById('formCurso').requestSubmit()"><span class="icon">💾</span>Salvar</button>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <section class="page-head">
+        <div class="page-title">
+          <h2>Cadastro de Curso</h2>
+          <p>Defina os dados do curso, módulos (PDF) e a avaliação — tudo sem sair do layout da Home.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn secondary" type="button" onclick="history.back()"><span class="icon">↩</span>Voltar</button>
+          <button class="btn" type="button" onclick="document.getElementById('formCurso').reset()"><span class="icon">🧹</span>Limpar</button>
+        </div>
+      </section>
+
+      <!-- FORM CARD -->
+      <section class="card">
+        <form id="formCurso" method="post" enctype="multipart/form-data">
+          <div class="grid cols-2">
+            <div class="field">
+              <label for="nome">Nome do Curso</label>
+              <select id="nome" name="nome" required onchange="preencherConteudo()">
+                <option value="">-- Selecione --</option>
+                <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
+                <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+                <option value="Emergências Gerais">Emergências Gerais</option>
+                <option value="SGSO">SGSO</option>
+                <option value="Transporte Aeromédico">Transporte Aeromédico</option>
+                <option value="Sobrevivência na Selva">Sobrevivência na Selva</option>
+                <option value="Instrutor de Voo">Instrutor de Voo</option>
+                <option value="Examinador">Examinador</option>
+                <option value="BELL 206-B06">BELL 206-B06</option>
+                <option value="AS350 SERIES-B,BA,B2,AS50">AS350 SERIES-B,BA,B2,AS50</option>
+                <option value="AS 365 SERIES (N,N1,N2)/AS65">AS 365 SERIES-N,N1,N2-AS65</option>
+                <option value="AS 355 SERIES (F,F1,F2,NP)/AS55">AS 355 SERIES-F,F1,F2,NP-AS55</option>
+                <option value="AS330J">AS330J</option>
+                <option value="AS350B-BA">AS350B-BA</option>
+                <option value="AS350B2-B3">AS350B2-B3</option>
+                <option value="Arriel1 Series">Arriel1 Series</option>
+                <option value="RR250-C20 Series">RR250-C20 Series</option>
+                <option value="AS355 Series">AS355 Series</option>
+                <option value="Treinamento Solo AS350">Treinamento Solo AS350</option>
+                <option value="Treinamento Solo BH06">Treinamento Solo BH06</option>
+                <option value="Treinamento Solo AS355">Treinamento Solo AS355</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="carga_horaria">Carga Horária</label>
+              <input type="text" id="carga_horaria" name="carga_horaria" required />
+            </div>
+
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="conteudo">Conteúdo Programático</label>
+              <textarea id="conteudo" name="conteudo" required></textarea>
+            </div>
+          </div>
+
+          <div class="section-title">
+            <h3>Módulos do Curso</h3>
+            <button type="button" class="btn" onclick="adicionarModulo()"><span class="icon">➕</span>Adicionar Módulo</button>
+          </div>
+          <div id="modulos"></div>
+
+          <div class="section-title" style="margin-top:18px">
+            <h3>Avaliação</h3>
+            <span class="hint">Crie perguntas de múltipla escolha e marque a alternativa correta.</span>
+          </div>
+          <div id="perguntas"></div>
+
+          <div class="form-actions" style="margin-top:16px">
+            <button type="button" id="adicionarPergunta" class="btn"><span class="icon">✚</span>Adicionar Pergunta</button>
+            <input type="submit" class="btn" value="Cadastrar Curso" />
+          </div>
+        </form>
+      </section>
+    </main>
   </div>
 
   <script>
+    /* ====== Conteúdos pré-definidos (mantidos/compatíveis) ====== */
     const conteudos = {
       "Doutrinamento Básico de Solo": `(1) Atribuições e responsabilidades do tripulante, conforme aplicável;
 (2) As apropriadas provisões deste regulamento;
@@ -202,7 +397,7 @@
 (8) reconhecer e evitar condições atmosféricas severas;
 (9) livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadvertidamente, incluindo, para aviões, tesouras de vento em baixa altitude;
 (10) operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento(inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas e planejamento de voo.`,
-      "Inicial - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação
+      "Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação
 (2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:
 (i) equipamentos utilizados em pousos na água e em evacuação de emergência;
 (ii) equipamentos de primeiros socorros e sua apropriada utilização;e
@@ -211,95 +406,57 @@
 (i) Descompressão rápida;
 (ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;
 (iii) Pouso na água e evacuação;
-(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e
+(iv) Enfermidades, contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e
 (v) Interferência ilícita e outras situações não usuais;e
 (4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;
-(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:
-(i) Pouso na água, se aplicável;
-(ii) Evacuação em emergência;
-(iii) Extinção de fogo e controle de fumação;
-(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;
-(v) Uso do oxigênio para tripulantes e passageiros;
-(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulentes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
-      "Periódico - Emergências Gerais": `(1) Instruções sobre procedimentos e atribuições em emergências, incluindo coordenação da tripulação
-(2) Instrução individual sobre localização, funcionamento e operação dos equipamentos de emergência, incluindo:
-(i) equipamentos utilizados em pousos na água e em evacuação de emergência;
-(ii) equipamentos de primeiros socorros e sua apropriada utilização;e
-(iii) extintores de incêndio portáteis, com ênfase no tipo de agente extintor a ser utilizado nas diferentes classes de fogos;
-(3) Instruções sobre procedimentos em emergência, incluindo:
-(i) Descompressão rápida;
-(ii) Fogo a bordo em voo e no solo e procedimentos de controle de fumaça, com ênfase no equipamento elétrico e correspondentes disjuntores localizados no interior da aeronave;
-(iii) Pouso na água e evacuação;
-(iv) Enfermidades,contusões ou outras situações anormais envolvendo passageiros ou tripulantes; e
-(v) Interferência ilícita e outras situações não usuais;e
-(4) Revisão e estudo de acidentes e incidentes previamente ocorridos com o detentor de certificado, envolvendo situações reais de emergência;
-(5) Cada tripulante deve executar pelo menos os seguintes exercícios de emergência:
-(i) Pouso na água, se aplicável;
-(ii) Evacuação em emergência;
-(iii) Extinção de fogo e controle de fumação;
-(iv) Operação e uso das saídas de emergência, incluindo abertura e uso das escorregadeiras de evacuação, se aplicável;
-(v) Uso do oxigênio para tripulantes e passageiros;
-(vi) Remoção e enchimento dos botes salva-vidas da aeronave, uso de cordas de salvamento e embarque de passageiros e tripulentes nos botes, se aplicável; e (vii) colocação e inflagem dos coletes salva-vidas e uso de outros equipamentos de flutuação, se aplicável`,
-      "Inicial - SGSO": `(1) Princípios básicos de Gerenciamento de Segurança Operacional;
+(5) Cada tripulante deve executar exercícios práticos como evacuação, extinção de fogo, uso de oxigênio e equipamentos de flutuação, quando aplicável.`,
+      "SGSO": `(1) Princípios básicos de Gerenciamento de Segurança Operacional;
 (2) Filosofia, política e cultura de segurança operacional da AMBIPAR FLYONE;
 (3) Processo de identificação de perigos;
 (4) Processos de avaliação e mitigação de riscos;
-(5) Canais de comunicação para os fins da segurança operacional, com enfoque nos repostes - RELPREV;
-(6) Estudos de casos de SGSO em organizações, voltando à área de atuação do público-alvo;
+(5) Canais de comunicação para segurança operacional, com enfoque nos RELPREV;
+(6) Estudos de casos de SGSO aplicados ao contexto da organização;
 (7) Plano de Resposta a Emergências;
 (8) Programa de Prevenção de Substâncias Psicoativas.`,
-      "Periódico - SGSO": `(1) Princípios básicos de Gerenciamento de Segurança Operacional;
-(2) Filosofia, política e cultura de segurança operacional da AMBIPAR FLYONE;
-(3) Processo de identificação de perigos;
-(4) Processos de avaliação e mitigação de riscos;
-(5) Canais de comunicação para os fins da segurança operacional, com enfoque nos repostes - RELPREV;
-(6) Estudos de casos de SGSO em organizações, voltando à área de atuação do público-alvo;
-(7) Plano de Resposta a Emergências;
-(8) Programa de Prevenção de Substâncias Psicoativas.`,
-      "Inicial - Sobrevivência na Selva": `(1) Objetivo dos primeiros socorros / Respiração de emergência / RCP
-(2) Curativos e bandagens / Ferimentos e Hemorragias / Amputação;
-(3) Queimaduras e Escaldos / Estado de choque / Contusão;
-(4) Luxação / Fraturas / Técnicas para Improvisação de Transporte de Feridos e Doentes;
-(5) Animais Peçonhentos e Venenosos.
-(6) Regra Básica de Sobrevivência na Selva / Prioridades / Regras de Liderança;
-(7) Cuidados com a Saúde / A Vida na Selva / Área de Estacionamento ou Abrigo;
-(8) Importância na Limpeza do Local / Balizamento / Despojo de Detritos;
-(9) Importância da Obtenção do Fogo / Construção e Classificação de Abrigos / Meios de Obtenção de Agua e Alimentos;
-(10) Meios de Orientação na Mata / Meios de Sinalização
-(11) A vida na Selva / Meios de Orientação na Selva / Área de Estacionamento ou Abrigo
-(12) Importância na Limpeza do Local / Balizamento / Despojo de Detritos;
-(13) Importância da Obtenção do fogo / Construção de Abrigos;
-(14) Meios de Obtenção de Agua e Alimentos / Uso do Purificador de Agua / Utilização dos Meios de Sinalização`,
-      "Inicial - Instrutor de Voo": `(1) Atividades, funções e responsabilidades do instrutor de voo;
-(2) Os regulamentos e normas aplicáveis e as políticas e procedimentos do detentor do certificado;
-(3) Os métodos, procedimentos e técnicas aplicáveis na condução da instrução de voo;
-(4) Avaliação apropriada do desempenho do aluno, incluindo a identificação de:
- (i) Treinamento impróprio e insuficiente;e
- (ii) Características pessoais de um candidato que possam afetar adversamente a segurança;
-(5) As ações corretivas no caso de progresso insatisfatório do treinamento;
-(6) Os métodos, procedimentos e limitações aprovados para desempenhar os procedimentos normais, anormais e de emergência requeridos na aeronave;e
-(7) Exceto para detentores de habilitação de instrutor de voo:
-(i) Os princípios fundamentais do processo de ensino-aprendizado;
-(ii) Métodos e procedimentos de ensino;e
-(iii) O relacionemtno instrutor-aluno.`,
-      "Inicial - Examinador": `(1) Atribuições, responsabilidades e funçõesde um piloto examinador;
-(2) As aplicáveis provisões deste regulamento, dos regulamentos aeronáuticos e das políticas e procedimentos do detentor de certificado;
-(3) Os apropriados métodos, procedimentos e técnicas para conduzir os exames requeridos;
-(4) A adequada avaliação do desempenho de um piloto, incluindo a identificação de:
-(i) Treinamento inadequado ou insuficiente;e
-(ii) Características pessoais de um requerente que possam afetar adversamente a segurança;
-(5) As ações corretivas no caso de exames insatisfatórios;e
-(6) Os métodos, procedimentos e limitações aprovados para a execução dos procedimentos normais, anormais e de emergência da aeronave.`,
-      "Inicial - BELL 206/B06": `(1) Descrição Geral;
-(2) Características de desempenho;
-(3) Sistema motopropulsor;
-(4) Componentes principais;
-(5) Sistemas principais da aeronave (controle de voo, elétrico, hidráulico etc.), outros sistemas se aplicável, princípios de operação normal, anormal e de emergência e procedimentos e limitações apropriadas;
-(6) Conhecimentos e procedimentosd para:
-(i) Reconhecer e evitar condições atmosféricas severas;
-(ii) Livrar-se de condições atmosféricas severas, no caso de elas serem encontradas inadverdidamente;
-(iii) Operar dentro ou perto de tempestades (incluindo melhor altitude de penetração), ar turbulento (inclusive turbulência de céu claro), gelo, granizo e outras condições meteorológicas potencialmente perigosas;e
-(iv) Operar aeronaves durante condições de gelo no solo (ou seja, a qualquer tempo em que as condições`
+      "Transporte Aeromédico": `(1) Doutrina do atendimento pré-hospitalar aéreo;
+(2) Papéis e responsabilidades da tripulação;
+(3) Biossegurança e artigos perigosos;
+(4) Comunicação e coordenação com equipes em solo;
+(5) Gerenciamento de riscos operacionais em cenários aeromédicos;
+(6) Casos práticos e lições aprendidas.`,
+      "Sobrevivência na Selva": `(1) Primeiros socorros básicos (RCP, controle de hemorragias);
+(2) Queimaduras, choque, fraturas, transporte improvisado;
+(3) Animais peçonhentos;
+(4) Regras de liderança e prioridades de sobrevivência;
+(5) Abrigos, fogo, água e alimentos;
+(6) Sinalização e orientação na mata.`,
+      "Instrutor de Voo": `(1) Funções e responsabilidades do instrutor;
+(2) Regulamentos aplicáveis e procedimentos do detentor de certificado;
+(3) Métodos e técnicas de instrução;
+(4) Avaliação do desempenho do aluno e ações corretivas;
+(5) Procedimentos normais, anormais e de emergência.`,
+      "Examinador": `(1) Atribuições e responsabilidades do examinador;
+(2) Regulamentos, políticas e procedimentos aplicáveis;
+(3) Métodos e técnicas para conduzir exames;
+(4) Avaliação do desempenho e ações corretivas;
+(5) Limitações e procedimentos operacionais aprovados.`,
+      "BELL 206-B06": `(1) Descrição geral e desempenho;
+(2) Sistema motopropulsor e componentes;
+(3) Sistemas principais (voo, elétrico, hidráulico);
+(4) Procedimentos normais, anormais e de emergência;
+(5) Operação em condições meteorológicas adversas.`,
+      "AS350 SERIES-B,BA,B2,AS50": `Conteúdo programático conforme MM e POH, incluindo limitações, sistemas e emergências.`,
+      "AS 365 SERIES (N,N1,N2)/AS65": `Conteúdo programático conforme manuais aplicáveis e procedimentos de emergência.`,
+      "AS 355 SERIES (F,F1,F2,NP)/AS55": `Conteúdo programático conforme manuais aplicáveis e procedimentos de emergência.`,
+      "AS330J": `Conteúdo programático conforme documentação técnica da aeronave.`,
+      "AS350B-BA": `Conteúdo programático conforme documentação técnica da aeronave.`,
+      "AS350B2-B3": `Conteúdo programático conforme documentação técnica da aeronave.`,
+      "Arriel1 Series": `Conhecimentos do powerplant, limitações e emergências.`,
+      "RR250-C20 Series": `Conhecimentos do powerplant, limitações e emergências.`,
+      "AS355 Series": `Conteúdo programático conforme documentação técnica da aeronave.`,
+      "Treinamento Solo AS350": `Treinamento teórico de solo específico para AS350.`,
+      "Treinamento Solo BH06": `Treinamento teórico de solo específico para BH06.`,
+      "Treinamento Solo AS355": `Treinamento teórico de solo específico para AS355.`
     };
 
     function preencherConteudo() {
@@ -321,7 +478,7 @@
             <label style="margin-top:8px;">Arquivo (PDF):</label>
             <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
           </div>
-          <button type="button" class="btn btn-danger" onclick="this.closest('.modulo').remove()">Remover Módulo</button>
+          <button type="button" class="btn danger" onclick="this.closest('.modulo').remove()">Remover</button>
         </div>
       `;
       container.appendChild(div);
@@ -337,7 +494,7 @@
       div.innerHTML = `
         <div class="header-pergunta">
           <strong>Pergunta ${indicePergunta + 1}</strong>
-          <button type="button" class="btn btn-danger" onclick="this.closest('.pergunta').remove()">Remover Pergunta</button>
+          <button type="button" class="btn danger" onclick="this.closest('.pergunta').remove()">Remover</button>
         </div>
 
         <label>Enunciado:</label>
