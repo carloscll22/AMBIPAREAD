@@ -7,79 +7,59 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#c1f38e;          /* fundo Ambipar */
-      --primary:#a0e76d;     /* botões */
+      --bg:#c1f38e;
+      --primary:#a0e76d;
       --primary-hover:#8dd24a;
       --surface:#ffffff;
       --border:#e2e8f0;
       --text:#1f2937;
       --muted:#64748b;
       --shadow:0 8px 22px rgba(0,0,0,.08);
-      --radius:16px;
-      --radius-sm:12px;
+      --radius:16px; --radius-sm:12px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       font-family:'Poppins',sans-serif;
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--text);
-      display:grid;
-      grid-template-columns:260px 1fr;   /* === posição igual EADFLOW === */
-      gap:22px;
+      min-height:100vh; background:var(--bg); color:var(--text);
+      display:grid; grid-template-columns:260px 1fr; gap:22px;
     }
 
     /* === SIDEBAR === */
-    .sidebar{
-      background:var(--surface);
-      border-right:1px solid var(--border);
-      padding:18px 16px;
-      display:flex;flex-direction:column;gap:18px;
-    }
-    .brand{
-      background:#f4ffe7;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      display:flex;align-items:center;justify-content:center;
-    }
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:18px 16px;display:flex;flex-direction:column;gap:16px}
+    .brand{background:#f4ffe7;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center}
     .brand img{height:32px;width:auto;display:block}
 
-    .side-card{
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:var(--radius-sm);
-      box-shadow:var(--shadow);
-      padding:16px;
-      display:flex;flex-direction:column;gap:10px;
-      text-align:center;
+    /* Perfil (logo -> avatar -> nome) */
+    .profile{
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+      padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px
     }
-    .side-card h4{font-size:14px;font-weight:600;margin-bottom:6px}
+    .avatar-wrap{position:relative;width:86px;height:86px}
+    .avatar{
+      width:86px;height:86px;border-radius:50%;
+      background-position:center;background-size:cover;background-repeat:no-repeat;
+      border:3px solid #d9f5b6; /* aro verde claro */
+    }
+    .avatar-btn{
+      position:absolute;right:-4px;bottom:-4px;
+      background:var(--primary);border:none;border-radius:999px;padding:6px 8px;
+      font-weight:700;cursor:pointer;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.15)
+    }
+    .avatar-btn:hover{background:var(--primary-hover)}
+    .user-name{
+      text-align:center;font-weight:700;color:#222;font-size:14px;letter-spacing:.02em;text-transform:uppercase
+    }
 
-    .btn{
-      width:100%;
-      display:inline-block;text-align:center;
-      padding:10px 14px;border:none;border-radius:10px;
-      background:var(--primary);color:#333;font-weight:600;
-      text-decoration:none;cursor:pointer;transition:.15s ease;
-    }
+    .btn{width:100%;display:inline-block;text-align:center;padding:10px 14px;border:none;border-radius:10px;background:var(--primary);color:#333;font-weight:600;text-decoration:none;cursor:pointer;transition:.15s ease}
     .btn:hover{background:var(--primary-hover)}
-    .btn.secondary{
-      background:#eef2f6;color:#111;border:1px solid var(--border);
-    }
+    .btn.secondary{background:#eef2f6;color:#111;border:1px solid var(--border)}
 
     /* === CONTEÚDO === */
-    .content{padding:22px 22px 40px 0; max-width:1200px;}
+    .content{padding:22px 22px 40px 0;max-width:1200px}
     .breadcrumb{font-size:12px;color:var(--muted);margin:6px 0 12px;text-align:right}
     .page-title{font-size:26px;font-weight:700;margin-bottom:14px;color:#213547}
 
-    .card{
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:20px;
-    }
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
     .card h3{font-size:18px;margin-bottom:12px}
 
     .grid{display:grid;gap:14px}
@@ -88,49 +68,57 @@
 
     .field{display:flex;flex-direction:column;gap:8px}
     .field label{font-weight:600;font-size:14px;color:#444}
-    .field input[type="text"],
-    .field select,
-    .field textarea,
-    .field input[type="file"]{
-      padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;color:#333;background:#fff;
-    }
+    .field input[type="text"], .field select, .field textarea, .field input[type="file"]{padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;color:#333;background:#fff}
     .field textarea{min-height:120px;resize:vertical}
 
     .section-title{font-size:18px;font-weight:700;color:#333;margin:18px 0 10px}
-
-    #modulos .modulo{
-      background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:12px;
-    }
+    #modulos .modulo{background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:12px}
     .modulo .top-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
     .btn-danger{background:#dc3545;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:600;cursor:pointer}
     .btn-danger:hover{background:#b02a37}
-
-    #perguntas .pergunta{
-      background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:10px;
-    }
+    #perguntas .pergunta{background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:10px}
     .pergunta .header-pergunta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-
     .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
     .actions .btn{flex:1}
   </style>
 </head>
 <body>
 
-  <!-- === SIDEBAR (igual ao EADFLOW em posição) === -->
+  <!-- === SIDEBAR === -->
   <aside class="sidebar">
-    <!-- LOGO obrigatória no topo -->
+    <!-- LOGO (obrigatória) -->
     <div class="brand">
-      <!-- Se usa Flask, deixe a linha 1 e apague a 2; se estático, use a 2 -->
-      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD" />
-      <!-- <img src="/static/loggo.png" alt="Ambipar EAD" /> -->
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
     </div>
 
-    <div class="side-card">
-      <h4>Painel do Professor</h4>
-      <!-- LINKS FUNCIONAIS -->
-      <a class="btn" href="/alterar_senha">Alterar Senha</a>
-      <a class="btn secondary" href="/">Home do Professor</a>
+    <!-- PERFIL: Avatar editável + Nome da pessoa logada -->
+    <div class="profile">
+      <div class="avatar-wrap">
+        <div
+          class="avatar"
+          style="
+            background-image:
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+              url('{{ url_for('static', filename='avatar_padrao.png') }}');
+          ">
+        </div>
+        <!-- botão editar (abre input de arquivo escondido) -->
+        <button class="avatar-btn" type="button" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
+        <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+          <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
+        </form>
+      </div>
+      <div class="user-name">
+        {{ (session['nome'] or 'USUÁRIO') | upper }}
+      </div>
     </div>
+
+    <!-- Botões existentes (funcionais) -->
+    <a class="btn" href="/alterar_senha">Alterar Senha</a>
+    <a class="btn secondary" href="/">Home do Professor</a>
   </aside>
 
   <!-- === CONTEÚDO === -->
@@ -140,7 +128,6 @@
 
     <section class="card">
       <h3>Informações do Curso</h3>
-
       <form method="post" enctype="multipart/form-data">
         <div class="grid cols-2">
           <div class="field">
@@ -199,7 +186,7 @@
   </main>
 
   <script>
-    // ==== Conteúdos mantidos (adicione/edite conforme seu dicionário) ====
+    // === Conteúdos (complete com o seu dicionário completo) ===
     const conteudos = {
       "Doutrinamento Básico de Solo": `(1) Atribuições e responsabilidades do tripulante, conforme aplicável;
 (2) As apropriadas provisões deste regulamento;
@@ -209,21 +196,16 @@
 (6) O SGSO;
 (7) Segurança da aviação civil (AVSEC);
 (8) Fatores humanos e CRM`
-      // ... mantenha o restante do seu objeto aqui ...
     };
+    function preencherConteudo(){ const n=document.getElementById('nome').value; document.getElementById('conteudo').value = conteudos[n] || ''; }
 
-    function preencherConteudo(){
-      const nome = document.getElementById('nome').value;
-      document.getElementById('conteudo').value = conteudos[nome] || '';
-    }
-
-    // ==== Módulos (mesma lógica do seu) ====
-    let indexModulo = 0;
+    // === Módulos ===
+    let indexModulo=0;
     function adicionarModulo(){
-      const container = document.getElementById("modulos");
-      const div = document.createElement("div");
-      div.classList.add("modulo");
-      div.innerHTML = `
+      const c=document.getElementById("modulos");
+      const d=document.createElement("div");
+      d.className="modulo";
+      d.innerHTML=`
         <div class="top-row">
           <div>
             <label>Título do Módulo:</label>
@@ -232,49 +214,33 @@
             <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
           </div>
           <button type="button" class="btn-danger" onclick="this.closest('.modulo').remove()">Remover Módulo</button>
-        </div>
-      `;
-      container.appendChild(div);
-      indexModulo++;
+        </div>`;
+      c.appendChild(d); indexModulo++;
     }
 
-    // ==== Perguntas (mesma lógica do seu) ====
-    let indicePergunta = 0;
-    document.getElementById('adicionarPergunta').addEventListener('click', () => {
-      const container = document.getElementById('perguntas');
-      const div = document.createElement('div');
-      div.classList.add('pergunta');
-      div.innerHTML = `
+    // === Perguntas ===
+    let indicePergunta=0;
+    document.getElementById('adicionarPergunta').addEventListener('click', ()=>{
+      const c=document.getElementById('perguntas');
+      const d=document.createElement('div');
+      d.className='pergunta';
+      d.innerHTML=`
         <div class="header-pergunta">
-          <strong>Pergunta ${indicePergunta + 1}</strong>
+          <strong>Pergunta ${indicePergunta+1}</strong>
           <button type="button" class="btn-danger" onclick="this.closest('.pergunta').remove()">Remover Pergunta</button>
         </div>
-
         <label>Enunciado:</label>
         <input type="text" name="perguntas[${indicePergunta}][enunciado]" required>
-
-        <label>a)</label>
-        <input type="text" name="perguntas[${indicePergunta}][a]" required>
-
-        <label>b)</label>
-        <input type="text" name="perguntas[${indicePergunta}][b]" required>
-
-        <label>c)</label>
-        <input type="text" name="perguntas[${indicePergunta}][c]" required>
-
-        <label>d)</label>
-        <input type="text" name="perguntas[${indicePergunta}][d]" required>
-
+        <label>a)</label><input type="text" name="perguntas[${indicePergunta}][a]" required>
+        <label>b)</label><input type="text" name="perguntas[${indicePergunta}][b]" required>
+        <label>c)</label><input type="text" name="perguntas[${indicePergunta}][c]" required>
+        <label>d)</label><input type="text" name="perguntas[${indicePergunta}][d]" required>
         <label>Alternativa correta:</label>
         <select name="perguntas[${indicePergunta}][correta]" required>
-          <option value="a">a</option>
-          <option value="b">b</option>
-          <option value="c">c</option>
-          <option value="d">d</option>
-        </select>
-      `;
-      container.appendChild(div);
-      indicePergunta++;
+          <option value="a">a</option><option value="b">b</option>
+          <option value="c">c</option><option value="d">d</option>
+        </select>`;
+      c.appendChild(d); indicePergunta++;
     });
   </script>
 </body>
