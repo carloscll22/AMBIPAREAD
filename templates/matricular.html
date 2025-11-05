@@ -6,98 +6,80 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#c1f38e;
-      --primary:#a0e76d;
-      --primary-hover:#8dd24a;
-      --surface:#ffffff;
-      --border:#e2e8f0;
-      --text:#1f2937;
-      --muted:#64748b;
-      --shadow:0 8px 22px rgba(0,0,0,.08);
+      --bg:#c1f38e; --primary:#a0e76d; --primary-hover:#8dd24a; --surface:#fff;
+      --border:#e2e8f0; --text:#1f2937; --muted:#64748b; --shadow:0 8px 22px rgba(0,0,0,.08);
       --radius:16px; --radius-sm:12px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-
-    /* ===== Layout geral com sidebar (igual ao cadastro de curso) ===== */
     body{
-      font-family:'Poppins',sans-serif;
-      min-height:100vh; background:var(--bg); color:var(--text);
-      display:grid; grid-template-columns:260px 1fr; gap:22px;
-      padding:22px;
+      font-family:'Poppins',sans-serif; min-height:100vh; background:var(--bg); color:var(--text);
+      display:grid; grid-template-columns:260px 1fr; gap:22px; padding:22px;
     }
 
-    /* ===== Sidebar ===== */
+    /* ===== Sidebar (igual cadastro de curso) ===== */
     .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:18px 16px;display:flex;flex-direction:column;gap:16px}
     .brand{background:#f4ffe7;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center}
     .brand img{height:32px;width:auto;display:block}
 
-    .profile{
-      background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
-      padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px
-    }
+    .profile{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px}
     .avatar-wrap{position:relative;width:86px;height:86px}
-    .avatar{
-      width:86px;height:86px;border-radius:50%;
-      background-position:center;background-size:cover;background-repeat:no-repeat;
-      border:3px solid #d9f5b6;
-    }
-    .avatar-btn{
-      position:absolute;right:-4px;bottom:-4px;
-      background:var(--primary);border:none;border-radius:999px;padding:6px 8px;
-      font-weight:700;cursor:pointer;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.15)
-    }
+    .avatar{width:86px;height:86px;border-radius:50%;background-position:center;background-size:cover;background-repeat:no-repeat;border:3px solid #d9f5b6}
+    .avatar-btn{position:absolute;right:-4px;bottom:-4px;background:var(--primary);border:none;border-radius:999px;padding:6px 8px;font-weight:700;cursor:pointer;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.15)}
     .avatar-btn:hover{background:var(--primary-hover)}
-    .user-name{
-      text-align:center;font-weight:700;color:#222;font-size:14px;letter-spacing:.02em;text-transform:uppercase
-    }
+    .user-name{text-align:center;font-weight:700;color:#222;font-size:14px;letter-spacing:.02em;text-transform:uppercase}
 
-    .btn-side{
-      width:100%;display:inline-block;text-align:center;
-      padding:10px 14px;border:none;border-radius:10px;background:var(--primary);color:#333;font-weight:600;
-      text-decoration:none;cursor:pointer;transition:.15s ease
-    }
+    .btn-side{width:100%;display:inline-block;text-align:center;padding:10px 14px;border:none;border-radius:10px;background:var(--primary);color:#333;font-weight:600;text-decoration:none;cursor:pointer;transition:.15s ease}
     .btn-side:hover{background:var(--primary-hover)}
     .btn-side.secondary{background:#eef2f6;color:#111;border:1px solid var(--border)}
 
-    /* ===== Conteúdo (mantém seu formulário) ===== */
+    /* ===== Conteúdo ===== */
     .content{padding-right:22px}
-    .box{
-      background:#fff; padding:25px 30px; border-radius:10px; width:360px; box-shadow:0 0 8px rgba(0,0,0,.1); text-align:left;
-      /* Centraliza no conteúdo sem perder sua largura original */
-      margin:0 auto;
+    .card{
+      background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow);
+      padding:24px; max-width:980px; margin:0 auto;
     }
-    h2{ text-align:center; margin-bottom:25px; color:#333; }
-    label{ display:block; margin-top:15px; font-weight:bold; color:#444; }
-    select, input[type="text"], input[type="date"]{ width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ccc; font-size:15px; box-sizing:border-box; }
-    .hint{ font-size:12px; color:#666; margin-top:4px; }
-    .erro{ margin-top:10px; background:#ffe7e7; color:#a30000; padding:8px 10px; border-radius:6px; font-size:14px; }
-    input[type="submit"]{ margin-top:25px; width:100%; padding:12px; background:#a0e76d; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; color:#333; transition:background .3s; }
-    input[type="submit"]:hover{ background:#8dd24a; }
-    .link-voltar{ display:block; margin-top:20px; text-align:center; text-decoration:none; color:#333; font-weight:bold; }
-    .link-voltar:hover{ text-decoration:underline; }
+    h2{ margin-bottom:16px; color:#1e293b; font-size:22px; font-weight:700; text-align:center }
+
+    /* --- FORMATO HORIZONTAL (duas colunas) --- */
+    form .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    .field{display:grid; grid-template-columns:170px 1fr; align-items:center; gap:10px; background:#fafafa; border:1px solid #ececec; border-radius:10px; padding:10px 12px}
+    .field label{font-weight:700; font-size:13px; color:#374151}
+    .field .ctrl{display:flex; gap:8px; align-items:center}
+    select, input[type="text"], input[type="date"]{width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px}
+    .hint{ grid-column:2 / 3; font-size:12px; color:#666 }
+
+    .erro{ grid-column:1/-1; background:#ffe7e7; color:#a30000; padding:10px 12px; border-radius:8px; font-size:14px }
+
+    .row-full{grid-column:1/-1}
+    .submit-wrap{grid-column:1/-1; display:flex; justify-content:center; margin-top:6px}
+    input[type="submit"]{ width:320px; padding:12px; background:var(--primary); border:none; border-radius:10px; cursor:pointer; font-weight:700; font-size:16px; color:#333; transition:background .2s}
+    input[type="submit"]:hover{ background:var(--primary-hover) }
+    .link-voltar{ display:block; margin-top:14px; text-align:center; text-decoration:none; color:#333; font-weight:600 }
 
     /* linha aluno existente */
-    .aluno-row{display:flex; align-items:center; gap:6px; margin-top:6px}
+    .aluno-row{display:flex; align-items:center; gap:6px; width:100%}
+    .add-btn{ padding:8px 10px; border-radius:8px; border:1px solid #cbd5e1; background:#f6f6f6; cursor:pointer }
+
     @media (max-width:980px){
       body{grid-template-columns:1fr}
       .content{padding-right:0}
+      form .grid{grid-template-columns:1fr}
+      .field{grid-template-columns:1fr; align-items:start}
+      .hint{grid-column:1/2}
     }
   </style>
 </head>
 <body>
 
-  <!-- ===== Sidebar igual à do cadastro de curso ===== -->
+  <!-- ===== Sidebar ===== -->
   <aside class="sidebar">
-    <!-- LOGO Ambipar -->
     <div class="brand">
       <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
     </div>
 
-    <!-- Avatar editável + Nome do usuário -->
     <div class="profile">
       <div class="avatar-wrap">
-        <div
-          class="avatar"
+        <div class="avatar"
           style="
             background-image:
               url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
@@ -115,14 +97,13 @@
       <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
     </div>
 
-    <!-- Mesmos links já existentes no projeto -->
     <a class="btn-side" href="/alterar_senha">Alterar Senha</a>
     <a class="btn-side secondary" href="/">Home do Professor</a>
   </aside>
 
-  <!-- ===== Conteúdo original da página de matrícula ===== -->
+  <!-- ===== Conteúdo ===== -->
   <main class="content">
-    <div class="box">
+    <div class="card">
       <h2>Matricular Aluno em Curso</h2>
 
       {% if erro %}
@@ -130,84 +111,113 @@
       {% endif %}
 
       <form method="post">
-        <label for="aluno">Aluno:</label>
-        <div id="alunosContainer">
-          <!-- primeira linha (não removível) -->
-          <div class="aluno-row">
-            <select name="alunos[]" id="aluno" required style="flex:1;">
-              {% for aluno in alunos %}
-                <option value="{{ aluno.email }}">{{ aluno.nome }}</option>
-              {% endfor %}
-            </select>
-            <button type="button" class="remove-aluno" title="Remover" aria-label="Remover"
-                    style="display:none; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#f6f6f6; cursor:pointer;">
-              ✕
-            </button>
+        <div class="grid">
+
+          <!-- Aluno + botão "Adicionar outro aluno" (inline) -->
+          <div class="field row-full">
+            <label for="aluno">Aluno:</label>
+            <div class="ctrl">
+              <div id="alunosContainer" style="flex:1">
+                <div class="aluno-row">
+                  <select name="alunos[]" id="aluno" required style="flex:1;">
+                    {% for aluno in alunos %}
+                      <option value="{{ aluno.email }}">{{ aluno.nome }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="button" class="remove-aluno" title="Remover" aria-label="Remover"
+                          style="display:none; padding:8px 10px; border-radius:8px; border:1px solid #cbd5e1; background:#f6f6f6; cursor:pointer;">
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="add-btn" onclick="addAluno()">Adicionar outro aluno</button>
+            </div>
           </div>
+
+          <div class="field">
+            <label for="curso">Curso:</label>
+            <div class="ctrl">
+              <select name="curso" id="curso" required>
+                {% for curso in cursos %}
+                  <option value="{{ curso.nome }}">{{ curso.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="professor">Professor:</label>
+            <div class="ctrl">
+              <select name="professor" id="professor" required>
+                {% for prof in professores %}
+                  <option value="{{ prof }}">{{ prof }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="tipo">Tipo:</label>
+            <div class="ctrl">
+              <select name="tipo" id="tipo" required>
+                <option value="Inicial">Inicial</option>
+                <option value="Periódico">Periódico</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="turma">Turma (3 dígitos):</label>
+            <div class="ctrl">
+              <input type="text" id="turma" name="turma"
+                placeholder="{{ sugestao_turma or '001' }}"
+                inputmode="numeric" autocomplete="off" pattern="[0-9]{3}"
+                title="Use exatamente 3 dígitos (ex.: 001, 002)"
+                oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,3)">
+            </div>
+            <div class="hint">Se deixar em branco, o sistema gera o próximo número automaticamente.</div>
+          </div>
+
+          <div class="field">
+            <label for="nrt">NRT da Turma:</label>
+            <div class="ctrl">
+              <input type="text" id="nrt" name="nrt" placeholder="Ex: NRT-2025-01" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="periodicidade">Periodicidade de vencimento:</label>
+            <div class="ctrl">
+              <select id="periodicidade" name="periodicidade" required>
+                <option value="1">1 ano</option>
+                <option value="2">2 anos</option>
+                <option value="3">3 anos</option>
+                <option value="5">5 anos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="data_inicio">Data Início:</label>
+            <div class="ctrl">
+              <input type="date" id="data_inicio" name="data_inicio" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="data_fim">Data Fim:</label>
+            <div class="ctrl">
+              <input type="date" id="data_fim" name="data_fim" required>
+            </div>
+          </div>
+
+          <div class="submit-wrap">
+            <input type="submit" value="Matricular" />
+          </div>
+
+          <a href="/" class="link-voltar row-full">Voltar</a>
         </div>
-        <button type="button" onclick="addAluno()" style="margin-top:8px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#f6f6f6; cursor:pointer;">
-          Adicionar outro aluno
-        </button>
-
-        <label for="curso">Curso:</label>
-        <select name="curso" id="curso" required>
-          {% for curso in cursos %}
-            <option value="{{ curso.nome }}">{{ curso.nome }}</option>
-          {% endfor %}
-        </select>
-
-        <label for="professor">Professor:</label>
-        <select name="professor" id="professor" required>
-          {% for prof in professores %}
-            <option value="{{ prof }}">{{ prof }}</option>
-          {% endfor %}
-        </select>
-
-        <!-- Tipo da matrícula -->
-        <label for="tipo">Tipo:</label>
-        <select name="tipo" id="tipo" required>
-          <option value="Inicial">Inicial</option>
-          <option value="Periódico">Periódico</option>
-        </select>
-
-        <!-- Turma (3 dígitos, opcional; se vazio o backend gera) -->
-        <label for="turma">Turma (3 dígitos):</label>
-        <input
-          type="text"
-          id="turma"
-          name="turma"
-          placeholder="{{ sugestao_turma or '001' }}"
-          inputmode="numeric"
-          autocomplete="off"
-          pattern="[0-9]{3}"
-          title="Use exatamente 3 dígitos (ex.: 001, 002)"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,3)"
-        />
-        <div class="hint">Se deixar em branco, o sistema gera o próximo número automaticamente.</div>
-
-        <!-- NRT -->
-        <label for="nrt">NRT da Turma:</label>
-        <input type="text" id="nrt" name="nrt" placeholder="Ex: NRT-2025-01" required>
-
-        <!-- Periodicidade de vencimento -->
-        <label for="periodicidade">Periodicidade de vencimento:</label>
-        <select id="periodicidade" name="periodicidade" required>
-          <option value="1">1 ano</option>
-          <option value="2">2 anos</option>
-          <option value="3">3 anos</option>
-          <option value="5">5 anos</option>
-        </select>
-
-        <label for="data_inicio">Data Início:</label>
-        <input type="date" id="data_inicio" name="data_inicio" required>
-
-        <label for="data_fim">Data Fim:</label>
-        <input type="date" id="data_fim" name="data_fim" required>
-
-        <input type="submit" value="Matricular" />
       </form>
-
-      <a href="/" class="link-voltar">Voltar</a>
     </div>
   </main>
 
@@ -223,7 +233,6 @@
       turmaInput.placeholder = sug;
       turmaInput.value = '';
     }
-
     atualizaPlaceholder();
     cursoSelect.addEventListener('change', atualizaPlaceholder);
   </script>
@@ -247,9 +256,9 @@
       btn.title = 'Remover';
       btn.setAttribute('aria-label', 'Remover');
       btn.textContent = '✕';
-      btn.style.padding = '6px 10px';
-      btn.style.borderRadius = '6px';
-      btn.style.border = '1px solid #ccc';
+      btn.style.padding = '8px 10px';
+      btn.style.borderRadius = '8px';
+      btn.style.border = '1px solid #cbd5e1';
       btn.style.background = '#f6f6f6';
       btn.style.cursor = 'pointer';
       btn.onclick = function () { removerAluno(btn); };
