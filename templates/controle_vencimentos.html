@@ -3,25 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <title>Controle de Vencimento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { background:#c1f38e; margin:0; font-family: Arial, sans-serif; }
-    .wrap { max-width: 720px; margin: 40px auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 0 8px rgba(0,0,0,.08); }
-    h2 { margin:0 0 16px; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px; }
-    a.btn { display:block; text-align:center; padding:16px; background:#a0e76d; border-radius:8px; font-weight:bold; color:#000; text-decoration:none; }
-    a.btn:hover { background:#8dd24a; }
-    .back { margin-top:16px; display:inline-block; color:#333; text-decoration:none; font-weight:bold; }
+    :root{
+      --bg:#c1f38e; --surface:#fff; --border:#e2e8f0; --text:#1f2937; --muted:#64748b;
+      --primary:#a0e76d; --primary-hover:#8dd24a; --shadow:0 8px 22px rgba(0,0,0,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; display:grid; grid-template-columns:260px 1fr; gap:22px; padding:22px;
+    }
+
+    /* ===== Sidebar ===== */
+    .sidebar{
+      background:var(--surface); border-right:1px solid var(--border);
+      padding:18px 16px; display:flex; flex-direction:column; gap:16px;
+    }
+    .brand{
+      background:#f4ffe7; border:1px solid var(--border); border-radius:12px;
+      padding:10px; display:flex; align-items:center; justify-content:center;
+    }
+    .brand img{height:32px;width:auto;display:block}
+
+    .profile{
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      box-shadow:var(--shadow); padding:14px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    }
+    .avatar-wrap{position:relative;width:86px;height:86px}
+    .avatar{
+      width:86px;height:86px;border-radius:50%;
+      background-position:center;background-size:cover;background-repeat:no-repeat;
+      border:3px solid #d9f5b6;
+    }
+    .avatar-btn{
+      position:absolute;right:-4px;bottom:-4px;background:var(--primary);
+      border:none;border-radius:999px;padding:6px 8px;font-weight:700;cursor:pointer;line-height:1;
+      box-shadow:0 2px 6px rgba(0,0,0,.15)
+    }
+    .avatar-btn:hover{background:var(--primary-hover)}
+    .user-name{ text-align:center; font-weight:700; color:#222; font-size:14px; text-transform:uppercase; letter-spacing:.02em }
+
+    .btn-side{
+      width:100%; display:inline-block; text-align:center;
+      padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
+      background:var(--primary); color:#333; font-weight:600; text-decoration:none; transition:.15s ease;
+    }
+    .btn-side:hover{ background:var(--primary-hover) }
+    .btn-side.secondary{ background:#eef2f6; color:#111; border:1px solid var(--border) }
+
+    /* ===== Conteúdo ===== */
+    .content{ padding-right:22px }
+    .wrap{
+      max-width:900px; margin:0 auto; background:var(--surface);
+      padding:24px; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border);
+    }
+    h2{ margin:0 0 16px; font-size:24px; font-weight:700; text-align:center; color:#1e293b }
+    p{ color:#475569 }
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px }
+    a.btn{
+      display:block; text-align:center; padding:16px; background:var(--primary);
+      border-radius:10px; font-weight:700; color:#000; text-decoration:none; border:1px solid #d3f0b2;
+    }
+    a.btn:hover{ background:var(--primary-hover) }
+    .back{
+      margin-top:16px; display:inline-block; color:#14532d; text-decoration:none; font-weight:700
+    }
+    .back:hover{ text-decoration:underline }
+
+    @media (max-width:980px){
+      body{ grid-template-columns:1fr; padding:16px }
+      .content{ padding-right:0 }
+      .wrap{ padding:18px }
+      .grid{ grid-template-columns:1fr }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h2>Controle de Vencimento</h2>
-    <p>Escolha uma ação:</p>
-    <div class="grid">
-      <a class="btn" href="/vencimentos/adicionar">Adicionar Vencimento</a>
-      <a class="btn" href="/vencimentos/verificar">Verificar Vencimento</a>
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
     </div>
-    <a class="back" href="/">← Voltar</a>
-  </div>
+
+    <div class="profile">
+      <div class="avatar-wrap">
+        <div class="avatar"
+          style="
+            background-image:
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+              url('{{ url_for('static', filename='avatar_padrao.png') }}');
+          ">
+        </div>
+        <button class="avatar-btn" type="button" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
+        <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+          <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
+        </form>
+      </div>
+      <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
+    </div>
+
+    <!-- Home do Professor com fallback -->
+    <a class="btn-side secondary" href="/" onclick="return goProfHome(event)">Home do Professor</a>
+  </aside>
+
+  <!-- ===== Conteúdo ===== -->
+  <main class="content">
+    <div class="wrap">
+      <h2>Controle de Vencimento</h2>
+      <p>Escolha uma ação:</p>
+
+      <div class="grid">
+        <a class="btn" href="/vencimentos/adicionar">Adicionar Vencimento</a>
+        <a class="btn" href="/vencimentos/verificar">Verificar Vencimento</a>
+      </div>
+
+      <a class="back" href="/">← Voltar</a>
+    </div>
+  </main>
+
+  <script>
+    // Fallback: tenta acessar /home_professor; se falhar, redireciona para "/"
+    function goProfHome(e){
+      e.preventDefault();
+      fetch('/home_professor', { method:'HEAD' })
+        .then(r => { if(r.ok){ location.href = '/home_professor'; } else { location.href = '/'; } })
+        .catch(() => { location.href = '/'; });
+      return false;
+    }
+  </script>
 </body>
 </html>
