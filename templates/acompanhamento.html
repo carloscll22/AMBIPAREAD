@@ -6,222 +6,269 @@
   <title>Relatório de Alunos Matriculados</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Poppins', sans-serif; background-color: #c1f38e; display: flex; }
+    :root{
+      --bg:#c1f38e; --surface:#fff; --border:#e2e8f0; --text:#1f2937; --muted:#64748b;
+      --primary:#a0e76d; --primary-hover:#8dd24a; --shadow:0 8px 22px rgba(0,0,0,.08);
+      --radius:16px; --radius-sm:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; display:grid; grid-template-columns:260px 1fr; gap:22px; padding:22px;
+    }
 
-    /* ===== Sidebar (mesmo estilo antigo) ===== */
-    .sidebar {
-      width: 220px; background: #fff; padding: 20px; border-right: 2px solid #ccc;
-      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    /* ===== Sidebar (padrão Ambipar/EADFlow) ===== */
+    .sidebar{
+      background:var(--surface); border-right:1px solid var(--border);
+      padding:18px 16px; display:flex; flex-direction:column; gap:16px;
     }
-    .sidebar h2 { font-size: 18px; margin-bottom: 20px; color: #333; }
-    .sidebar button {
-      width: 100%; margin-bottom: 15px; padding: 10px; background: #a0e76d;
-      border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-      transition: background 0.3s;
+    .brand{
+      background:#f4ffe7; border:1px solid var(--border); border-radius:12px;
+      padding:10px; display:flex; align-items:center; justify-content:center;
     }
-    .sidebar button:hover { background: #8ad858; }
-    .sidebar .logout { margin-top: auto; text-decoration: none; color: #333; font-weight: bold; }
+    .brand img{height:32px;width:auto;display:block}
+
+    .profile{
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      box-shadow:var(--shadow); padding:14px; display:flex; flex-direction:column;
+      align-items:center; gap:10px;
+    }
+    .avatar-wrap{position:relative;width:86px;height:86px}
+    .avatar{
+      width:86px;height:86px;border-radius:50%;
+      background-position:center;background-size:cover;background-repeat:no-repeat;
+      border:3px solid #d9f5b6;
+    }
+    .avatar-btn{
+      position:absolute;right:-4px;bottom:-4px;background:var(--primary);
+      border:none;border-radius:999px;padding:6px 8px;font-weight:700;cursor:pointer;line-height:1;
+      box-shadow:0 2px 6px rgba(0,0,0,.15)
+    }
+    .avatar-btn:hover{background:var(--primary-hover)}
+    .user-name{ text-align:center; font-weight:700; color:#222; font-size:14px; text-transform:uppercase; letter-spacing:.02em }
+
+    /* mantém SEUS controles (não adiciona/remove) */
+    .sidebar button{
+      width:100%; padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
+      background:var(--primary); color:#333; font-weight:600; transition:.15s ease;
+    }
+    .sidebar button:hover{background:var(--primary-hover)}
+    .sidebar .logout{ margin-top:auto; text-decoration:none; color:#111; font-weight:700; text-align:center;
+      background:#eef2f6; border:1px solid var(--border); padding:10px 14px; border-radius:10px; display:block }
 
     /* ===== Conteúdo ===== */
-    .content { flex: 1; padding: 30px; background-color: #f5ffe6; }
-    .content h2 { margin-bottom: 20px; color: #333; }
+    .content{ padding-right:22px }
+    .wrap{
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:20px; max-width:1200px; margin:0 auto;
+    }
+    h2{ font-size:24px; font-weight:700; color:#1e293b; margin-bottom:12px; text-align:center }
 
     /* ===== Filtro ===== */
-    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-    .filter-bar select,
-    .filter-bar input[type="text"] {
-      padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
-      font-size: 14px; flex: 1;
+    .filter-bar{ display:flex; gap:10px; margin:14px 0 18px }
+    .filter-bar select, .filter-bar input[type="text"]{
+      padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; flex:1; background:#fff
     }
 
-    /* ===== Wrappers para alternar tabela x cards ===== */
-    .table-area { display: block; }
-    .cards-area { display: none; }
-
-    /* ===== Tabela (idêntica a antes, com melhorias) ===== */
-    .table-wrap { width: 100%; overflow-x: auto; }            /* evita estourar no desktop */
-    table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 920px; }
-    thead th {
-      background: #fff; padding: 12px; text-align: left; font-weight: 600;
-      border-bottom: 2px solid #ccc; position: sticky; top: 0; z-index: 1;
+    /* ===== Tabela ===== */
+    .table-area{ display:block }
+    .cards-area{ display:none }
+    .table-wrap{ width:100%; overflow:auto }
+    table{ width:100%; border-collapse:separate; border-spacing:0 8px; min-width:920px }
+    thead th{
+      background:#fff; padding:12px; text-align:left; font-weight:600;
+      border-bottom:2px solid #cbd5e1; position:sticky; top:0; z-index:1;
     }
-    tbody tr { background: #fff; }
-    tbody td { padding: 12px; border-bottom: 1px solid #e0e0e0; vertical-align: middle; }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: #e8f5d7; }
+    tbody tr{ background:#fff }
+    tbody td{ padding:12px; border-bottom:1px solid #e0e0e0; vertical-align:middle }
+    tbody tr:last-child td{ border-bottom:none }
+    tbody tr:hover{ background:#e8f5d7 }
 
-    .actions a {
-      display: inline-block; margin-right: 8px; padding: 6px 10px;
-      background: #a0e76d; color: #000; border-radius: 6px;
-      text-decoration: none; font-size: 13px; font-weight: 500;
-      transition: background 0.3s; white-space: nowrap;
+    .actions a{
+      display:inline-block; margin-right:8px; padding:6px 10px;
+      background:var(--primary); color:#000; border-radius:8px;
+      text-decoration:none; font-size:13px; font-weight:600; transition:.15s ease; white-space:nowrap
     }
-    .actions a:hover { background: #8ad858; }
+    .actions a:hover{ background:var(--primary-hover) }
 
-    /* ===== Badges ===== */
-    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; }
-    .ok { background:#d9f6df; color:#0a6a2a; }
-    .warn { background:#fff2cc; color:#7a5c00; }
-    .no { background:#ffd9d9; color:#8f1010; }
+    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px }
+    .ok{ background:#d9f6df; color:#0a6a2a }
+    .warn{ background:#fff2cc; color:#7a5c00 }
+    .no{ background:#ffd9d9; color:#8f1010 }
 
-    /* ===== Mobile/Tablet retrato: sidebar vira topo e mostra cards ===== */
-    @media (max-width: 900px) {
-      body { flex-direction: column; }
-      .sidebar {
-        width: 100%; flex-direction: row; justify-content: space-around; gap: 12px;
-        border-right: none; border-bottom: 2px solid #ccc; min-height: unset; padding: 12px;
+    /* ===== Mobile/Tablet retrato ===== */
+    @media (max-width:900px){
+      body{ grid-template-columns:1fr; padding:16px }
+      .content{ padding-right:0 }
+      .sidebar{
+        width:100%; flex-direction:row; align-items:center; gap:12px;
+        border-right:none; border-bottom:1px solid var(--border); padding:12px
       }
-      .sidebar h2, .sidebar .logout { display: none; }
-      .content { padding: 16px; }
+      .logout{ margin-top:0 !important }
+      .wrap{ padding:14px }
+      .table-area{ display:none }
+      .cards-area{ display:grid; gap:12px }
 
-      .table-area { display: none; }     /* esconde tabela no mobile */
-      .cards-area { display: grid; gap: 12px; }
-
-      .card {
+      .card{
         background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        box-shadow:0 2px 10px rgba(0,0,0,.06)
       }
-      .card-header { display:flex; justify-content:space-between; gap:8px; margin-bottom:8px; }
-      .card-curso { font-weight:600; }
-      .grid {
-        display:grid; gap:8px; grid-template-columns: 1fr 1fr;
-      }
-      .row small { color:#666; display:block; margin-bottom:2px; }
-      .row div { font-size:14px; }
-      .card-actions { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
-      .pill { padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; background:#f7f7f7; }
-
-      @media (max-width: 520px){
-        .grid { grid-template-columns: 1fr; } /* 1 col em celulares menores */
-      }
+      .card-header{ display:flex; justify-content:space-between; gap:8px; margin-bottom:8px }
+      .card-curso{ font-weight:700 }
+      .grid{ display:grid; gap:8px; grid-template-columns:1fr 1fr }
+      .row small{ color:#666; display:block; margin-bottom:2px }
+      .row div{ font-size:14px }
+      .card-actions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap }
+      .pill{ padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; background:#f7f7f7 }
+      @media (max-width:520px){ .grid{ grid-template-columns:1fr } }
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>Professor</h2>
+
+  <!-- ===== Sidebar padronizada (mesmos controles) ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
+    </div>
+
+    <div class="profile">
+      <div class="avatar-wrap">
+        <div class="avatar"
+          style="
+            background-image:
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
+              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+              url('{{ url_for('static', filename='avatar_padrao.png') }}');
+          ">
+        </div>
+        <button class="avatar-btn" type="button" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
+        <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+          <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
+        </form>
+      </div>
+      <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
+    </div>
+
+    <!-- Mantidos: Voltar Home (button) e Sair (link) -->
     <button onclick="location.href='/'">Voltar Home</button>
     <a href="/logout" class="logout">Sair</a>
-  </div>
+  </aside>
 
-  <div class="content">
-    <h2>Relatório de Alunos Matriculados</h2>
+  <!-- ===== Conteúdo ===== -->
+  <main class="content">
+    <div class="wrap">
+      <h2>Relatório de Alunos Matriculados</h2>
 
-    <!-- ===== Filtro (só impacta a tabela / desktop) ===== -->
-    <div class="filter-bar table-area">
-      <select id="filter-type">
-        <option value="0">Curso</option>
-        <option value="1">Turma</option>
-        <option value="2">NRT</option>
-        <option value="3">Tipo</option>
-        <option value="4">Aluno</option>
-        <option value="6">Status</option>
-        <option value="7">Nota</option>
-      </select>
-      <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
-    </div>
+      <!-- Filtro (desktop) -->
+      <div class="filter-bar table-area">
+        <select id="filter-type">
+          <option value="0">Curso</option>
+          <option value="1">Turma</option>
+          <option value="2">NRT</option>
+          <option value="3">Tipo</option>
+          <option value="4">Aluno</option>
+          <option value="6">Status</option>
+          <option value="7">Nota</option>
+        </select>
+        <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
+      </div>
 
-    <!-- ====== Tabela (desktop/tablet landscape) ====== -->
-    <div class="table-area table-wrap">
-      <table id="tabela-acompanhamento">
-        <thead>
-          <tr>
-            <th>Curso</th>
-            <th>Turma</th>
-            <th>NRT</th>
-            <th>Tipo</th>
-            <th>Aluno</th>
-            <th>Tempo (min)</th>
-            <th>Status</th>
-            <th>Nota</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for e in enrollments %}
+      <!-- Tabela -->
+      <div class="table-area table-wrap">
+        <table id="tabela-acompanhamento">
+          <thead>
             <tr>
-              <td>{{ e.curso.nome }}</td>
-              <td>{{ e.turma }}</td>
-              <td>{{ e.nrt }}</td>
-              <td>{{ e.tipo }}</td>
-              <td>{{ e.aluno }}</td>
-              <td>{{ e.tempo }}</td>
-              <td>
-                {% if e.concluido %}
-                  <span class="badge ok">Concluído</span>
-                {% else %}
-                  <span class="badge warn">Em andamento</span>
-                {% endif %}
-              </td>
-              <td>{{ e.nota }}</td>
-              <td class="actions">
-                {% if e.concluido %}
-                  <a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
-                    Certificado
-                  </a>
-                  <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
-                    Lista Presença
-                  </a>
-                  {% if e.aprovado and e.cert_emitido %}
-                    <a href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">
-                      Visualizar Prova
-                    </a>
-                  {% endif %}
-                {% else %}
-                  ---
-                {% endif %}
-              </td>
+              <th>Curso</th>
+              <th>Turma</th>
+              <th>NRT</th>
+              <th>Tipo</th>
+              <th>Aluno</th>
+              <th>Tempo (min)</th>
+              <th>Status</th>
+              <th>Nota</th>
+              <th>Ações</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {% for e in enrollments %}
+              <tr>
+                <td>{{ e.curso.nome }}</td>
+                <td>{{ e.turma }}</td>
+                <td>{{ e.nrt }}</td>
+                <td>{{ e.tipo }}</td>
+                <td>{{ e.aluno }}</td>
+                <td>{{ e.tempo }}</td>
+                <td>
+                  {% if e.concluido %}
+                    <span class="badge ok">Concluído</span>
+                  {% else %}
+                    <span class="badge warn">Em andamento</span>
+                  {% endif %}
+                </td>
+                <td>{{ e.nota }}</td>
+                <td class="actions">
+                  {% if e.concluido %}
+                    <a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
+                    <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
+                    {% if e.aprovado and e.cert_emitido %}
+                      <a href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Visualizar Prova</a>
+                    {% endif %}
+                  {% else %}
+                    ---
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-    <!-- ====== Cards (mobile / tablet retrato) ====== -->
-    <div class="cards-area">
-      {% for e in enrollments %}
-      <div class="card">
-        <div class="card-header">
-          <div class="card-curso">{{ e.curso.nome }}</div>
-          <div>
-            {% if e.concluido %}<span class="badge ok">Concluído</span>{% else %}<span class="badge warn">Em andamento</span>{% endif %}
+      <!-- Cards (mobile) -->
+      <div class="cards-area">
+        {% for e in enrollments %}
+        <div class="card">
+          <div class="card-header">
+            <div class="card-curso">{{ e.curso.nome }}</div>
+            <div>{% if e.concluido %}<span class="badge ok">Concluído</span>{% else %}<span class="badge warn">Em andamento</span>{% endif %}</div>
           </div>
-        </div>
-        <div class="grid">
-          <div class="row"><small>Aluno</small><div>{{ e.aluno }}</div></div>
-          <div class="row"><small>Nota</small><div>{{ e.nota }}</div></div>
-          <div class="row"><small>Turma</small><div>{{ e.turma }}</div></div>
-          <div class="row"><small>NRT</small><div>{{ e.nrt }}</div></div>
-          <div class="row"><small>Tipo</small><div>{{ e.tipo }}</div></div>
-          <div class="row"><small>Tempo (min)</small><div>{{ e.tempo }}</div></div>
-          <div class="row"><small>Status</small>
-            <div>{% if e.aprovado %}<span class="badge ok">Aprovado</span>{% else %}<span class="badge no">Reprovado</span>{% endif %}</div>
+          <div class="grid">
+            <div class="row"><small>Aluno</small><div>{{ e.aluno }}</div></div>
+            <div class="row"><small>Nota</small><div>{{ e.nota }}</div></div>
+            <div class="row"><small>Turma</small><div>{{ e.turma }}</div></div>
+            <div class="row"><small>NRT</small><div>{{ e.nrt }}</div></div>
+            <div class="row"><small>Tipo</small><div>{{ e.tipo }}</div></div>
+            <div class="row"><small>Tempo (min)</small><div>{{ e.tempo }}</div></div>
+            <div class="row"><small>Status</small>
+              <div>{% if e.aprovado %}<span class="badge ok">Aprovado</span>{% else %}<span class="badge no">Reprovado</span>{% endif %}</div>
+            </div>
+            <div class="row"><small>Certificado</small>
+              <div>{% if e.cert_emitido %}<span class="badge ok">Emitido</span>{% else %}<span class="badge warn">Pendente</span>{% endif %}</div>
+            </div>
           </div>
-          <div class="row"><small>Certificado</small>
-            <div>{% if e.cert_emitido %}<span class="badge ok">Emitido</span>{% else %}<span class="badge warn">Pendente</span>{% endif %}</div>
-          </div>
-        </div>
 
-        {% if e.concluido %}
-        <div class="card-actions">
-          <a class="pill" href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
-          <a class="pill" href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
-          {% if e.aprovado and e.cert_emitido %}
-          <a class="pill" href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Visualizar Prova</a>
+          {% if e.concluido %}
+          <div class="card-actions">
+            <a class="pill" href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
+            <a class="pill" href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
+            {% if e.aprovado and e.cert_emitido %}
+            <a class="pill" href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Visualizar Prova</a>
+            {% endif %}
+          </div>
           {% endif %}
         </div>
-        {% endif %}
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
+  </main>
 
   <script>
-    function filtrarTabela() {
-      const idx = +document.getElementById('filter-type').value; // índice da coluna
+    function filtrarTabela(){
+      const idx = +document.getElementById('filter-type').value;
       const termo = document.getElementById('filter-input').value.toLowerCase();
-      document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row => {
+      document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row=>{
         const cell = row.querySelectorAll('td')[idx]?.textContent.toLowerCase() || '';
         row.style.display = cell.includes(termo) ? '' : 'none';
       });
