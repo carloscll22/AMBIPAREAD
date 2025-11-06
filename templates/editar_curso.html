@@ -44,7 +44,7 @@
     .avatar-btn:hover{background:var(--primary-hover)}
     .user-name{ text-align:center; font-weight:700; color:#222; font-size:14px; text-transform:uppercase; letter-spacing:.02em }
 
-    /* Botões na sidebar – igual aos outros layouts */
+    /* Botões da sidebar (mesmo estilo dos outros layouts) */
     .btn-side{
       width:100%; display:inline-block; text-align:center;
       padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
@@ -127,8 +127,8 @@
       <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
     </div>
 
-    <!-- Novo botão pedido, estilo igual aos outros layouts -->
-    <a class="btn-side secondary" href="/home_professor">Home do Professor</a>
+    <!-- Botão fixado com url_for para garantir a rota correta -->
+    <a class="btn-side secondary" href="{{ url_for('home_professor') }}">Home do Professor</a>
   </aside>
 
   <!-- ===== Conteúdo ===== -->
