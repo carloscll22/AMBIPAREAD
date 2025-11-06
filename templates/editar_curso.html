@@ -16,7 +16,7 @@
       min-height:100vh; display:grid; grid-template-columns:260px 1fr; gap:22px; padding:22px;
     }
 
-    /* ===== Sidebar padrão (sem novos botões) ===== */
+    /* ===== Sidebar ===== */
     .sidebar{
       background:var(--surface); border-right:1px solid var(--border);
       padding:18px 16px; display:flex; flex-direction:column; gap:16px;
@@ -43,6 +43,17 @@
     }
     .avatar-btn:hover{background:var(--primary-hover)}
     .user-name{ text-align:center; font-weight:700; color:#222; font-size:14px; text-transform:uppercase; letter-spacing:.02em }
+
+    /* Botões na sidebar – igual aos outros layouts */
+    .btn-side{
+      width:100%; display:inline-block; text-align:center;
+      padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
+      background:var(--primary); color:#333; font-weight:600; text-decoration:none; transition:.15s ease;
+    }
+    .btn-side:hover{ background:var(--primary-hover) }
+    .btn-side.secondary{
+      background:#eef2f6; color:#111; border:1px solid var(--border);
+    }
 
     /* ===== Conteúdo ===== */
     .content{ padding-right:22px }
@@ -115,6 +126,9 @@
       </div>
       <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
     </div>
+
+    <!-- Novo botão pedido, estilo igual aos outros layouts -->
+    <a class="btn-side secondary" href="/home_professor">Home do Professor</a>
   </aside>
 
   <!-- ===== Conteúdo ===== -->
