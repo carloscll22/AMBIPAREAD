@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -65,10 +65,17 @@
     h2{ font-size:24px; font-weight:700; color:#1e293b; margin-bottom:12px; text-align:center }
 
     /* ===== Filtro ===== */
-    .filter-bar{ display:flex; gap:10px; margin:14px 0 18px }
+    .filter-bar{ display:flex; gap:10px; margin:14px 0 18px; align-items:center }
     .filter-bar select, .filter-bar input[type="text"]{
       padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; flex:1; background:#fff
     }
+
+    /* botão Cursos Arquivados - discreto mas visível (não altera o esquema geral) */
+    .archived-toggle{
+      padding:9px 12px; border-radius:10px; border:1px solid #e6aeb0; background:#fff;
+      color:#c92a2a; font-weight:700; cursor:pointer; white-space:nowrap;
+    }
+    .archived-toggle:hover{ filter:brightness(.98) }
 
     /* ===== Tabela ===== */
     .table-area{ display:block }
@@ -96,6 +103,24 @@
     .warn{ background:#fff2cc; color:#7a5c00 }
     .no{ background:#ffd9d9; color:#8f1010 }
 
+    /* botão Arquivar e Restaurar (mantém o design verde pra ações principais) */
+    .btn-archive{
+      display:inline-block; margin-right:6px; padding:6px 10px;
+      background:#9fe06a; color:#062c06; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;
+      cursor:pointer; border:1px solid rgba(0,0,0,.04);
+    }
+    .btn-archive:hover{ background:#84d24a }
+
+    .btn-restore{
+      display:inline-block; margin-right:6px; padding:6px 10px;
+      background:#fff; color:#0a6a2a; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;
+      cursor:pointer; border:1px solid #cbecc3;
+    }
+    .btn-restore:hover{ filter:brightness(.98) }
+
+    /* area de arquivados - inicialmente escondida */
+    .archived-area{ display:none; margin-top:18px; border-top:1px dashed #e6e6e6; padding-top:12px }
+
     /* ===== Mobile/Tablet retrato ===== */
     @media (max-width:900px){
       body{ grid-template-columns:1fr; padding:16px }
@@ -120,6 +145,10 @@
       .row div{ font-size:14px }
       .card-actions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap }
       .pill{ padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; background:#f7f7f7 }
+
+      /* botão arquivar nos cards */
+      .card .btn-archive{ padding:6px 8px; font-size:13px }
+      .card .btn-restore{ padding:6px 8px; font-size:13px }
       @media (max-width:520px){ .grid{ grid-template-columns:1fr } }
     }
   </style>
@@ -174,10 +203,12 @@
           <option value="7">Nota</option>
         </select>
         <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
+        <!-- Botão solicitado: Cursos Arquivados (fica ao lado do filtro) -->
+        <button id="open-archived" class="archived-toggle" title="Ver Cursos Arquivados">Cursos Arquivados</button>
       </div>
 
-      <!-- Tabela -->
-      <div class="table-area table-wrap">
+      <!-- Tabela principal -->
+      <div class="table-area table-wrap" id="main-list-area">
         <table id="tabela-acompanhamento">
           <thead>
             <tr>
@@ -194,13 +225,13 @@
           </thead>
           <tbody>
             {% for e in enrollments %}
-              <tr>
-                <td>{{ e.curso.nome }}</td>
-                <td>{{ e.turma }}</td>
-                <td>{{ e.nrt }}</td>
-                <td>{{ e.tipo }}</td>
-                <td>{{ e.aluno }}</td>
-                <td>{{ e.tempo }}</td>
+              <tr data-idx="{{ loop.index0 }}">
+                <td class="cell-curso">{{ e.curso.nome }}</td>
+                <td class="cell-turma">{{ e.turma }}</td>
+                <td class="cell-nrt">{{ e.nrt }}</td>
+                <td class="cell-tipo">{{ e.tipo }}</td>
+                <td class="cell-aluno">{{ e.aluno }}</td>
+                <td class="cell-tempo">{{ e.tempo }}</td>
                 <td>
                   {% if e.concluido %}
                     <span class="badge ok">Concluído</span>
@@ -208,9 +239,12 @@
                     <span class="badge warn">Em andamento</span>
                   {% endif %}
                 </td>
-                <td>{{ e.nota }}</td>
+                <td class="cell-nota">{{ e.nota }}</td>
                 <td class="actions">
                   {% if e.concluido %}
+                    <!-- Botão Arquivar Curso (solicitado - aparece apenas para concluídos) -->
+                    <button class="btn-archive" onclick="arquivar({{ loop.index0 }})" title="Arquivar Curso">Arquivar Curso</button>
+
                     <a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
                     <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
                     {% if e.aprovado and e.cert_emitido %}
@@ -226,10 +260,42 @@
         </table>
       </div>
 
+      <!-- Área de Arquivados (inicialmente escondida) -->
+      <div class="archived-area" id="archived-area">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-weight:700; color:#1e293b">Cursos Arquivados</div>
+          <div>
+            <button id="back-to-main" class="archived-toggle" style="border-color:#cdebd3;color:#0a6a2a;margin-right:8px">Voltar</button>
+            <button id="clear-archived" class="archived-toggle" title="Limpar Arquivados">Limpar Arquivados</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tabela-arquivados">
+            <thead>
+              <tr>
+                <th>Curso</th>
+                <th>Turma</th>
+                <th>NRT</th>
+                <th>Tipo</th>
+                <th>Aluno</th>
+                <th>Tempo (min)</th>
+                <th>Status</th>
+                <th>Nota</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Linhas arquivadas serão inseridas aqui via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Cards (mobile) -->
-      <div class="cards-area">
+      <div class="cards-area" id="cards-area">
         {% for e in enrollments %}
-        <div class="card">
+        <div class="card" data-idx="{{ loop.index0 }}">
           <div class="card-header">
             <div class="card-curso">{{ e.curso.nome }}</div>
             <div>{% if e.concluido %}<span class="badge ok">Concluído</span>{% else %}<span class="badge warn">Em andamento</span>{% endif %}</div>
@@ -251,6 +317,9 @@
 
           {% if e.concluido %}
           <div class="card-actions">
+            <!-- Botão Arquivar no card -->
+            <button class="btn-archive" onclick="arquivar({{ loop.index0 }})">Arquivar Curso</button>
+
             <a class="pill" href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
             <a class="pill" href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
             {% if e.aprovado and e.cert_emitido %}
@@ -265,14 +334,157 @@
   </main>
 
   <script>
+    /* Funções de filtro (mantidas) */
     function filtrarTabela(){
       const idx = +document.getElementById('filter-type').value;
       const termo = document.getElementById('filter-input').value.toLowerCase();
       document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row=>{
+        // se a linha já estiver arquivada (display none), não interferir:
+        if(row.dataset.archived === "true"){ row.style.display = 'none'; return; }
         const cell = row.querySelectorAll('td')[idx]?.textContent.toLowerCase() || '';
         row.style.display = cell.includes(termo) ? '' : 'none';
       });
     }
+
+    /* Gerenciamento de arquivados em client-side (localStorage)
+       - Armazenamos um array de índices arquivados: 'archivedEnrollmentIdx'
+       - Ao carregar a página, movemos as linhas dos índices arquivados para a tabela de arquivados
+    */
+
+    const ARCHIVE_KEY = 'archivedEnrollmentIdx_v1';
+
+    function getArchivedSet(){
+      try{
+        const raw = localStorage.getItem(ARCHIVE_KEY);
+        if(!raw) return new Set();
+        const arr = JSON.parse(raw);
+        return new Set(arr);
+      } catch(e){
+        console.error('Erro lendo arquivados', e);
+        return new Set();
+      }
+    }
+
+    function saveArchivedSet(set){
+      const arr = Array.from(set);
+      localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arr));
+    }
+
+    function arquivar(idx){
+      // idx é número do loop.index0
+      const set = getArchivedSet();
+      set.add(String(idx));
+      saveArchivedSet(set);
+      moveRowToArchived(idx);
+    }
+
+    function desarquivar(idx){
+      const set = getArchivedSet();
+      set.delete(String(idx));
+      saveArchivedSet(set);
+      moveRowToMain(idx);
+    }
+
+    function moveRowToArchived(idx){
+      // encontrar linha na tabela principal com data-idx
+      const row = document.querySelector('#tabela-acompanhamento tbody tr[data-idx="'+idx+'"]');
+      const card = document.querySelector('.cards-area .card[data-idx="'+idx+'"]');
+      const archivedTbody = document.querySelector('#tabela-arquivados tbody');
+
+      if(row){
+        // Clonar a linha para arquivados (limpando handlers inline da célula ações e adicionando botão Restaurar)
+        const clone = row.cloneNode(true);
+        clone.dataset.archived = "true";
+        // substituir a célula de ações para conter apenas botão Restaurar
+        const actionsCell = clone.querySelector('td.actions');
+        if(actionsCell){
+          const restoreBtn = document.createElement('button');
+          restoreBtn.className = 'btn-restore';
+          restoreBtn.textContent = 'Restaurar';
+          restoreBtn.onclick = function(){ desarquivar(idx); };
+          actionsCell.innerHTML = '';
+          actionsCell.appendChild(restoreBtn);
+        }
+        archivedTbody.appendChild(clone);
+
+        // ocultar linha original
+        row.style.display = 'none';
+      }
+
+      if(card){
+        // marcar card como arquivado (ocultar)
+        card.style.display = 'none';
+        // opcional: adicionar representação no area arquivados mobile: não implementado visualmente para não mudar layout
+      }
+    }
+
+    function moveRowToMain(idx){
+      // removemos a linha arquivada do corpo de arquivados e mostramos a linha principal novamente
+      const archivedTbody = document.querySelector('#tabela-arquivados tbody');
+      const archivedRow = archivedTbody.querySelector('tr[data-idx="'+idx+'"]');
+      if(archivedRow){
+        archivedRow.remove();
+      }
+      const mainRow = document.querySelector('#tabela-acompanhamento tbody tr[data-idx="'+idx+'"]');
+      if(mainRow){
+        mainRow.style.display = '';
+        mainRow.dataset.archived = "false";
+      }
+      const card = document.querySelector('.cards-area .card[data-idx="'+idx+'"]');
+      if(card) card.style.display = '';
+    }
+
+    function populateArchivedFromStorage(){
+      const set = getArchivedSet();
+      if(set.size === 0) return;
+      set.forEach(idx=>{
+        moveRowToArchived(idx);
+      });
+    }
+
+    // Botões para abrir/fechar área arquivados
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('open-archived').addEventListener('click', function(){
+        document.getElementById('archived-area').style.display = 'block';
+        // opcional: ocultar lista principal (manter ambas é ok); vamos ocultar a principal para foco
+        document.getElementById('main-list-area').style.display = 'none';
+        // também ocultar cards area (mobile)
+        document.getElementById('cards-area').style.display = 'none';
+      });
+
+      document.getElementById('back-to-main').addEventListener('click', function(){
+        document.getElementById('archived-area').style.display = 'none';
+        document.getElementById('main-list-area').style.display = 'block';
+        // re-exibir cards mobile (apenas se for viewport pequeno)
+        if(window.innerWidth <= 900){
+          document.getElementById('cards-area').style.display = 'grid';
+        }
+      });
+
+      document.getElementById('clear-archived').addEventListener('click', function(){
+        if(!confirm('Limpar todos os cursos arquivados? Esta ação apenas limpa o armazenamento local do navegador.')) return;
+        localStorage.removeItem(ARCHIVE_KEY);
+        // remover rows da tabela de arquivados e reexibir linhas principais
+        document.querySelectorAll('#tabela-arquivados tbody tr').forEach(r=>r.remove());
+        document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(r=>{ r.style.display=''; r.dataset.archived='false' });
+        // reexibir cards
+        document.querySelectorAll('.cards-area .card').forEach(c=>c.style.display='');
+      });
+
+      // Inicializa: popula area de arquivados com os que estiverem salvos
+      populateArchivedFromStorage();
+
+      // Exibir cards-area em telas pequenas
+      if(window.innerWidth <= 900){
+        document.getElementById('cards-area').style.display = 'grid';
+        document.getElementById('main-list-area').style.display = 'none';
+      } else {
+        document.getElementById('cards-area').style.display = 'none';
+        document.getElementById('main-list-area').style.display = 'block';
+      }
+    });
+
+    // Recomenda: se seu backend controla os dados arquivados, remova o uso do localStorage e chame uma API para arquivar/desarquivar.
   </script>
 </body>
 </html>
