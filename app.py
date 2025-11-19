@@ -1048,6 +1048,140 @@ def editar_turma_detalhe(curso, turma):
     flash("Turma atualizada com sucesso!", "success")
     return redirect(url_for("editar_turma_lista"))
 
+@app.route("/ranking")
+def ranking():
+    # apenas professores
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    # ano (opcional) -> ?year=2025
+    try:
+        year = int(request.args.get("year") or datetime.now(TZ).year)
+    except Exception:
+        year = datetime.now(TZ).year
+
+    cat = prof_categoria_atual()
+
+    # contador por aluno (email lowercase)
+    counts = {}
+
+    # util: checar se matrícula/aluno pertence à categoria do prof
+    def visivel(aluno_email):
+        return _aluno_e_da_categoria(aluno_email, cat)
+
+    # util: verifica se a conclusão válida e retorna data (string 'DD/MM/YYYY' or ISO) se tiver
+    def obter_data_conclusao_se_concluido(curso_obj, aluno_email_raw, matricula_obj):
+        aluno_lc = (aluno_email_raw or "").lower()
+
+        # 1) progresso
+        prog_map = curso_obj.get("progresso", {}) or {}
+        prog_entry = prog_map.get(aluno_lc) or prog_map.get(aluno_email_raw) or next((v for k,v in prog_map.items() if k.lower() == aluno_lc), None)
+        prog_ok = bool(prog_entry and prog_entry.get("concluido"))
+
+        # 2) prova
+        resultados = curso_obj.get("resultados", {}) or {}
+        res = resultados.get(aluno_lc) or resultados.get(aluno_email_raw) or next((v for k,v in resultados.items() if k.lower() == aluno_lc), None)
+        prova_ok = False
+        when_iso = None
+        if res:
+            try:
+                ac = int(res.get("acertos", 0))
+                tot = int(res.get("total", 0))
+                prova_ok = (tot > 0) and ((ac / tot) >= 0.7)
+            except Exception:
+                prova_ok = False
+            # resultado pode trazer 'quando' em ISO
+            when_iso = res.get("quando")
+
+        # 3) presença (da matrícula)
+        presenca_ok = bool(matricula_obj and matricula_obj.get("presenca_assinada"))
+
+        # 4) certificado (preferível)
+        certs = curso_obj.get("certificados_emitidos") or {}
+        cert_rec = None
+        if isinstance(certs, dict):
+            if aluno_lc in certs:
+                cert_rec = certs[aluno_lc]
+            else:
+                found = next(((k,v) for k,v in certs.items() if k.lower() == aluno_lc), None)
+                if found:
+                    cert_rec = found[1]
+
+        cert_ok = bool(cert_rec)
+        cert_data = None
+        if cert_rec:
+            # preferimos o campo 'data' no formato DD/MM/YYYY
+            cert_data = cert_rec.get("data") or cert_rec.get("emitido_em", {}).get("data") if isinstance(cert_rec, dict) else None
+
+        # conclusão: todos true
+        concluido = prog_ok and prova_ok and presenca_ok and cert_ok
+        if not concluido:
+            return None
+
+        # retorna data preferencialmente do certificado, senão do resultado 'quando'
+        if cert_data:
+            return cert_data  # 'DD/MM/YYYY'
+        if when_iso:
+            return when_iso  # ISO string
+
+        return None
+
+    # montagem: para cada matrícula visível, verificar cada curso correlato
+    for m in matriculas:
+        aluno = (m.get("aluno") or "").lower()
+        if not aluno or not visivel(aluno):
+            continue
+
+        curso_nome = m.get("curso")
+        if not curso_nome:
+            continue
+
+        curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
+        if not curso_obj:
+            continue
+
+        data_conclusao = obter_data_conclusao_se_concluido(curso_obj, m.get("aluno"), m)
+        if not data_conclusao:
+            continue
+
+        # tenta interpretar a data: primeiro dd/mm/YYYY, se falhar tenta iso
+        ano_reg = None
+        try:
+            ano_reg = datetime.strptime(data_conclusao, "%d/%m/%Y").year
+        except Exception:
+            try:
+                ano_reg = datetime.fromisoformat(data_conclusao).year
+            except Exception:
+                try:
+                    # tentar só pegar os 4 dígitos finais
+                    if len(data_conclusao) >= 4:
+                        ano_reg = int(data_conclusao[-4:])
+                except Exception:
+                    ano_reg = None
+
+        if ano_reg == year:
+            counts[aluno] = counts.get(aluno, 0) + 1
+
+    # transforma em lista ordenada (maior primeiro) e pega top 5
+    ranking = sorted(
+        [
+            {"email": email, "nome": usuarios.get(email, {}).get("nome", email), "count": n,
+             "categoria": usuarios.get(email, {}).get("categoria", "")}
+            for email, n in counts.items()
+        ],
+        key=lambda x: x["count"], reverse=True
+    )
+
+    # garantir que sempre retorne 5 posições (preenchendo com zeros se desejar)
+    top_n = 5
+    while len(ranking) < top_n:
+        ranking.append({"email": "", "nome": "—", "count": 0, "categoria": ""})
+
+    # corta caso tenha mais
+    ranking = ranking[:top_n]
+
+    return render_template("ranking.html", ranking=ranking, year=year)
+
 
 @app.route("/indicadores")
 def indicadores():
