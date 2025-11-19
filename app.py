@@ -1191,6 +1191,113 @@ def indicadores():
         ultimos=ultimos
     )
 
+
+@app.route("/testar_conclusao")
+def testar_conclusao():
+    # Proteção básica: só professores (mantém padrão do seu app)
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    # parâmetros da URL: ?aluno=...&curso=...
+    aluno = (request.args.get("aluno") or "").strip().lower()
+    curso_nome = (request.args.get("curso") or "").strip()
+
+    if not aluno or not curso_nome:
+        return "Use ?aluno=email&curso=Nome do Curso (ex: ?aluno=daniel.telles@ambipar.com&curso=SGSO)", 400
+
+    # localiza matrícula (se houver)
+    mat = next((m for m in matriculas if m.get("aluno","").lower() == aluno and m.get("curso","") == curso_nome), None)
+
+    # localiza o curso
+    curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
+
+    # prepara relatório simples
+    linhas = []
+    linhas.append(f"<h2>Testando conclusão: <em>{curso_nome}</em> — <strong>{aluno}</strong></h2>")
+
+    if not curso_obj:
+        linhas.append("<p style='color:darkred'>Curso <strong>não encontrado</strong> no cursos.json.</p>")
+        return Markup("<br>".join(linhas))
+
+    if not mat:
+        linhas.append("<p style='color:darkred'>Matrícula <strong>não encontrada</strong> (verifique matriculas.json).</p>")
+
+    # 1) PROGRESSO 100% (progresso.concluido)
+    prog = curso_obj.get("progresso", {}).get(aluno, {})
+    prog_ok = bool(prog.get("concluido"))
+    linhas.append("<h3>1) Progresso (módulos)</h3>")
+    linhas.append(f"<p>concluido flag: <strong>{prog_ok}</strong></p>")
+    linhas.append("<pre style='background:#f6f6f6;padding:8px;border-radius:6px;max-width:90%;overflow:auto;'>"
+                  + (Markup.escape(str(prog)) if prog else "nenhum registro de progresso para este aluno") + "</pre>")
+
+    # 2) PROVA APROVADA (resultados -> acertos/total >= 0.7)
+    resultados = curso_obj.get("resultados", {}).get(aluno)
+    prova_ok = False
+    if resultados:
+        try:
+            ac = int(resultados.get("acertos", 0))
+            tot = int(resultados.get("total", 0))
+            prova_ok = (tot > 0) and ((ac / tot) >= 0.7)
+        except Exception:
+            prova_ok = False
+    linhas.append("<h3>2) Prova</h3>")
+    linhas.append(f"<p>aprovada: <strong>{prova_ok}</strong></p>")
+    linhas.append("<pre style='background:#f6f6f6;padding:8px;border-radius:6px;max-width:90%;overflow:auto;'>"
+                  + (Markup.escape(str(resultados)) if resultados else "nenhum resultado registrado para este aluno") + "</pre>")
+
+    # 3) PRESENÇA ASSINADA (na matrícula)
+    presenca_ok = False
+    linhas.append("<h3>3) Presença</h3>")
+    if mat:
+        presenca_ok = bool(mat.get("presenca_assinada"))
+        linhas.append(f"<p>matrícula encontrada — presenca_assinada: <strong>{presenca_ok}</strong></p>")
+        linhas.append("<pre style='background:#f6f6f6;padding:8px;border-radius:6px;max-width:90%;overflow:auto;'>"
+                      + Markup.escape(str(mat)) + "</pre>")
+    else:
+        linhas.append("<p>matrícula ausente — não é possível checar presença na matrícula.</p>")
+
+    # 4) CERTIFICADO EMITIDO (curso.certificados_emitidos contém o aluno)
+    certs = curso_obj.get("certificados_emitidos") or {}
+    # tenta normalizar chaves: muitas vezes o email pode ter caixa diferente
+    cert_ok = False
+    if isinstance(certs, dict):
+        # normalizar: buscar por chave exatamente igual ou igual lower()
+        if aluno in certs:
+            cert_ok = True
+            cert_record = certs[aluno]
+        else:
+            # procurar correspondência ignorando caixa
+            found = next(((k,v) for k,v in certs.items() if k.lower() == aluno), None)
+            if found:
+                cert_ok = True
+                cert_record = found[1]
+            else:
+                cert_record = None
+    else:
+        cert_record = None
+
+    linhas.append("<h3>4) Certificado</h3>")
+    linhas.append(f"<p>emitido: <strong>{cert_ok}</strong></p>")
+    linhas.append("<pre style='background:#f6f6f6;padding:8px;border-radius:6px;max-width:90%;overflow:auto;'>"
+                  + (Markup.escape(str(cert_record)) if cert_record else "nenhum certificado registrado para este aluno") + "</pre>")
+
+    # Resultado final (Regra A: todos devem ser True)
+    tudo = prog_ok and prova_ok and presenca_ok and cert_ok
+    linhas.append("<hr>")
+    linhas.append(f"<h3>Resultado final (Regra A): <span style='color:{'green' if tudo else 'darkred'}'>{'CONCLUÍDO ✅' if tudo else 'NÃO CONCLUÍDO ❌'}</span></h3>")
+
+    # Sugestão automática de ação rápida
+    if not prog_ok:
+        linhas.append("<p style='color:orange'>Sugestão: verifique se a rota /concluir (POST) foi executada para esse aluno ou se o progresso foi salvo corretamente.</p>")
+    if not prova_ok:
+        linhas.append("<p style='color:orange'>Sugestão: verifique em cursos.json → resultados se há acertos/total registrados e se total>0.</p>")
+    if not presenca_ok:
+        linhas.append("<p style='color:orange'>Sugestão: verifique matriculas.json para o campo <code>presenca_assinada</code>.</p>")
+    if not cert_ok:
+        linhas.append("<p style='color:orange'>Sugestão: verifique se houve emissão de certificado (rota /emitir_certificado grava em curso[\"certificados_emitidos\"]).</p>")
+
+    return Markup("<div style='font-family:Inter,system-ui,Arial,sans-serif;padding:18px;'>" + "<br>".join(linhas) + "</div>")
+
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
     # Só professor pode acessar
