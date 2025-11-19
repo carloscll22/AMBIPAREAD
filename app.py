@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask import send_from_directory
 from random import randint
