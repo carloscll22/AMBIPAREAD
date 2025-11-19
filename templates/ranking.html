@@ -57,7 +57,7 @@
 
               {% for row in ranking %}
               <tr>
-                <td class="rank-num">{{ loop.index0 }}</td>
+                <td class="rank-num">{{ loop.index }}</td>
                 <td>{{ row.nome }}</td>
                 <td>{{ row.email or '—' }}</td>
                 <td>{{ row.categoria or '—' }}</td>
@@ -68,7 +68,7 @@
             </tbody>
           </table>
 
-          <p class="note">Observação: ranking mostra os top 5. Se quiser mais posições, posso ajustar.</p>
+          <p class="note">Observação: ranking mostra os top 5 (posições 1 a 5). Se quiser outro tamanho, me fala.</p>
 
         {% else %}
           <div class="empty">Nenhum registro de conclusões neste ano.</div>
