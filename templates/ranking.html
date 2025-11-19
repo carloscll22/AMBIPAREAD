@@ -12,7 +12,8 @@
     body{ margin:0; font-family:'Poppins',sans-serif; background:var(--bg); color:var(--ink); }
     .layout{ display:flex; min-height:100vh; }
     .sidebar{ width:260px; background:#fff; border-right:1px solid var(--bord); padding:28px; display:flex; flex-direction:column; align-items:center; }
-    .logo{ width:160px; margin-bottom:18px; } .avatar{ width:76px; height:76px; border-radius:50%; background:#eef7df; border:4px solid #d8f5c8; margin-bottom:12px; }
+    .logo{ width:160px; margin-bottom:18px; }
+    .avatar{ width:76px; height:76px; border-radius:50%; background:#eef7df; border:4px solid #d8f5c8; margin-bottom:12px; }
     .user-name{ font-weight:700; margin-bottom:12px; text-align:center; }
     .btn{ display:block; width:100%; text-align:center; padding:10px; background:var(--accent); border-radius:8px; margin-bottom:12px; color:#111; font-weight:700; text-decoration:none; }
     .main{ flex:1; padding:28px 36px; }
@@ -53,18 +54,22 @@
               </tr>
             </thead>
             <tbody>
-              {% for i, row in enumerate(ranking, start=1) %}
-                <tr>
-                  <td class="rank-num">{{ i - 1 }}</td>
-                  <td>{{ row.nome }}</td>
-                  <td>{{ row.email or '—' }}</td>
-                  <td>{{ row.categoria or '—' }}</td>
-                  <td>{{ row.count }}</td>
-                </tr>
+
+              {% for row in ranking %}
+              <tr>
+                <td class="rank-num">{{ loop.index0 }}</td>
+                <td>{{ row.nome }}</td>
+                <td>{{ row.email or '—' }}</td>
+                <td>{{ row.categoria or '—' }}</td>
+                <td>{{ row.count }}</td>
+              </tr>
               {% endfor %}
+
             </tbody>
           </table>
-          <p class="note">Observação: ranking mostra os top 5 (posições 0 a 4). Se quiser outro tamanho, me fala.</p>
+
+          <p class="note">Observação: ranking mostra os top 5. Se quiser mais posições, posso ajustar.</p>
+
         {% else %}
           <div class="empty">Nenhum registro de conclusões neste ano.</div>
         {% endif %}
