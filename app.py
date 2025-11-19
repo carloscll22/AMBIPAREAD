@@ -1048,63 +1048,126 @@ def editar_turma_detalhe(curso, turma):
     return redirect(url_for("editar_turma_lista"))
 
 
-@app.route('/indicadores')
+@app.route("/indicadores")
 def indicadores():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
 
-    # ----- EXEMPLOS DE ESTRUTURAS DE DADOS -----
-    # Ajuste para corresponder às suas listas/dicionários reais.
-    # Aqui estou usando nomes genéricos baseados no seu sistema.
+    cat = prof_categoria_atual()
 
-    # Lista de cursos cadastrados
-    courses = cursos  # ex.: [{'nome': 'BPT', ...}, ...]
+    # ---------------------
+    # 1) ALUNOS DO SISTEMA
+    # ---------------------
+    alunos = {
+        email: d for email, d in usuarios.items()
+        if d.get("tipo") == "aluno" and _aluno_e_da_categoria(email, cat)
+    }
+    total_alunos = len(alunos)
 
-    # Lista de alunos
-    students = alunos  # ex.: [{'nome': 'Carlos', 'email': ...}, ...]
+    # ---------------------
+    # 2) CURSOS
+    # ---------------------
+    total_cursos = len(cursos)
 
-    # Treinamentos concluídos no ano
-    total_concluded_year = sum([
-        c.get('concluidos_ano', 0) for c in cursos
-    ])
+    # ---------------------
+    # 3) MATRÍCULAS
+    # ---------------------
+    matriculas_filtradas = [
+        m for m in matriculas
+        if _aluno_e_da_categoria(m.get("aluno",""), cat)
+    ]
+    total_matriculas = len(matriculas_filtradas)
 
-    # Total de treinamentos concluídos no sistema (todos os anos)
-    total_concluded_all = sum([
-        c.get('concluidos_total', c.get('concluidos_ano', 0))
-        for c in cursos
-    ])
+    # ---------------------
+    # 4) TREINAMENTOS CONCLUÍDOS
+    # ---------------------
+    total_concluidos = 0
+    total_pendentes = 0
 
-    # Total de treinamentos atribuídos (pendentes + concluídos)
-    total_assigned = sum([
-        c.get('alocados', 0) for c in cursos
-    ])
+    for m in matriculas_filtradas:
+        aluno = m["aluno"]
+        curso_nome = m["curso"]
 
-    # Pendentes
-    total_pending = total_assigned - total_concluded_all
-    if total_pending < 0:
-        total_pending = 0
+        curso_obj = next((c for c in cursos if c["nome"] == curso_nome), None)
+        if not curso_obj:
+            continue
 
-    # Top cursos por conclusão no ano
-    top_courses = sorted(
-        [(c['nome'], c.get('concluidos_ano', 0)) for c in cursos],
-        key=lambda x: x[1],
+        prog = curso_obj.get("progresso", {}).get(aluno, {})
+        concluido = prog.get("concluido", False)
+
+        if concluido:
+            total_concluidos += 1
+        else:
+            total_pendentes += 1
+
+    # ---------------------
+    # 5) ÍNDICE DE DESEMPENHO
+    # ---------------------
+    porcentagem_conclusao = 0
+    if total_matriculas > 0:
+        porcentagem_conclusao = round((total_concluidos / total_matriculas) * 100, 1)
+
+    # ---------------------
+    # 6) TOP 5 CURSOS MAIS CONCLUÍDOS
+    # ---------------------
+    curso_contagem = {}
+    for m in matriculas_filtradas:
+        aluno = m["aluno"]
+        curso_nome = m["curso"]
+
+        curso_obj = next((c for c in cursos if c["nome"] == curso_nome), None)
+        if not curso_obj:
+            continue
+
+        prog = curso_obj.get("progresso", {}).get(aluno, {})
+        if prog.get("concluido"):
+            curso_contagem[curso_nome] = curso_contagem.get(curso_nome, 0) + 1
+
+    top_cursos = sorted(curso_contagem.items(), key=lambda x: x[1], reverse=True)[:5]
+
+    # ---------------------
+    # 7) ÚLTIMOS TREINAMENTOS CONCLUÍDOS
+    # ---------------------
+    ultimos = []
+    for c in cursos:
+        for aluno, data_cert in c.get("certificados_emitidos", {}).items():
+            if not _aluno_e_da_categoria(aluno, cat):
+                continue
+
+            ultimos.append({
+                "curso": c["nome"],
+                "aluno": usuarios.get(aluno, {}).get("nome", aluno),
+                "data": data_cert.get("data"),
+                "hora": data_cert.get("hora")
+            })
+
+    # ordenar por data/hora
+    def parse_datetime(d, h):
+        try:
+            return datetime.strptime(f"{d} {h}", "%d/%m/%Y %H:%M")
+        except:
+            return datetime.min
+
+    ultimos = sorted(
+        ultimos,
+        key=lambda x: parse_datetime(x["data"], x["hora"]),
         reverse=True
-    )[:5]
+    )[:10]
 
-    # Últimos treinamentos aplicados
-    # Exemplo de estrutura (ajuste conforme o seu sistema)
-    recent_trainings = recentes_treinamentos  # ex.: [{'data':..., 'curso':..., 'instrutor':..., 'qtd_concluidores':...}, ...]
-
+    # ---------------------
+    # RENDERIZA O TEMPLATE
+    # ---------------------
     return render_template(
-        'indicadores.html',
-        courses=courses,
-        students=students,
-        total_concluded_year=total_concluded_year,
-        total_concluded_all=total_concluded_all,
-        total_assigned=total_assigned,
-        total_pending=total_pending,
-        top_courses=top_courses,
-        recent_trainings=recent_trainings
+        "indicadores.html",
+        total_alunos=total_alunos,
+        total_cursos=total_cursos,
+        total_matriculas=total_matriculas,
+        total_concluidos=total_concluidos,
+        total_pendentes=total_pendentes,
+        porcentagem_conclusao=porcentagem_conclusao,
+        top_cursos=top_cursos,
+        ultimos=ultimos
     )
-
 
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
