@@ -1055,34 +1055,71 @@ def indicadores():
 
     cat = prof_categoria_atual()
 
-    # ---------------------
-    # 1) ALUNOS DO SISTEMA
-    # ---------------------
-    alunos = {
+    # -----------------------------
+    # 1) ALUNOS DA CATEGORIA DO PROFESSOR
+    # -----------------------------
+    alunos_categoria = {
         email: d for email, d in usuarios.items()
         if d.get("tipo") == "aluno" and _aluno_e_da_categoria(email, cat)
     }
-    total_alunos = len(alunos)
 
-    # ---------------------
-    # 2) CURSOS
-    # ---------------------
+    total_alunos = len(alunos_categoria)
+
+    # -----------------------------
+    # 2) CURSOS DISPONÍVEIS
+    # -----------------------------
     total_cursos = len(cursos)
 
-    # ---------------------
-    # 3) MATRÍCULAS
-    # ---------------------
+    # -----------------------------
+    # 3) MATRÍCULAS APENAS DESSA CATEGORIA
+    # -----------------------------
     matriculas_filtradas = [
         m for m in matriculas
-        if _aluno_e_da_categoria(m.get("aluno",""), cat)
+        if _aluno_e_da_categoria(m["aluno"], cat)
     ]
     total_matriculas = len(matriculas_filtradas)
 
-    # ---------------------
-    # 4) TREINAMENTOS CONCLUÍDOS
-    # ---------------------
+    # -----------------------------
+    # FUNÇÃO PARA VERIFICAR CONCLUSÃO (REGRA A)
+    # -----------------------------
+    def curso_concluido(aluno, curso_obj, matricula):
+        # 1) PROGRESSO 100%
+        progresso = curso_obj.get("progresso", {}).get(aluno, {})
+        if not progresso.get("concluido"):
+            return False
+
+        # 2) PROVA APROVADA
+        resultado = curso_obj.get("resultados", {}).get(aluno)
+        if not resultado:
+            return False
+
+        acertos = resultado.get("acertos", 0)
+        total = resultado.get("total", 1)
+        if total == 0 or (acertos / total) < 0.7:  # regra: 70%
+            return False
+
+        # 3) PRESENÇA ASSINADA (NA MATRÍCULA)
+        if not matricula.get("presenca_assinada"):
+            return False
+
+        # 4) CERTIFICADO EMITIDO
+        certs = curso_obj.get("certificados_emitidos", {})
+        if aluno not in certs:
+            return False
+
+        return True
+
+    # -----------------------------
+    # 4) CONTABILIZAÇÃO FINAL
+    # -----------------------------
     total_concluidos = 0
     total_pendentes = 0
+
+    # Para top cursos
+    contagem_cursos = {}
+
+    # Para lista dos últimos certificados
+    ultimos = []
 
     for m in matriculas_filtradas:
         aluno = m["aluno"]
@@ -1092,57 +1129,42 @@ def indicadores():
         if not curso_obj:
             continue
 
-        prog = curso_obj.get("progresso", {}).get(aluno, {})
-        concluido = prog.get("concluido", False)
+        concluido = curso_concluido(aluno, curso_obj, m)
 
         if concluido:
             total_concluidos += 1
+            contagem_cursos[curso_nome] = contagem_cursos.get(curso_nome, 0) + 1
+
+            # tentar pegar dados do certificado
+            certs = curso_obj.get("certificados_emitidos", {})
+            cert = certs.get(aluno)
+            if cert:
+                ultimos.append({
+                    "curso": curso_nome,
+                    "aluno": usuarios.get(aluno, {}).get("nome", aluno),
+                    "data": cert.get("data"),
+                    "hora": cert.get("hora")
+                })
+
         else:
             total_pendentes += 1
 
-    # ---------------------
-    # 5) ÍNDICE DE DESEMPENHO
-    # ---------------------
+    # -----------------------------
+    # 5) TAXA DE CONCLUSÃO
+    # -----------------------------
     porcentagem_conclusao = 0
     if total_matriculas > 0:
         porcentagem_conclusao = round((total_concluidos / total_matriculas) * 100, 1)
 
-    # ---------------------
-    # 6) TOP 5 CURSOS MAIS CONCLUÍDOS
-    # ---------------------
-    curso_contagem = {}
-    for m in matriculas_filtradas:
-        aluno = m["aluno"]
-        curso_nome = m["curso"]
+    # -----------------------------
+    # 6) TOP 5 CURSOS
+    # -----------------------------
+    top_cursos = sorted(contagem_cursos.items(), key=lambda x: x[1], reverse=True)[:5]
 
-        curso_obj = next((c for c in cursos if c["nome"] == curso_nome), None)
-        if not curso_obj:
-            continue
-
-        prog = curso_obj.get("progresso", {}).get(aluno, {})
-        if prog.get("concluido"):
-            curso_contagem[curso_nome] = curso_contagem.get(curso_nome, 0) + 1
-
-    top_cursos = sorted(curso_contagem.items(), key=lambda x: x[1], reverse=True)[:5]
-
-    # ---------------------
-    # 7) ÚLTIMOS TREINAMENTOS CONCLUÍDOS
-    # ---------------------
-    ultimos = []
-    for c in cursos:
-        for aluno, data_cert in c.get("certificados_emitidos", {}).items():
-            if not _aluno_e_da_categoria(aluno, cat):
-                continue
-
-            ultimos.append({
-                "curso": c["nome"],
-                "aluno": usuarios.get(aluno, {}).get("nome", aluno),
-                "data": data_cert.get("data"),
-                "hora": data_cert.get("hora")
-            })
-
-    # ordenar por data/hora
-    def parse_datetime(d, h):
+    # -----------------------------
+    # 7) ÚLTIMOS 10 CERTIFICADOS (ORDENADOS POR DATA)
+    # -----------------------------
+    def parse_dt(d, h):
         try:
             return datetime.strptime(f"{d} {h}", "%d/%m/%Y %H:%M")
         except:
@@ -1150,13 +1172,13 @@ def indicadores():
 
     ultimos = sorted(
         ultimos,
-        key=lambda x: parse_datetime(x["data"], x["hora"]),
+        key=lambda x: parse_dt(x["data"], x["hora"]),
         reverse=True
     )[:10]
 
-    # ---------------------
-    # RENDERIZA O TEMPLATE
-    # ---------------------
+    # -----------------------------
+    # 8) RENDERIZA
+    # -----------------------------
     return render_template(
         "indicadores.html",
         total_alunos=total_alunos,
