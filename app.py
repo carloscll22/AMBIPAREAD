@@ -1074,10 +1074,11 @@ def indicadores():
 
     # Função utilitária: verifica se prova está aprovada (>=70%)
     def prova_aprovada(curso_obj, aluno_email_lc):
-        res = curso_obj.get("resultados", {}).get(aluno_email_lc) or curso_obj.get("resultados", {}).get(aluno_email_lc.lower())
+        res_map = curso_obj.get("resultados", {}) or {}
+        # tenta várias chaves (case-insensitive)
+        res = res_map.get(aluno_email_lc) or res_map.get(aluno_email_lc.lower())
         if not res:
-            # tentar por chaves que não sejam lower (compatibilidade)
-            for k, v in (curso_obj.get("resultados", {}) or {}).items():
+            for k, v in res_map.items():
                 if k.lower() == aluno_email_lc:
                     res = v
                     break
@@ -1090,11 +1091,11 @@ def indicadores():
         except Exception:
             return False
 
-    # Contadores
-    total_concluidos = 0
-    total_pendentes = 0
+    # Contadores por curso (usados para montar detalhamento)
     contagem_cursos = {}
     ultimos = []
+    total_concluidos = 0
+    total_pendentes = 0
 
     for m in matriculas_filtradas:
         aluno_raw = m.get("aluno", "")
@@ -1103,21 +1104,20 @@ def indicadores():
 
         curso_obj = next((c for c in cursos if c.get("nome") == curso_nome), None)
         if not curso_obj:
-            # pular se curso não existe
             continue
 
-        # 1) progresso (checar campo 'progresso' armazenado por email)
-        prog = curso_obj.get("progresso", {}) or {}
-        prog_entry = prog.get(aluno) or prog.get(aluno_raw) or next((v for k,v in prog.items() if k.lower() == aluno), None)
+        # 1) progresso
+        prog_map = curso_obj.get("progresso", {}) or {}
+        prog_entry = prog_map.get(aluno) or prog_map.get(aluno_raw) or next((v for k, v in prog_map.items() if k.lower() == aluno), None)
         prog_ok = bool(prog_entry and prog_entry.get("concluido"))
 
-        # 2) prova aprovada
+        # 2) prova
         prova_ok = prova_aprovada(curso_obj, aluno)
 
-        # 3) presença na matrícula
+        # 3) presença
         presenca_ok = bool(m.get("presenca_assinada"))
 
-        # 4) certificado emitido (verifica chaves ignorando caixa)
+        # 4) certificado
         certs = curso_obj.get("certificados_emitidos") or {}
         cert_ok = False
         cert_record = None
@@ -1126,7 +1126,7 @@ def indicadores():
                 cert_ok = True
                 cert_record = certs[aluno]
             else:
-                found = next(((k,v) for k,v in certs.items() if k.lower() == aluno), None)
+                found = next(((k, v) for k, v in certs.items() if k.lower() == aluno), None)
                 if found:
                     cert_ok = True
                     cert_record = found[1]
@@ -1146,17 +1146,39 @@ def indicadores():
         else:
             total_pendentes += 1
 
-    porcentagem_conclusao = round((total_concluidos / total_matriculas) * 100, 1) if total_matriculas else 0
-    top_cursos = sorted(contagem_cursos.items(), key=lambda x: x[1], reverse=True)[:5]
+    # Monta lista de detalhes por curso (todas entradas de cursos)
+    course_details = []
+    for c in cursos:
+        nome = c.get("nome")
+        if not nome:
+            continue
+        # alocados conta matrículas filtradas pela categoria e pelo curso
+        alocados = sum(1 for m in matriculas if m.get("curso") == nome and _aluno_e_da_categoria(m.get("aluno", ""), cat))
+        concluidos = contagem_cursos.get(nome, 0)
+        taxa = round((concluidos / alocados) * 100, 1) if alocados > 0 else None
+        course_details.append({
+            "nome": nome,
+            "concluidos": concluidos,
+            "alocados": alocados,
+            "taxa": taxa
+        })
 
-    # ordenar ultimos por data/hora (se existirem)
+    # ordena alfabeticamente para exibição inicial
+    course_details.sort(key=lambda x: x["nome"].casefold())
+
+    porcentagem_conclusao = round((total_concluidos / total_matriculas) * 100, 1) if total_matriculas else 0
+
+    # top cursos (se ainda quiser manter internamente)
+    top_cursos = sorted(contagem_cursos.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    # ordenar ultimos por data/hora
     def parse_dt(d, h):
         try:
             return datetime.strptime(f"{d} {h}", "%d/%m/%Y %H:%M")
         except Exception:
             return datetime.min
 
-    ultimos = sorted(ultimos, key=lambda x: parse_dt(x.get("data",""), x.get("hora","")), reverse=True)[:10]
+    ultimos = sorted(ultimos, key=lambda x: parse_dt(x.get("data", ""), x.get("hora", "")), reverse=True)[:10]
 
     return render_template(
         "indicadores.html",
@@ -1167,9 +1189,9 @@ def indicadores():
         total_pendentes=total_pendentes,
         porcentagem_conclusao=porcentagem_conclusao,
         top_cursos=top_cursos,
-        ultimos=ultimos
+        ultimos=ultimos,
+        course_details=course_details
     )
-
 
 
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
