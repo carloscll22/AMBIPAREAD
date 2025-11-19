@@ -1046,7 +1046,66 @@ def editar_turma_detalhe(curso, turma):
     salvar_dados(CAMINHO_MATRICULAS, matriculas)
     flash("Turma atualizada com sucesso!", "success")
     return redirect(url_for("editar_turma_lista"))
-        
+
+
+@app.route('/indicadores')
+def indicadores():
+
+    # ----- EXEMPLOS DE ESTRUTURAS DE DADOS -----
+    # Ajuste para corresponder às suas listas/dicionários reais.
+    # Aqui estou usando nomes genéricos baseados no seu sistema.
+
+    # Lista de cursos cadastrados
+    courses = cursos  # ex.: [{'nome': 'BPT', ...}, ...]
+
+    # Lista de alunos
+    students = alunos  # ex.: [{'nome': 'Carlos', 'email': ...}, ...]
+
+    # Treinamentos concluídos no ano
+    total_concluded_year = sum([
+        c.get('concluidos_ano', 0) for c in cursos
+    ])
+
+    # Total de treinamentos concluídos no sistema (todos os anos)
+    total_concluded_all = sum([
+        c.get('concluidos_total', c.get('concluidos_ano', 0))
+        for c in cursos
+    ])
+
+    # Total de treinamentos atribuídos (pendentes + concluídos)
+    total_assigned = sum([
+        c.get('alocados', 0) for c in cursos
+    ])
+
+    # Pendentes
+    total_pending = total_assigned - total_concluded_all
+    if total_pending < 0:
+        total_pending = 0
+
+    # Top cursos por conclusão no ano
+    top_courses = sorted(
+        [(c['nome'], c.get('concluidos_ano', 0)) for c in cursos],
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+
+    # Últimos treinamentos aplicados
+    # Exemplo de estrutura (ajuste conforme o seu sistema)
+    recent_trainings = recentes_treinamentos  # ex.: [{'data':..., 'curso':..., 'instrutor':..., 'qtd_concluidores':...}, ...]
+
+    return render_template(
+        'indicadores.html',
+        courses=courses,
+        students=students,
+        total_concluded_year=total_concluded_year,
+        total_concluded_all=total_concluded_all,
+        total_assigned=total_assigned,
+        total_pending=total_pending,
+        top_courses=top_courses,
+        recent_trainings=recent_trainings
+    )
+
+
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
     # Só professor pode acessar
