@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Indicadores - Professor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #c1f38e; /* mesma cor da home */
+    }
+    .sidebar {
+      width: 240px;
+      background: #fff;
+      border-right: 2px solid #ccc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 12px;
+    }
+    .avatar-wrap {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      border: 2px solid #cce7b3;
+    }
+    .avatar-btn {
+      position: absolute;
+      right: -6px;
+      bottom: -6px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .avatar-btn:hover { filter: brightness(0.95); }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .sidebar .btn {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      background: #a0e76d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar .btn:hover { background: #8ad858; }
+
+    .content {
+      flex: 1;
+      padding: 32px 40px;
+      background-color: #f5ffe6; /* mesma cor da home content */
+    }
+    .content h2 {
+      margin-bottom: 18px;
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    /* Área de métricas em cards (mesmo estilo visual dos botões) */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .metric-card {
+      background: #fff;
+      border-left: 5px solid #a0e76d;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .metric-card h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+      color: #222;
+    }
+    .metric-card .value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0b6a1f;
+    }
+
+    /* Tabelas de detalhamento */
+    .panel {
+      background: #fff;
+      padding: 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+      margin-bottom: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    thead { background: #e8f5d7; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #333; }
+    tbody tr:nth-child(odd){ background: #fcfff5; }
+    .muted { color: #666; font-size: 13px; }
+
+    .small {
+      font-size: 13px;
+      color: #444;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; flex-direction: row; justify-content: space-around; border-right: none; border-bottom: 2px solid #ccc; }
+      .logo, .user-name { display: none; }
+      .content { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
+    <div class="avatar-wrap">
+      <div
+        class="avatar"
+        style="
+          background-image:
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
+            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+            url('{{ url_for('static', filename='avatar_padrao.png') }}');
+        ">
+      </div>
+      <button class="avatar-btn" title="Trocar foto" onclick="document.getElementById('fotoInputInd').click()">✎</button>
+      <form id="fotoFormInd" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
+        <input id="fotoInputInd" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormInd').submit()">
+      </form>
+    </div>
+
+    <div class="user-name">{{ session['nome'] }}</div>
+
+    <button type="button" class="btn" onclick="location.href='/home_professor'">Voltar</button>
+    <button type="button" class="btn" onclick="location.href='/acompanhamento'">Acompanhamento</button>
+  </div>
+
+  <div class="content">
+    <h2>Indicadores de Treinamentos</h2>
+
+    <!-- Cards de métricas principais -->
+    <div class="metrics">
+      <div class="metric-card">
+        <h3>Total de Cursos Cadastrados</h3>
+        <div class="value">{{ courses|length if courses is defined else 0 }}</div>
+        <div class="small muted">Cursos ativos no sistema</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>Total de Treinamentos Concluídos (ano)</h3>
+        <div class="value">{{ total_concluded_year if total_concluded_year is defined else 0 }}</div>
+        <div class="small muted">Concluídos no ano corrente</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>Treinamentos Pendentes</h3>
+        <div class="value">{{ total_pending if total_pending is defined else 0 }}</div>
+        <div class="small muted">Treinamentos atribuídos porém não concluídos</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>Taxa de Conclusão (%)</h3>
+        <div class="value">
+          {% if total_assigned is defined and total_assigned > 0 %}
+            {{ (total_concluded_all | default(0) / total_assigned * 100) | round(1) }}%
+          {% else %}
+            0%
+          {% endif %}
+        </div>
+        <div class="small muted">Concluídos / Atribuídos</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>Média de Cursos Concluídos por Aluno (ano)</h3>
+        <div class="value">
+          {% if students is defined and students|length > 0 %}
+            {{ (total_concluded_year | default(0) / students|length) | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+        </div>
+        <div class="small muted">Média simples por aluno</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>Top Cursos por Conclusão (ano)</h3>
+        <div class="small">
+          <ol>
+            {% if top_courses is defined and top_courses|length > 0 %}
+              {% for curso, cnt in top_courses %}
+                <li>{{ curso }} — {{ cnt }}</li>
+              {% endfor %}
+            {% else %}
+              <li>Sem dados</li>
+            {% endif %}
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalhamento por curso -->
+    <div class="panel">
+      <h3 class="small">Detalhamento por Curso</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Concluídos (ano)</th>
+            <th>Alocados</th>
+            <th>Taxa de Conclusão</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if courses is defined and courses|length > 0 %}
+            {% for c in courses %}
+            <tr>
+              <td>{{ c.nome }}</td>
+              <td>{{ c.concluidos_ano | default(0) }}</td>
+              <td>{{ c.alocados | default(0) }}</td>
+              <td>
+                {% if (c.alocados | default(0)) > 0 %}
+                  {{ ((c.concluidos_ano | default(0)) / (c.alocados | default(0)) * 100) | round(1) }}%
+                {% else %}
+                  0%
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="4">Nenhum curso cadastrado</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Últimos treinamentos aplicados -->
+    <div class="panel">
+      <h3 class="small">Últimos treinamentos aplicados</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Curso</th>
+            <th>Instrutor</th>
+            <th>Alunos Concluíram</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if recent_trainings is defined and recent_trainings|length > 0 %}
+            {% for t in recent_trainings %}
+            <tr>
+              <td>{{ t.data }}</td>
+              <td>{{ t.curso }}</td>
+              <td>{{ t.instrutor }}</td>
+              <td>{{ t.qtd_concluidores }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="4">Sem treinamentos registrados</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Seção com gráficos simples (opcional no futuro) -->
+    <div class="panel">
+      <h3 class="small">Observações</h3>
+      <p class="muted">Use estes indicadores para avaliar desempenho dos treinamentos. Se quiser, posso adicionar gráficos simples (barra/linha) usando Chart.js ou gerar CSV de exportação.</p>
+    </div>
+
+  </div>
+</body>
+</html>
