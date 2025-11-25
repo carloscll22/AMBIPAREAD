@@ -65,5 +65,7 @@
   "thalys.martins@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Thalys Martins"},
   "diogo.machado@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Diogo Machado"},
   "carlos.borges@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Carlos Borges"},
-  "felipe.baptista@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "Felipe Baptista"}
+  "felipe.baptista@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "Felipe Baptista"},
+  "daiane.leite@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Daiane Ferreira"},
+  "daniel.sousa@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Daniel Sousa"}
 }
