@@ -67,5 +67,6 @@
   "carlos.borges@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Carlos Borges"},
   "felipe.baptista@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "Felipe Baptista"},
   "daiane.leite@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Daiane Ferreira"},
+  "cmte.bomfim@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Willian Bomfim"},
   "daniel.sousa@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Daniel Sousa"}
 }
