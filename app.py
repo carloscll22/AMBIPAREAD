@@ -242,6 +242,7 @@ PILOTOS_SET = {
     "cmte.welner@ambipar.com",
     "thalys.martins@ambipar.com",
     "felipe.baptista@ambipar.com",
+    "cmte.bomfim@ambipar.com",
 }
 
 MECANICOS_SET = {
