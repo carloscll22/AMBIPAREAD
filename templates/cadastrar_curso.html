@@ -24,12 +24,10 @@
       display:grid; grid-template-columns:260px 1fr; gap:22px;
     }
 
-    /* === SIDEBAR === */
     .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:18px 16px;display:flex;flex-direction:column;gap:16px}
     .brand{background:#f4ffe7;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center}
     .brand img{height:32px;width:auto;display:block}
 
-    /* Perfil (logo -> avatar -> nome) */
     .profile{
       background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
       padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px
@@ -38,7 +36,7 @@
     .avatar{
       width:86px;height:86px;border-radius:50%;
       background-position:center;background-size:cover;background-repeat:no-repeat;
-      border:3px solid #d9f5b6; /* aro verde claro */
+      border:3px solid #d9f5b6;
     }
     .avatar-btn{
       position:absolute;right:-4px;bottom:-4px;
@@ -54,7 +52,6 @@
     .btn:hover{background:var(--primary-hover)}
     .btn.secondary{background:#eef2f6;color:#111;border:1px solid var(--border)}
 
-    /* === CONTEÚDO === */
     .content{padding:22px 22px 40px 0;max-width:1200px}
     .breadcrumb{font-size:12px;color:var(--muted);margin:6px 0 12px;text-align:right}
     .page-title{font-size:26px;font-weight:700;margin-bottom:14px;color:#213547}
@@ -84,44 +81,27 @@
 </head>
 <body>
 
-  <!-- === SIDEBAR === -->
   <aside class="sidebar">
-    <!-- LOGO (obrigatória) -->
     <div class="brand">
       <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
     </div>
 
-    <!-- PERFIL: Avatar editável + Nome da pessoa logada -->
     <div class="profile">
       <div class="avatar-wrap">
-        <div
-          class="avatar"
-          style="
-            background-image:
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
-              url('{{ url_for('static', filename='avatar_padrao.png') }}');
-          ">
-        </div>
-        <!-- botão editar (abre input de arquivo escondido) -->
-        <button class="avatar-btn" type="button" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
-        <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
-          <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
-        </form>
+        <div class="avatar" style="
+          background-image:
+          url('{{ url_for('static', filename='avatar_padrao.png') }}');
+        "></div>
       </div>
       <div class="user-name">
         {{ (session['nome'] or 'USUÁRIO') | upper }}
       </div>
     </div>
 
-    <!-- Botões existentes (funcionais) -->
     <a class="btn" href="/alterar_senha">Alterar Senha</a>
     <a class="btn secondary" href="/">Home do Professor</a>
   </aside>
 
-  <!-- === CONTEÚDO === -->
   <main class="content">
     <div class="breadcrumb">Início / Professor / Cadastro de Curso</div>
     <div class="page-title">Cadastro de Curso</div>
@@ -130,37 +110,41 @@
       <h3>Informações do Curso</h3>
       <form method="post" enctype="multipart/form-data">
         <div class="grid cols-2">
+
+          <!-- NOME DO CURSO COM + -->
           <div class="field">
             <label for="nome">Nome do Curso</label>
-            <select id="nome" name="nome" required onchange="preencherConteudo()">
-              <option value="">-- Selecione --</option>
-              <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
-              <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
-              <option value="Emergências Gerais">Emergências Gerais</option>
-              <option value="SGSO">SGSO</option>
-              <option value="Transporte Aeromédico">Transporte Aeromédico</option>
-              <option value="Sobrevivência na Selva">Sobrevivência na Selva</option>
-              <option value="Instrutor de Voo">Instrutor de Voo</option>
-              <option value="Examinador">Examinador</option>
-              <option value="BELL 206-B06">BELL 206-B06</option>
-              <option value="AS350 SERIES-B,BA,B2,AS50">AS350 SERIES-B,BA,B2,AS50</option>
-              <option value="AS 365 SERIES (N,N1,N2)/AS65">AS 365 SERIES (N,N1,N2)/AS65</option>
-              <option value="AS 355 SERIES (F,F1,F2,NP)/AS55">AS 355 SERIES (F,F1,F2,NP)/AS55</option>
-              <option value="AS330J">AS330J</option>
-              <option value="AS350B-BA">AS350B-BA</option>
-              <option value="AS350B2-B3">AS350B2-B3</option>
-              <option value="Arriel1 Series">Arriel1 Series</option>
-              <option value="RR250-C20 Series">RR250-C20 Series</option>
-              <option value="AS355 Series">AS355 Series</option>
-              <option value="Treinamento Solo AS350">Treinamento Solo AS350</option>
-              <option value="Treinamento Solo BH06">Treinamento Solo BH06</option>
-              <option value="Treinamento Solo AS355">Treinamento Solo AS355</option>
-            </select>
+            <div style="display:flex; gap:8px;">
+              <select id="nome" name="nome" required style="flex:1;">
+                <option value="">-- Selecione --</option>
+                <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
+                <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+                <option value="Emergências Gerais">Emergências Gerais</option>
+                <option value="SGSO">SGSO</option>
+              </select>
+              <button type="button" class="btn" style="width:40px;" onclick="mostrarNovoCurso()">+</button>
+            </div>
+            <input type="text" id="novoCurso" placeholder="Digite novo nome do curso"
+                   style="display:none; margin-top:8px;" onblur="adicionarNovoCurso()">
           </div>
 
+          <!-- CARGA HORÁRIA -->
           <div class="field">
             <label for="carga_horaria">Carga Horária</label>
             <input type="text" id="carga_horaria" name="carga_horaria" required>
+          </div>
+
+          <!-- SETOR -->
+          <div class="field">
+            <label for="setor">Setor do Curso</label>
+            <select id="setor" name="setor" required>
+              <option value="">-- Selecione --</option>
+              <option value="Operações">Operações</option>
+              <option value="Manutenção">Manutenção</option>
+              <option value="SGSO">SGSO</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Outros">Outros</option>
+            </select>
           </div>
 
           <div class="field" style="grid-column:1/-1">
@@ -185,63 +169,67 @@
     </section>
   </main>
 
-  <script>
-    // === Conteúdos (complete com o seu dicionário completo) ===
-    const conteudos = {
-      "Doutrinamento Básico de Solo": `(1) Atribuições e responsabilidades do tripulante, conforme aplicável;
-(2) As apropriadas provisões deste regulamento;
-(3) Conteúdo do certificado e das especificações operativas;
-(4) Apropriadas partes do manual geral da empresa do detentor de certificado;
-(5) O transporte seguro de artigos perigosos por via aérea, em conformidade com os requisitos do RBAC N° 175;
-(6) O SGSO;
-(7) Segurança da aviação civil (AVSEC);
-(8) Fatores humanos e CRM`
-    };
-    function preencherConteudo(){ const n=document.getElementById('nome').value; document.getElementById('conteudo').value = conteudos[n] || ''; }
+<script>
+function mostrarNovoCurso(){
+  document.getElementById("novoCurso").style.display="block";
+  document.getElementById("novoCurso").focus();
+}
+function adicionarNovoCurso(){
+  const input=document.getElementById("novoCurso");
+  const nome=input.value.trim();
+  const select=document.getElementById("nome");
+  if(nome){
+    const opt=document.createElement("option");
+    opt.value=nome;
+    opt.textContent=nome;
+    select.appendChild(opt);
+    select.value=nome;
+  }
+  input.value="";
+  input.style.display="none";
+}
 
-    // === Módulos ===
-    let indexModulo=0;
-    function adicionarModulo(){
-      const c=document.getElementById("modulos");
-      const d=document.createElement("div");
-      d.className="modulo";
-      d.innerHTML=`
-        <div class="top-row">
-          <div>
-            <label>Título do Módulo:</label>
-            <input type="text" name="modulos[${indexModulo}][titulo]" required>
-            <label style="margin-top:8px;">Arquivo (PDF):</label>
-            <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
-          </div>
-          <button type="button" class="btn-danger" onclick="this.closest('.modulo').remove()">Remover Módulo</button>
-        </div>`;
-      c.appendChild(d); indexModulo++;
-    }
+let indexModulo=0;
+function adicionarModulo(){
+  const c=document.getElementById("modulos");
+  const d=document.createElement("div");
+  d.className="modulo";
+  d.innerHTML=`
+    <div class="top-row">
+      <div>
+        <label>Título do Módulo:</label>
+        <input type="text" name="modulos[${indexModulo}][titulo]" required>
+        <label style="margin-top:8px;">Arquivo (PDF):</label>
+        <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
+      </div>
+      <button type="button" class="btn-danger" onclick="this.closest('.modulo').remove()">Remover Módulo</button>
+    </div>`;
+  c.appendChild(d); indexModulo++;
+}
 
-    // === Perguntas ===
-    let indicePergunta=0;
-    document.getElementById('adicionarPergunta').addEventListener('click', ()=>{
-      const c=document.getElementById('perguntas');
-      const d=document.createElement('div');
-      d.className='pergunta';
-      d.innerHTML=`
-        <div class="header-pergunta">
-          <strong>Pergunta ${indicePergunta+1}</strong>
-          <button type="button" class="btn-danger" onclick="this.closest('.pergunta').remove()">Remover Pergunta</button>
-        </div>
-        <label>Enunciado:</label>
-        <input type="text" name="perguntas[${indicePergunta}][enunciado]" required>
-        <label>a)</label><input type="text" name="perguntas[${indicePergunta}][a]" required>
-        <label>b)</label><input type="text" name="perguntas[${indicePergunta}][b]" required>
-        <label>c)</label><input type="text" name="perguntas[${indicePergunta}][c]" required>
-        <label>d)</label><input type="text" name="perguntas[${indicePergunta}][d]" required>
-        <label>Alternativa correta:</label>
-        <select name="perguntas[${indicePergunta}][correta]" required>
-          <option value="a">a</option><option value="b">b</option>
-          <option value="c">c</option><option value="d">d</option>
-        </select>`;
-      c.appendChild(d); indicePergunta++;
-    });
-  </script>
+let indicePergunta=0;
+document.getElementById('adicionarPergunta').addEventListener('click', ()=>{
+  const c=document.getElementById('perguntas');
+  const d=document.createElement('div');
+  d.className='pergunta';
+  d.innerHTML=`
+    <div class="header-pergunta">
+      <strong>Pergunta ${indicePergunta+1}</strong>
+      <button type="button" class="btn-danger" onclick="this.closest('.pergunta').remove()">Remover Pergunta</button>
+    </div>
+    <label>Enunciado:</label>
+    <input type="text" name="perguntas[${indicePergunta}][enunciado]" required>
+    <label>a)</label><input type="text" name="perguntas[${indicePergunta}][a]" required>
+    <label>b)</label><input type="text" name="perguntas[${indicePergunta}][b]" required>
+    <label>c)</label><input type="text" name="perguntas[${indicePergunta}][c]" required>
+    <label>d)</label><input type="text" name="perguntas[${indicePergunta}][d]" required>
+    <label>Alternativa correta:</label>
+    <select name="perguntas[${indicePergunta}][correta]" required>
+      <option value="a">a</option><option value="b">b</option>
+      <option value="c">c</option><option value="d">d</option>
+    </select>`;
+  c.appendChild(d); indicePergunta++;
+});
+</script>
 </body>
 </html>
