@@ -320,7 +320,7 @@ _prof_filtro_por_nome = {
     "Leandro Michelin": "piloto",
     "Carlos Lourenço": "piloto",
     "Larissa Furtado": "mecanico",
-    "alan.almeida@ambipar.com": "piloto",
+    "Alan Almeida": "piloto",
 }
 for email, d in usuarios.items():
     if d.get("tipo") == "professor":
