@@ -332,11 +332,11 @@ salvar_usuarios()
 
 # ==== FORÇA FILTRO DE VISIBILIDADE POR E-MAIL DO PROFESSOR ====
 _forcar_prof_por_email = {
-    "tuany.oliveira@ambipar.com": ["piloto"],     
-    "leandro.michelin@ambipar.com": ["piloto"],  
-    "carlos.lopes@ambipar.com": ["piloto"],      
-    "larissafr.ctm@gmail.com": ["mecanico"],     
-    "alan.almeida@ambipar.com": ["piloto", "mecanico"],  
+    "tuany.oliveira@ambipar.com": "piloto",     
+    "leandro.michelin@ambipar.com": "piloto",  
+    "carlos.lopes@ambipar.com": "piloto",      
+    "larissafr.ctm@gmail.com": "mecanico",     
+    "alan.almeida@ambipar.com": "piloto",  
 }
 
 mudou = False
