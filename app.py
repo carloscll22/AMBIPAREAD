@@ -780,6 +780,19 @@ def vencimentos_restaurar():
 # ======================================================================
 #                       ROTAS (PROFESSOR)
 # ======================================================================
+
+
+@app.route('/cadastrar_aluno', methods=['GET','POST'])
+def cadastrar_aluno():
+    if request.method == 'POST':
+        nome = request.form['nome']
+        login = request.form['login']
+        senha = request.form['senha']
+        setor = request.form['setor']
+        # salvar no banco ou estrutura
+    return render_template('cadastrar_aluno.html')
+
+
 @app.route("/cadastrar_curso", methods=["GET", "POST"])
 def cadastrar_curso():
     if session.get("tipo") != "professor":
