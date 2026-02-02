@@ -32,18 +32,11 @@
       background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
       padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px
     }
-    .avatar-wrap{position:relative;width:86px;height:86px}
     .avatar{
       width:86px;height:86px;border-radius:50%;
-      background-position:center;background-size:cover;background-repeat:no-repeat;
+      background:url('{{ url_for("static", filename="avatar_padrao.png") }}') center/cover no-repeat;
       border:3px solid #d9f5b6;
     }
-    .avatar-btn{
-      position:absolute;right:-4px;bottom:-4px;
-      background:var(--primary);border:none;border-radius:999px;padding:6px 8px;
-      font-weight:700;cursor:pointer;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.15)
-    }
-    .avatar-btn:hover{background:var(--primary-hover)}
     .user-name{
       text-align:center;font-weight:700;color:#222;font-size:14px;letter-spacing:.02em;text-transform:uppercase
     }
@@ -65,7 +58,9 @@
 
     .field{display:flex;flex-direction:column;gap:8px}
     .field label{font-weight:600;font-size:14px;color:#444}
-    .field input[type="text"], .field select, .field textarea, .field input[type="file"]{padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;color:#333;background:#fff}
+    .field input[type="text"], .field select, .field textarea, .field input[type="file"]{
+      padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;color:#333;background:#fff
+    }
     .field textarea{min-height:120px;resize:vertical}
 
     .section-title{font-size:18px;font-weight:700;color:#333;margin:18px 0 10px}
@@ -81,113 +76,130 @@
 </head>
 <body>
 
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
-    </div>
+<aside class="sidebar">
+  <div class="brand">
+    <img src="{{ url_for('static', filename='loggo.png') }}">
+  </div>
 
-    <div class="profile">
-      <div class="avatar-wrap">
-        <div class="avatar" style="
-          background-image:
-          url('{{ url_for('static', filename='avatar_padrao.png') }}');
-        "></div>
-      </div>
-      <div class="user-name">
-        {{ (session['nome'] or 'USUÁRIO') | upper }}
-      </div>
-    </div>
+  <div class="profile">
+    <div class="avatar"></div>
+    <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
+  </div>
 
-    <a class="btn" href="/alterar_senha">Alterar Senha</a>
-    <a class="btn secondary" href="/">Home do Professor</a>
-  </aside>
+  <a class="btn" href="/alterar_senha">Alterar Senha</a>
+  <a class="btn secondary" href="/">Home do Professor</a>
+</aside>
 
-  <main class="content">
-    <div class="breadcrumb">Início / Professor / Cadastro de Curso</div>
-    <div class="page-title">Cadastro de Curso</div>
+<main class="content">
+  <div class="breadcrumb">Início / Professor / Cadastro de Curso</div>
+  <div class="page-title">Cadastro de Curso</div>
 
-    <section class="card">
-      <h3>Informações do Curso</h3>
-      <form method="post" enctype="multipart/form-data">
-        <div class="grid cols-2">
+  <section class="card">
+    <h3>Informações do Curso</h3>
+    <form method="post" enctype="multipart/form-data">
+      <div class="grid cols-2">
 
-          <!-- NOME DO CURSO COM + -->
-          <div class="field">
-            <label for="nome">Nome do Curso</label>
-            <div style="display:flex; gap:8px;">
-              <select id="nome" name="nome" required style="flex:1;">
-                <option value="">-- Selecione --</option>
-                <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
-                <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
-                <option value="Emergências Gerais">Emergências Gerais</option>
-                <option value="SGSO">SGSO</option>
-              </select>
-              <button type="button" class="btn" style="width:40px;" onclick="mostrarNovoCurso()">+</button>
-            </div>
-            <input type="text" id="novoCurso" placeholder="Digite novo nome do curso"
-                   style="display:none; margin-top:8px;" onblur="adicionarNovoCurso()">
-          </div>
-
-          <!-- CARGA HORÁRIA -->
-          <div class="field">
-            <label for="carga_horaria">Carga Horária</label>
-            <input type="text" id="carga_horaria" name="carga_horaria" required>
-          </div>
-
-          <!-- SETOR -->
-          <div class="field">
-            <label for="setor">Setor do Curso</label>
-            <select id="setor" name="setor" required>
+        <!-- NOME DO CURSO -->
+        <div class="field">
+          <label>Nome do Curso</label>
+          <div style="display:flex;gap:8px;">
+            <select id="nome" name="nome" required style="flex:1;">
               <option value="">-- Selecione --</option>
-              <option value="Operações">Operações</option>
-              <option value="Manutenção">Manutenção</option>
+              <option value="Doutrinamento Básico de Solo">Doutrinamento Básico de Solo</option>
+              <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+              <option value="Emergências Gerais">Emergências Gerais</option>
               <option value="SGSO">SGSO</option>
-              <option value="Administrativo">Administrativo</option>
-              <option value="Outros">Outros</option>
             </select>
+            <button type="button" class="btn" style="width:40px;" onclick="mostrarNovoCurso()">+</button>
           </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label for="conteudo">Conteúdo Programático</label>
-            <textarea id="conteudo" name="conteudo" required></textarea>
-          </div>
+          <input type="text" id="novoCurso" placeholder="Digite novo nome do curso"
+                 style="display:none;margin-top:8px;" onblur="adicionarNovoCurso()">
         </div>
 
-        <div class="section-title">Módulos do Curso</div>
-        <div id="modulos"></div>
-        <button type="button" class="btn" onclick="adicionarModulo()">Adicionar Módulo</button>
-
-        <div class="section-title">Avaliação</div>
-        <div id="perguntas"></div>
-        <button type="button" id="adicionarPergunta" class="btn">Adicionar Pergunta</button>
-
-        <div class="actions">
-          <input type="submit" class="btn" value="Cadastrar Curso">
-          <a class="btn secondary" href="/">Cancelar</a>
+        <div class="field">
+          <label>Carga Horária</label>
+          <input type="text" name="carga_horaria" required>
         </div>
-      </form>
-    </section>
-  </main>
+
+        <div class="field">
+          <label>Setor do Curso</label>
+          <select name="setor" required>
+            <option value="">-- Selecione --</option>
+            <option>Operações</option>
+            <option>Manutenção</option>
+            <option>SGSO</option>
+            <option>Administrativo</option>
+            <option>Outros</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Conteúdo Programático</label>
+          <textarea name="conteudo" required></textarea>
+        </div>
+      </div>
+
+      <div class="section-title">Módulos</div>
+      <div id="modulos"></div>
+      <button type="button" class="btn" onclick="adicionarModulo()">Adicionar Módulo</button>
+
+      <div class="section-title">Avaliação</div>
+      <div id="perguntas"></div>
+      <button type="button" class="btn" id="adicionarPergunta">Adicionar Pergunta</button>
+
+      <div class="actions">
+        <input type="submit" class="btn" value="Cadastrar Curso">
+        <a class="btn secondary" href="/">Cancelar</a>
+      </div>
+    </form>
+  </section>
+</main>
 
 <script>
 function mostrarNovoCurso(){
-  document.getElementById("novoCurso").style.display="block";
-  document.getElementById("novoCurso").focus();
+  const campo=document.getElementById("novoCurso");
+  campo.style.display="block";
+  campo.focus();
 }
+
 function adicionarNovoCurso(){
   const input=document.getElementById("novoCurso");
   const nome=input.value.trim();
   const select=document.getElementById("nome");
+
   if(nome){
     const opt=document.createElement("option");
     opt.value=nome;
     opt.textContent=nome;
     select.appendChild(opt);
     select.value=nome;
+    salvarCurso(nome);
   }
+
   input.value="";
   input.style.display="none";
 }
+
+function salvarCurso(nome){
+  let cursos=JSON.parse(localStorage.getItem("cursosCustom"))||[];
+  if(!cursos.includes(nome)){
+    cursos.push(nome);
+    localStorage.setItem("cursosCustom",JSON.stringify(cursos));
+  }
+}
+
+function carregarCursos(){
+  let cursos=JSON.parse(localStorage.getItem("cursosCustom"))||[];
+  const select=document.getElementById("nome");
+  cursos.forEach(c=>{
+    const opt=document.createElement("option");
+    opt.value=c;
+    opt.textContent=c;
+    select.appendChild(opt);
+  });
+}
+
+window.onload=carregarCursos;
 
 let indexModulo=0;
 function adicionarModulo(){
@@ -199,23 +211,23 @@ function adicionarModulo(){
       <div>
         <label>Título do Módulo:</label>
         <input type="text" name="modulos[${indexModulo}][titulo]" required>
-        <label style="margin-top:8px;">Arquivo (PDF):</label>
+        <label>Arquivo PDF:</label>
         <input type="file" name="modulos[${indexModulo}][arquivo]" accept=".pdf" required>
       </div>
-      <button type="button" class="btn-danger" onclick="this.closest('.modulo').remove()">Remover Módulo</button>
+      <button type="button" class="btn-danger" onclick="this.closest('.modulo').remove()">Remover</button>
     </div>`;
   c.appendChild(d); indexModulo++;
 }
 
 let indicePergunta=0;
-document.getElementById('adicionarPergunta').addEventListener('click', ()=>{
-  const c=document.getElementById('perguntas');
-  const d=document.createElement('div');
-  d.className='pergunta';
+document.getElementById("adicionarPergunta").onclick=function(){
+  const c=document.getElementById("perguntas");
+  const d=document.createElement("div");
+  d.className="pergunta";
   d.innerHTML=`
     <div class="header-pergunta">
       <strong>Pergunta ${indicePergunta+1}</strong>
-      <button type="button" class="btn-danger" onclick="this.closest('.pergunta').remove()">Remover Pergunta</button>
+      <button type="button" class="btn-danger" onclick="this.closest('.pergunta').remove()">Remover</button>
     </div>
     <label>Enunciado:</label>
     <input type="text" name="perguntas[${indicePergunta}][enunciado]" required>
@@ -223,13 +235,12 @@ document.getElementById('adicionarPergunta').addEventListener('click', ()=>{
     <label>b)</label><input type="text" name="perguntas[${indicePergunta}][b]" required>
     <label>c)</label><input type="text" name="perguntas[${indicePergunta}][c]" required>
     <label>d)</label><input type="text" name="perguntas[${indicePergunta}][d]" required>
-    <label>Alternativa correta:</label>
+    <label>Correta:</label>
     <select name="perguntas[${indicePergunta}][correta]" required>
-      <option value="a">a</option><option value="b">b</option>
-      <option value="c">c</option><option value="d">d</option>
+      <option>a</option><option>b</option><option>c</option><option>d</option>
     </select>`;
   c.appendChild(d); indicePergunta++;
-});
+}
 </script>
 </body>
 </html>
