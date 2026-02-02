@@ -23,152 +23,59 @@
       align-items: center;
       position: relative;
     }
-    .logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 12px;
-    }
+    .logo { width: 120px; height: auto; margin-bottom: 12px; }
 
-    /* Avatar no mesmo tamanho/estilo que você já tinha */
-    .avatar-wrap {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      margin-bottom: 15px;
-    }
+    .avatar-wrap { position: relative; width: 80px; height: 80px; margin-bottom: 15px; }
     .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
+      width: 80px; height: 80px; border-radius: 50%;
+      background-position: center; background-size: cover; background-repeat: no-repeat;
       border: 2px solid #cce7b3;
     }
     .avatar-btn {
-      position: absolute;
-      right: -6px;
-      bottom: -6px;
-      background: #a0e76d;
-      border: none;
-      border-radius: 999px;
-      padding: 4px 8px;
-      font-weight: 700;
-      cursor: pointer;
-      line-height: 1;
+      position: absolute; right: -6px; bottom: -6px;
+      background: #a0e76d; border: none; border-radius: 999px;
+      padding: 4px 8px; font-weight: 700; cursor: pointer; line-height: 1;
     }
-    .avatar-btn:hover { filter: brightness(0.95); }
+    .user-name { font-weight: 600; font-size: 16px; color: #333; text-align: center; margin-bottom: 25px; }
 
-    .user-name {
-      font-weight: 600;
-      font-size: 16px;
-      color: #333;
-      text-align: center;
-      margin-bottom: 25px;
+    .sidebar .btn, .sidebar a.logout {
+      width: 100%; padding: 10px; margin-bottom: 12px;
+      background: #a0e76d; border: none; border-radius: 8px;
+      font-weight: 600; color: #000; text-align: center;
+      cursor: pointer; text-decoration:none;
     }
 
-    /* Botões padrão da sidebar (mantidos) */
-    .sidebar .btn {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      background: #a0e76d;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      color: #000;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .sidebar .btn:hover { background: #8ad858; }
-    .sidebar a.logout {
-      width: 100%;
-      padding: 10px;
-      margin-top: auto;
-      background: #a0e76d;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      color: #000;
-      text-decoration: none;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .sidebar a.logout:hover { background: #8ad858; }
+    .content { flex: 1; padding: 40px; background-color: #f5ffe6; }
+    .content h2 { margin-bottom: 20px; color: #333; font-size: 24px; }
 
-    .content {
-      flex: 1;
-      padding: 40px;
-      background-color: #f5ffe6;
-    }
-    .content h2 {
-      margin-bottom: 20px;
-      color: #333;
-      font-size: 24px;
-      font-weight: 600;
-    }
     .actions {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 30px;
+      gap: 20px; margin-top: 30px;
     }
     .actions a.card-btn {
-      display: block;
-      background: #fff;
-      border-left: 5px solid #a0e76d;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      text-decoration: none;
-      color: #000;
-      font-weight: 600;
-      transition: background 0.3s;
-    }
-    .actions a.card-btn:hover { background: #e8f5d7; }
-
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        justify-content: space-around;
-        border-right: none;
-        border-bottom: 2px solid #ccc;
-      }
-      .logo, .user-name { display: none; }
+      display: block; background: #fff; border-left: 5px solid #a0e76d;
+      padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      text-decoration: none; color: #000; font-weight: 600;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <!-- LOGO (igual do aluno) -->
-    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo">
+    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}">
 
-    <!-- AVATAR clicável para trocar foto (mesma posição e tamanho) -->
     <div class="avatar-wrap">
-      <div
-        class="avatar"
+      <div class="avatar"
         style="
           background-image:
             url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
-            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
-            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
-            url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
             url('{{ url_for('static', filename='avatar_padrao.png') }}');
         ">
       </div>
-      <button class="avatar-btn" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
-      <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
-        <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
-      </form>
     </div>
 
     <div class="user-name">{{ session['nome'] }}</div>
-
-    <button type="button" class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
+    <button class="btn" onclick="location.href='/alterar_senha'">Alterar Senha</button>
     <a href="/logout" class="logout">Sair</a>
   </div>
 
@@ -177,16 +84,12 @@
     <div class="actions">
       <a href="/cadastrar_curso" class="card-btn">📚 Cadastrar Novo Curso</a>
       <a href="/matricular" class="card-btn">👥 Matricular Aluno</a>
-      <a href="/cadastrar_professor" class="card-btn">👤 Cadastrar Professor</a>
+      <a href="/cadastrar_aluno" class="card-btn">➕ Adicionar Aluno</a>
       <a href="/acompanhamento" class="card-btn">📊 Acompanhamento de Alunos</a>
       <a href="/editar_curso" class="card-btn">✏️ Editar Curso</a>
-      <a href="/editar_turma" class="card-btn">🛠️ Editar Turma</a>
       <a href="/controle_vencimentos" class="card-btn">⏱️ Controle de Vencimento</a>
-
-      <!-- NOVOS BOTÕES: Indicadores e Ranking (mesmo estilo) -->
       <a href="/indicadores" class="card-btn">📈 Indicadores</a>
       <a href="/ranking" class="card-btn">🏆 Ranking</a>
-
     </div>
   </div>
 </body>
