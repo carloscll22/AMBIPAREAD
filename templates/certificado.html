@@ -4,169 +4,172 @@
   <meta charset="UTF-8">
   <title>Certificado</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #fff;
-      text-align: center;
-      padding: 40px;
-      margin: 0;
-    }
 
-    .topbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .btn {
-      background-color: #a0e76d;
-      color: black;
-      padding: 10px 16px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      display: inline-block;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border: none;
-      cursor: pointer;
-    }
-    .btn:hover { filter: brightness(0.95); }
-    .no-print { display: inline-block; }
+<style>
+* { box-sizing: border-box; }
 
-    .certificado {
-      border: 10px solid #1602f1;
-      padding: 40px;
-      max-width: 1000px;
-      margin: 0 auto 40px auto;
-      background: #fff;
-    }
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #fff;
+  margin: 0;
+}
 
-    .logo {
-      width: 160px;
-      height: auto;
-      margin-bottom: 20px;
-    }
+/* ===== BOTÕES ===== */
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px;
+}
+.btn {
+  background-color: #a0e76d;
+  color: black;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+.no-print {}
 
-    .titulo {
-      font-size: 30px;
-      font-weight: bold;
-      color: #000000;
-      margin-bottom: 20px;
-    }
+/* ===== PÁGINAS ===== */
+.page {
+  width: 297mm;
+  height: 210mm;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    .texto {
-      font-size: 18px;
-      margin-top: 30px;
-      margin-bottom: 30px;
-      line-height: 1.5;
-    }
+.certificado {
+  border: 8px solid #1602f1;
+  width: 95%;
+  height: 90%;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
 
-    .nome {
-      font-size: 24px;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin: 20px 0;
-    }
+/* ===== CONTEÚDO ===== */
+.logo { width: 150px; margin: 0 auto; }
 
-    .info {
-      font-size: 18px;
-      margin-top: 20px;
-    }
+.titulo {
+  font-size: 30px;
+  font-weight: bold;
+}
 
-    .assinaturas-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 50px;
-      text-align: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+.texto {
+  font-size: 18px;
+  line-height: 1.5;
+}
 
-    .assinatura {
-      width: 45%;
-      min-width: 260px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      justify-content: center;
-    }
+.nome {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
 
-    .assinatura-detalhes {
-      text-align: left;
-      font-size: 12px;
-      line-height: 1.4;
-    }
+.info { font-size: 16px; }
 
-    .assinatura-detalhes strong {
-      display: block;
-      margin-bottom: 5px;
-    }
+.assinaturas-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
 
-    .assinatura img {
-      width: 80px;
-      height: 80px;
-    }
+.assinatura {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
 
-    .pagebreak { page-break-before: always; }
+.assinatura img {
+  width: 70px;
+  height: 70px;
+}
 
-    .conteudo {
-      text-align: left;
-      font-size: 16px;
-      max-width: 900px;
-      margin: 0 auto;
-      white-space: pre-line;
-      line-height: 1.5;
-    }
+.assinatura-detalhes { text-align: left; }
 
-    /* ===== Configurações de impressão (PDF) ===== */
-    @page {
-      size: A4 landscape;   /* agora é paisagem */
-      margin: 12mm;
-    }
-    @media print {
-      body { padding: 0; background: #fff; }
-      .no-print { display: none !important; }
-      .certificado {
-        border: 8px solid #1602f1;
-        margin: 0 auto;
-        page-break-inside: avoid;
-      }
-      .pagebreak { page-break-before: always; }
-      a[href]:after { content: ""; }
-    }
-  </style>
+/* ===== CONTEÚDO PROGRAMÁTICO ===== */
+.conteudo-page {
+  width: 297mm;
+  height: 210mm;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.conteudo-box {
+  border: 8px solid #1602f1;
+  width: 95%;
+  height: 90%;
+  padding: 25px;
+  overflow: hidden;
+}
+
+.conteudo {
+  font-size: 16px;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+/* ===== IMPRESSÃO ===== */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+@media print {
+  .topbar { display: none; }
+  body { margin: 0; }
+
+  .page, .conteudo-page {
+    page-break-after: always;
+  }
+
+  .conteudo {
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <!-- Topbar -->
-  <div class="topbar no-print">
-    <a href="/" class="btn">← Voltar para Central do Aluno</a>
-    <button class="btn" onclick="window.print()">Baixar Certificado</button>
-  </div>
+<div class="topbar no-print">
+  <a href="/" class="btn">← Voltar</a>
+  <button class="btn" onclick="window.print()">Baixar Certificado</button>
+</div>
 
-  <!-- PRIMEIRA PÁGINA -->
+<!-- PRIMEIRA PÁGINA -->
+<div class="page">
   <div class="certificado">
-    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}" alt="Logo da Empresa">
+
+    <img class="logo" src="{{ url_for('static', filename='loggo.png') }}">
 
     <div class="titulo">CERTIFICADO</div>
 
     <div class="texto">
-      Certifico que o <div class="nome">{{ aluno_nome }}</div>
-      concluiu com êxito o curso <strong>{{ curso }}</strong> com carga horária de
-      <strong>{{ carga }}</strong> horas. Ministrado pela empresa Ambipar Flyone Serviço Aéreo Especializado.
+      Certifico que o
+      <div class="nome">{{ aluno_nome }}</div>
+      concluiu com êxito o curso <strong>{{ curso }}</strong>
+      com carga horária de <strong>{{ carga }}</strong> horas.
     </div>
 
     <div class="info">Data de emissão: {{ data_emissao }}</div>
 
     <div class="assinaturas-container">
-      <!-- Assinatura Instrutor -->
+
       <div class="assinatura">
-        <img src="{{ url_for('static', filename='qrcode_empresa.png') }}" alt="QR Code">
+        <img src="{{ url_for('static', filename='qrcode_empresa.png') }}">
         <div class="assinatura-detalhes">
-          <strong>Documento Assinado Digitalmente</strong>
+          <strong>Documento Assinado Digitalmente</strong><br>
           Nome: {{ instrutor }}<br>
           Data: {{ data_assinatura_instrutor }}<br>
           Hora: {{ hora_assinatura_instrutor }}<br>
@@ -175,11 +178,10 @@
         </div>
       </div>
 
-      <!-- Assinatura Aluno -->
       <div class="assinatura">
-        <img src="{{ url_for('static', filename='qrcode_empresa.png') }}" alt="QR Code">
+        <img src="{{ url_for('static', filename='qrcode_empresa.png') }}">
         <div class="assinatura-detalhes">
-          <strong>Documento Assinado Digitalmente</strong>
+          <strong>Documento Assinado Digitalmente</strong><br>
           Aluno: {{ aluno_nome }}<br>
           Data: {{ data_assinatura_aluno }}<br>
           Hora: {{ hora_assinatura_aluno }}<br>
@@ -187,15 +189,18 @@
           <strong>Assinatura Aluno</strong>
         </div>
       </div>
+
     </div>
   </div>
+</div>
 
-  <!-- SEGUNDA PÁGINA -->
-  <div class="pagebreak"></div>
-  <div class="certificado">
-    <h2>Conteúdo Programático</h2>
+<!-- SEGUNDA PÁGINA -->
+<div class="conteudo-page">
+  <div class="conteudo-box">
+    <h2 style="text-align:center">Conteúdo Programático</h2>
     <div class="conteudo">{{ conteudo }}</div>
   </div>
+</div>
 
 </body>
 </html>
