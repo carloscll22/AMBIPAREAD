@@ -70,5 +70,6 @@
   "cmte.bomfim@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Willian Bomfim"},
   "daniel.sousa@ambipar.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Daniel Sousa"},
   "caiocmazzetti@gmail.com": {"senha": "Ambipar2025", "tipo": "aluno", "nome": "Caio Mazzetti"},
-  "alan.almeida@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "Alan Almeida"}
+  "alan.almeida@ambipar.com": {"senha": "Ambipar2025", "tipo": "professor", "nome": "Alan Almeida"},
+  "felipe.baptista@ambipar.com" {"senha": "Ambipar2025", "tipo": "professor", "nome": "Felipe Baptista"}
 }
