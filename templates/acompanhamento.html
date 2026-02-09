@@ -1,490 +1,258 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório de Alunos Matriculados</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#c1f38e; --surface:#fff; --border:#e2e8f0; --text:#1f2937; --muted:#64748b;
-      --primary:#a0e76d; --primary-hover:#8dd24a; --shadow:0 8px 22px rgba(0,0,0,.08);
-      --radius:16px; --radius-sm:12px;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);
-      min-height:100vh; display:grid; grid-template-columns:260px 1fr; gap:22px; padding:22px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acompanhamento de Alunos</title>
 
-    /* ===== Sidebar (padrão Ambipar/EADFlow) ===== */
-    .sidebar{
-      background:var(--surface); border-right:1px solid var(--border);
-      padding:18px 16px; display:flex; flex-direction:column; gap:16px;
-    }
-    .brand{
-      background:#f4ffe7; border:1px solid var(--border); border-radius:12px;
-      padding:10px; display:flex; align-items:center; justify-content:center;
-    }
-    .brand img{height:32px;width:auto;display:block}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-    .profile{
-      background:var(--surface); border:1px solid var(--border); border-radius:12px;
-      box-shadow:var(--shadow); padding:14px; display:flex; flex-direction:column;
-      align-items:center; gap:10px;
-    }
-    .avatar-wrap{position:relative;width:86px;height:86px}
-    .avatar{
-      width:86px;height:86px;border-radius:50%;
-      background-position:center;background-size:cover;background-repeat:no-repeat;
-      border:3px solid #d9f5b6;
-    }
-    .avatar-btn{
-      position:absolute;right:-4px;bottom:-4px;background:var(--primary);
-      border:none;border-radius:999px;padding:6px 8px;font-weight:700;cursor:pointer;line-height:1;
-      box-shadow:0 2px 6px rgba(0,0,0,.15)
-    }
-    .avatar-btn:hover{background:var(--primary-hover)}
-    .user-name{ text-align:center; font-weight:700; color:#222; font-size:14px; text-transform:uppercase; letter-spacing:.02em }
+<style>
+:root{
+  --bg:#c1f38e; --surface:#fff; --border:#e2e8f0; --text:#1f2937;
+  --primary:#a0e76d; --primary-hover:#8dd24a;
+  --shadow:0 8px 22px rgba(0,0,0,.08);
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Poppins',sans-serif;
+  background:var(--bg);
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:22px;
+  padding:22px;
+}
+.sidebar{
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.sidebar button,.logout{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:var(--primary);
+  font-weight:600;
+  cursor:pointer;
+}
+.logout{
+  margin-top:auto;
+  background:#eef2f6;
+  text-align:center;
+  text-decoration:none;
+  color:#111;
+}
+.content{padding-right:22px}
+.wrap{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+h2{text-align:center;margin-bottom:12px}
 
-    /* mantém SEUS controles (não adiciona/remove) */
-    .sidebar button{
-      width:100%; padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
-      background:var(--primary); color:#333; font-weight:600; transition:.15s ease;
-    }
-    .sidebar button:hover{background:var(--primary-hover)}
-    .sidebar .logout{ margin-top:auto; text-decoration:none; color:#111; font-weight:700; text-align:center;
-      background:#eef2f6; border:1px solid var(--border); padding:10px 14px; border-radius:10px; display:block }
+.filter-bar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+}
+.filter-bar select,.filter-bar input{
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+}
+.archived-toggle{
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cdebd3;
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
 
-    /* ===== Conteúdo ===== */
-    .content{ padding-right:22px }
-    .wrap{
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-      box-shadow:var(--shadow); padding:20px; max-width:1200px; margin:0 auto;
-    }
-    h2{ font-size:24px; font-weight:700; color:#1e293b; margin-bottom:12px; text-align:center }
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+}
+thead th{
+  border-bottom:2px solid #cbd5e1;
+  padding:10px;
+}
+tbody td{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+}
+tbody tr:hover{background:#eef8dd}
 
-    /* ===== Filtro ===== */
-    .filter-bar{ display:flex; gap:10px; margin:14px 0 18px; align-items:center }
-    .filter-bar select, .filter-bar input[type="text"]{
-      padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; flex:1; background:#fff
-    }
+.badge{
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:12px;
+}
+.ok{background:#d9f6df;color:#0a6a2a}
+.warn{background:#fff2cc;color:#7a5c00}
 
-    /* botão Cursos Arquivados - discreto mas visível (não altera o esquema geral) */
-    .archived-toggle{
-      padding:9px 12px; border-radius:10px; border:1px solid #e6aeb0; background:#fff;
-      color:#c92a2a; font-weight:700; cursor:pointer; white-space:nowrap;
-    }
-    .archived-toggle:hover{ filter:brightness(.98) }
+.actions a,.btn-archive,.btn-restore{
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+}
+.btn-archive{background:#9fe06a;border:none}
+.btn-restore{background:#fff;border:1px solid #cdebd3}
 
-    /* ===== Tabela ===== */
-    .table-area{ display:block }
-    .cards-area{ display:none }
-    .table-wrap{ width:100%; overflow:auto }
-    table{ width:100%; border-collapse:separate; border-spacing:0 8px; min-width:920px }
-    thead th{
-      background:#fff; padding:12px; text-align:left; font-weight:600;
-      border-bottom:2px solid #cbd5e1; position:sticky; top:0; z-index:1;
-    }
-    tbody tr{ background:#fff }
-    tbody td{ padding:12px; border-bottom:1px solid #e0e0e0; vertical-align:middle }
-    tbody tr:last-child td{ border-bottom:none }
-    tbody tr:hover{ background:#e8f5d7 }
-
-    .actions a{
-      display:inline-block; margin-right:8px; padding:6px 10px;
-      background:var(--primary); color:#000; border-radius:8px;
-      text-decoration:none; font-size:13px; font-weight:600; transition:.15s ease; white-space:nowrap
-    }
-    .actions a:hover{ background:var(--primary-hover) }
-
-    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px }
-    .ok{ background:#d9f6df; color:#0a6a2a }
-    .warn{ background:#fff2cc; color:#7a5c00 }
-    .no{ background:#ffd9d9; color:#8f1010 }
-
-    /* botão Arquivar e Restaurar (mantém o design verde pra ações principais) */
-    .btn-archive{
-      display:inline-block; margin-right:6px; padding:6px 10px;
-      background:#9fe06a; color:#062c06; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;
-      cursor:pointer; border:1px solid rgba(0,0,0,.04);
-    }
-    .btn-archive:hover{ background:#84d24a }
-
-    .btn-restore{
-      display:inline-block; margin-right:6px; padding:6px 10px;
-      background:#fff; color:#0a6a2a; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;
-      cursor:pointer; border:1px solid #cbecc3;
-    }
-    .btn-restore:hover{ filter:brightness(.98) }
-
-    /* area de arquivados - inicialmente escondida */
-    .archived-area{ display:none; margin-top:18px; border-top:1px dashed #e6e6e6; padding-top:12px }
-
-    /* ===== Mobile/Tablet retrato ===== */
-    @media (max-width:900px){
-      body{ grid-template-columns:1fr; padding:16px }
-      .content{ padding-right:0 }
-      .sidebar{
-        width:100%; flex-direction:row; align-items:center; gap:12px;
-        border-right:none; border-bottom:1px solid var(--border); padding:12px
-      }
-      .logout{ margin-top:0 !important }
-      .wrap{ padding:14px }
-      .table-area{ display:none }
-      .cards-area{ display:grid; gap:12px }
-
-      .card{
-        background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:12px;
-        box-shadow:0 2px 10px rgba(0,0,0,.06)
-      }
-      .card-header{ display:flex; justify-content:space-between; gap:8px; margin-bottom:8px }
-      .card-curso{ font-weight:700 }
-      .grid{ display:grid; gap:8px; grid-template-columns:1fr 1fr }
-      .row small{ color:#666; display:block; margin-bottom:2px }
-      .row div{ font-size:14px }
-      .card-actions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap }
-      .pill{ padding:6px 10px; border:1px solid #ddd; border-radius:8px; font-size:12px; background:#f7f7f7 }
-
-      /* botão arquivar nos cards */
-      .card .btn-archive{ padding:6px 8px; font-size:13px }
-      .card .btn-restore{ padding:6px 8px; font-size:13px }
-      @media (max-width:520px){ .grid{ grid-template-columns:1fr } }
-    }
-  </style>
+.archived-area{display:none;margin-top:18px}
+</style>
 </head>
+
 <body>
 
-  <!-- ===== Sidebar padronizada (mesmos controles) ===== -->
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="{{ url_for('static', filename='loggo.png') }}" alt="Ambipar EAD">
-    </div>
+<aside class="sidebar">
+  <button onclick="location.href='/'">Voltar Home</button>
+  <a href="/logout" class="logout">Sair</a>
+</aside>
 
-    <div class="profile">
-      <div class="avatar-wrap">
-        <div class="avatar"
-          style="
-            background-image:
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.webp') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpg') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.jpeg') }}'),
-              url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
-              url('{{ url_for('static', filename='avatar_padrao.png') }}');
-          ">
-        </div>
-        <button class="avatar-btn" type="button" title="Trocar foto" onclick="document.getElementById('fotoInputProf').click()">✎</button>
-        <form id="fotoFormProf" action="{{ url_for('upload_foto') }}" method="POST" enctype="multipart/form-data" style="display:none">
-          <input id="fotoInputProf" type="file" name="foto" accept=".png,.jpg,.jpeg,.webp" onchange="document.getElementById('fotoFormProf').submit()">
-        </form>
-      </div>
-      <div class="user-name">{{ (session['nome'] or 'USUÁRIO') | upper }}</div>
-    </div>
+<main class="content">
+<div class="wrap">
+<h2>Acompanhamento de Alunos</h2>
 
-    <!-- Mantidos: Voltar Home (button) e Sair (link) -->
-    <button onclick="location.href='/'">Voltar Home</button>
-    <a href="/logout" class="logout">Sair</a>
-  </aside>
+<div class="filter-bar">
+  <select id="filter-type">
+    <option value="0">Curso</option>
+    <option value="4">Aluno</option>
+    <option value="6">Status</option>
+  </select>
+  <input type="text" id="filter-input" placeholder="Filtrar..." onkeyup="filtrarTabela()">
 
-  <!-- ===== Conteúdo ===== -->
-  <main class="content">
-    <div class="wrap">
-      <h2>Relatório de Alunos Matriculados</h2>
+  <button id="open-concluded" class="archived-toggle">Concluídos</button>
+  <button id="open-archived" class="archived-toggle">Arquivados</button>
+</div>
 
-      <!-- Filtro (desktop) -->
-      <div class="filter-bar table-area">
-        <select id="filter-type">
-          <option value="0">Curso</option>
-          <option value="1">Turma</option>
-          <option value="2">NRT</option>
-          <option value="3">Tipo</option>
-          <option value="4">Aluno</option>
-          <option value="6">Status</option>
-          <option value="7">Nota</option>
-        </select>
-        <input type="text" id="filter-input" placeholder="Digite para filtrar..." onkeyup="filtrarTabela()">
-        <!-- Botão solicitado: Cursos Arquivados (fica ao lado do filtro) -->
-        <button id="open-archived" class="archived-toggle" title="Ver Cursos Arquivados">Cursos Arquivados</button>
-      </div>
+<!-- LISTA PRINCIPAL -->
+<div id="main-list-area">
+<table id="tabela-acompanhamento">
+<thead>
+<tr>
+<th>Curso</th>
+<th>Turma</th>
+<th>NRT</th>
+<th>Tipo</th>
+<th>Aluno</th>
+<th>Tempo</th>
+<th>Status</th>
+<th>Nota</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody>
+{% for e in enrollments %}
+<tr data-idx="{{ loop.index0 }}">
+<td>{{ e.curso.nome }}</td>
+<td>{{ e.turma }}</td>
+<td>{{ e.nrt }}</td>
+<td>{{ e.tipo }}</td>
+<td>{{ e.aluno }}</td>
+<td>{{ e.tempo }}</td>
+<td>
+{% if e.concluido %}
+<span class="badge ok">Concluído</span>
+{% else %}
+<span class="badge warn">Em andamento</span>
+{% endif %}
+</td>
+<td>{{ e.nota }}</td>
+<td class="actions">
+{% if e.concluido %}
+<button class="btn-archive" onclick="arquivar({{ loop.index0 }})">Arquivar</button>
+<a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
+{% else %} --- {% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
 
-      <!-- Tabela principal -->
-      <div class="table-area table-wrap" id="main-list-area">
-        <table id="tabela-acompanhamento">
-          <thead>
-            <tr>
-              <th>Curso</th>
-              <th>Turma</th>
-              <th>NRT</th>
-              <th>Tipo</th>
-              <th>Aluno</th>
-              <th>Tempo (min)</th>
-              <th>Status</th>
-              <th>Nota</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for e in enrollments %}
-              <tr data-idx="{{ loop.index0 }}">
-                <td class="cell-curso">{{ e.curso.nome }}</td>
-                <td class="cell-turma">{{ e.turma }}</td>
-                <td class="cell-nrt">{{ e.nrt }}</td>
-                <td class="cell-tipo">{{ e.tipo }}</td>
-                <td class="cell-aluno">{{ e.aluno }}</td>
-                <td class="cell-tempo">{{ e.tempo }}</td>
-                <td>
-                  {% if e.concluido %}
-                    <span class="badge ok">Concluído</span>
-                  {% else %}
-                    <span class="badge warn">Em andamento</span>
-                  {% endif %}
-                </td>
-                <td class="cell-nota">{{ e.nota }}</td>
-                <td class="actions">
-                  {% if e.concluido %}
-                    <!-- Botão Arquivar Curso (solicitado - aparece apenas para concluídos) -->
-                    <button class="btn-archive" onclick="arquivar({{ loop.index0 }})" title="Arquivar Curso">Arquivar Curso</button>
+<!-- CONCLUÍDOS -->
+<div class="archived-area" id="concluded-area">
+<button onclick="voltar()">Voltar</button>
+<table id="tabela-concluidos">
+<thead><tr><th colspan="9">Cursos Concluídos</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
 
-                    <a href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
-                    <a href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
-                    {% if e.aprovado and e.cert_emitido %}
-                      <a href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Visualizar Prova</a>
-                    {% endif %}
-                  {% else %}
-                    ---
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+<!-- ARQUIVADOS -->
+<div class="archived-area" id="archived-area">
+<button onclick="voltar()">Voltar</button>
+<table id="tabela-arquivados">
+<thead><tr><th colspan="9">Cursos Arquivados</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
 
-      <!-- Área de Arquivados (inicialmente escondida) -->
-      <div class="archived-area" id="archived-area">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div style="font-weight:700; color:#1e293b">Cursos Arquivados</div>
-          <div>
-            <button id="back-to-main" class="archived-toggle" style="border-color:#cdebd3;color:#0a6a2a;margin-right:8px">Voltar</button>
-            <button id="clear-archived" class="archived-toggle" title="Limpar Arquivados">Limpar Arquivados</button>
-          </div>
-        </div>
+</div>
+</main>
 
-        <div class="table-wrap">
-          <table id="tabela-arquivados">
-            <thead>
-              <tr>
-                <th>Curso</th>
-                <th>Turma</th>
-                <th>NRT</th>
-                <th>Tipo</th>
-                <th>Aluno</th>
-                <th>Tempo (min)</th>
-                <th>Status</th>
-                <th>Nota</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Linhas arquivadas serão inseridas aqui via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
+<script>
+function filtrarTabela(){
+  const idx = +document.getElementById('filter-type').value;
+  const termo = document.getElementById('filter-input').value.toLowerCase();
+  document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(r=>{
+    const txt = r.children[idx]?.innerText.toLowerCase() || '';
+    r.style.display = txt.includes(termo) ? '' : 'none';
+  });
+}
 
-      <!-- Cards (mobile) -->
-      <div class="cards-area" id="cards-area">
-        {% for e in enrollments %}
-        <div class="card" data-idx="{{ loop.index0 }}">
-          <div class="card-header">
-            <div class="card-curso">{{ e.curso.nome }}</div>
-            <div>{% if e.concluido %}<span class="badge ok">Concluído</span>{% else %}<span class="badge warn">Em andamento</span>{% endif %}</div>
-          </div>
-          <div class="grid">
-            <div class="row"><small>Aluno</small><div>{{ e.aluno }}</div></div>
-            <div class="row"><small>Nota</small><div>{{ e.nota }}</div></div>
-            <div class="row"><small>Turma</small><div>{{ e.turma }}</div></div>
-            <div class="row"><small>NRT</small><div>{{ e.nrt }}</div></div>
-            <div class="row"><small>Tipo</small><div>{{ e.tipo }}</div></div>
-            <div class="row"><small>Tempo (min)</small><div>{{ e.tempo }}</div></div>
-            <div class="row"><small>Status</small>
-              <div>{% if e.aprovado %}<span class="badge ok">Aprovado</span>{% else %}<span class="badge no">Reprovado</span>{% endif %}</div>
-            </div>
-            <div class="row"><small>Certificado</small>
-              <div>{% if e.cert_emitido %}<span class="badge ok">Emitido</span>{% else %}<span class="badge warn">Pendente</span>{% endif %}</div>
-            </div>
-          </div>
+function arquivar(idx){
+  const row = document.querySelector(`tr[data-idx="${idx}"]`);
+  const clone = row.cloneNode(true);
+  clone.querySelector('.actions').innerHTML =
+    `<button class="btn-restore" onclick="restaurar(${idx})">Restaurar</button>`;
+  document.querySelector('#tabela-arquivados tbody').appendChild(clone);
+  row.style.display='none';
+}
 
-          {% if e.concluido %}
-          <div class="card-actions">
-            <!-- Botão Arquivar no card -->
-            <button class="btn-archive" onclick="arquivar({{ loop.index0 }})">Arquivar Curso</button>
+function restaurar(idx){
+  document.querySelector(`tr[data-idx="${idx}"]`).style.display='';
+  document.querySelector(`#tabela-arquivados tr[data-idx="${idx}"]`)?.remove();
+}
 
-            <a class="pill" href="{{ url_for('assinar_certificado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Certificado</a>
-            <a class="pill" href="{{ url_for('ver_lista_presenca', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Lista Presença</a>
-            {% if e.aprovado and e.cert_emitido %}
-            <a class="pill" href="{{ url_for('prova_resultado', aluno=e.email, curso=e.curso.nome) }}" target="_blank">Visualizar Prova</a>
-            {% endif %}
-          </div>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </main>
-
-  <script>
-    /* Funções de filtro (mantidas) */
-    function filtrarTabela(){
-      const idx = +document.getElementById('filter-type').value;
-      const termo = document.getElementById('filter-input').value.toLowerCase();
-      document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row=>{
-        // se a linha já estiver arquivada (display none), não interferir:
-        if(row.dataset.archived === "true"){ row.style.display = 'none'; return; }
-        const cell = row.querySelectorAll('td')[idx]?.textContent.toLowerCase() || '';
-        row.style.display = cell.includes(termo) ? '' : 'none';
-      });
+function moverConcluidos(){
+  document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(row=>{
+    if(row.querySelector('.badge.ok')){
+      document.querySelector('#tabela-concluidos tbody')
+        .appendChild(row.cloneNode(true));
+      row.style.display='none';
     }
+  });
+}
 
-    /* Gerenciamento de arquivados em client-side (localStorage)
-       - Armazenamos um array de índices arquivados: 'archivedEnrollmentIdx'
-       - Ao carregar a página, movemos as linhas dos índices arquivados para a tabela de arquivados
-    */
+function voltar(){
+  document.getElementById('concluded-area').style.display='none';
+  document.getElementById('archived-area').style.display='none';
+  document.getElementById('main-list-area').style.display='block';
+}
 
-    const ARCHIVE_KEY = 'archivedEnrollmentIdx_v1';
+document.getElementById('open-concluded').onclick=()=>{
+  document.getElementById('main-list-area').style.display='none';
+  document.getElementById('concluded-area').style.display='block';
+};
+document.getElementById('open-archived').onclick=()=>{
+  document.getElementById('main-list-area').style.display='none';
+  document.getElementById('archived-area').style.display='block';
+};
 
-    function getArchivedSet(){
-      try{
-        const raw = localStorage.getItem(ARCHIVE_KEY);
-        if(!raw) return new Set();
-        const arr = JSON.parse(raw);
-        return new Set(arr);
-      } catch(e){
-        console.error('Erro lendo arquivados', e);
-        return new Set();
-      }
-    }
+moverConcluidos();
+</script>
 
-    function saveArchivedSet(set){
-      const arr = Array.from(set);
-      localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arr));
-    }
-
-    function arquivar(idx){
-      // idx é número do loop.index0
-      const set = getArchivedSet();
-      set.add(String(idx));
-      saveArchivedSet(set);
-      moveRowToArchived(idx);
-    }
-
-    function desarquivar(idx){
-      const set = getArchivedSet();
-      set.delete(String(idx));
-      saveArchivedSet(set);
-      moveRowToMain(idx);
-    }
-
-    function moveRowToArchived(idx){
-      // encontrar linha na tabela principal com data-idx
-      const row = document.querySelector('#tabela-acompanhamento tbody tr[data-idx="'+idx+'"]');
-      const card = document.querySelector('.cards-area .card[data-idx="'+idx+'"]');
-      const archivedTbody = document.querySelector('#tabela-arquivados tbody');
-
-      if(row){
-        // Clonar a linha para arquivados (limpando handlers inline da célula ações e adicionando botão Restaurar)
-        const clone = row.cloneNode(true);
-        clone.dataset.archived = "true";
-        // substituir a célula de ações para conter apenas botão Restaurar
-        const actionsCell = clone.querySelector('td.actions');
-        if(actionsCell){
-          const restoreBtn = document.createElement('button');
-          restoreBtn.className = 'btn-restore';
-          restoreBtn.textContent = 'Restaurar';
-          restoreBtn.onclick = function(){ desarquivar(idx); };
-          actionsCell.innerHTML = '';
-          actionsCell.appendChild(restoreBtn);
-        }
-        archivedTbody.appendChild(clone);
-
-        // ocultar linha original
-        row.style.display = 'none';
-      }
-
-      if(card){
-        // marcar card como arquivado (ocultar)
-        card.style.display = 'none';
-        // opcional: adicionar representação no area arquivados mobile: não implementado visualmente para não mudar layout
-      }
-    }
-
-    function moveRowToMain(idx){
-      // removemos a linha arquivada do corpo de arquivados e mostramos a linha principal novamente
-      const archivedTbody = document.querySelector('#tabela-arquivados tbody');
-      const archivedRow = archivedTbody.querySelector('tr[data-idx="'+idx+'"]');
-      if(archivedRow){
-        archivedRow.remove();
-      }
-      const mainRow = document.querySelector('#tabela-acompanhamento tbody tr[data-idx="'+idx+'"]');
-      if(mainRow){
-        mainRow.style.display = '';
-        mainRow.dataset.archived = "false";
-      }
-      const card = document.querySelector('.cards-area .card[data-idx="'+idx+'"]');
-      if(card) card.style.display = '';
-    }
-
-    function populateArchivedFromStorage(){
-      const set = getArchivedSet();
-      if(set.size === 0) return;
-      set.forEach(idx=>{
-        moveRowToArchived(idx);
-      });
-    }
-
-    // Botões para abrir/fechar área arquivados
-    document.addEventListener('DOMContentLoaded', function(){
-      document.getElementById('open-archived').addEventListener('click', function(){
-        document.getElementById('archived-area').style.display = 'block';
-        // opcional: ocultar lista principal (manter ambas é ok); vamos ocultar a principal para foco
-        document.getElementById('main-list-area').style.display = 'none';
-        // também ocultar cards area (mobile)
-        document.getElementById('cards-area').style.display = 'none';
-      });
-
-      document.getElementById('back-to-main').addEventListener('click', function(){
-        document.getElementById('archived-area').style.display = 'none';
-        document.getElementById('main-list-area').style.display = 'block';
-        // re-exibir cards mobile (apenas se for viewport pequeno)
-        if(window.innerWidth <= 900){
-          document.getElementById('cards-area').style.display = 'grid';
-        }
-      });
-
-      document.getElementById('clear-archived').addEventListener('click', function(){
-        if(!confirm('Limpar todos os cursos arquivados? Esta ação apenas limpa o armazenamento local do navegador.')) return;
-        localStorage.removeItem(ARCHIVE_KEY);
-        // remover rows da tabela de arquivados e reexibir linhas principais
-        document.querySelectorAll('#tabela-arquivados tbody tr').forEach(r=>r.remove());
-        document.querySelectorAll('#tabela-acompanhamento tbody tr').forEach(r=>{ r.style.display=''; r.dataset.archived='false' });
-        // reexibir cards
-        document.querySelectorAll('.cards-area .card').forEach(c=>c.style.display='');
-      });
-
-      // Inicializa: popula area de arquivados com os que estiverem salvos
-      populateArchivedFromStorage();
-
-      // Exibir cards-area em telas pequenas
-      if(window.innerWidth <= 900){
-        document.getElementById('cards-area').style.display = 'grid';
-        document.getElementById('main-list-area').style.display = 'none';
-      } else {
-        document.getElementById('cards-area').style.display = 'none';
-        document.getElementById('main-list-area').style.display = 'block';
-      }
-    });
-
-    // Recomenda: se seu backend controla os dados arquivados, remova o uso do localStorage e chame uma API para arquivar/desarquivar.
-  </script>
 </body>
 </html>
