@@ -932,7 +932,32 @@ def editar_turma_list():
 def funcionarios():
     if session.get("tipo") != "professor":
         return redirect("/login")
-    return render_template("funcionarios.html", usuarios=usuarios)
+
+    nome_filtro  = (request.args.get("nome") or "").lower()
+    setor_filtro = (request.args.get("setor") or "").lower()
+
+    usuarios_filtrados = {}
+
+    for email, u in usuarios.items():
+        if u.get("tipo") != "aluno":
+            continue
+
+        nome_ok = nome_filtro in u.get("nome", "").lower()
+        setor_ok = True
+
+        if setor_filtro:
+            setor_ok = setor_filtro == u.get("setor", "").lower()
+
+        if nome_ok and setor_ok:
+            usuarios_filtrados[email] = u
+
+    return render_template(
+        "funcionarios.html",
+        usuarios=usuarios_filtrados,
+        nome_filtro=nome_filtro,
+        setor_filtro=setor_filtro
+    )
+
 
 
 @app.route("/funcionarios/editar/<email>", methods=["GET", "POST"])
@@ -945,13 +970,18 @@ def editar_funcionario(email):
     if not usuario:
         return "Funcionário não encontrado", 404
 
-    if request.method == "POST":
-        usuario["nome"] = request.form.get("nome")
-        senha = request.form.get("senha")
-        categoria = request.form.get("categoria")
+    # 🔒 garante chaves mínimas
+    usuario.setdefault("categoria", "")
+    usuario.setdefault("setor", "")
 
+    if request.method == "POST":
+        usuario["nome"] = request.form.get("nome", usuario["nome"])
+
+        senha = request.form.get("senha")
         if senha:
             usuario["senha"] = senha
+
+        categoria = request.form.get("categoria")
         if categoria:
             usuario["categoria"] = categoria
 
@@ -959,6 +989,7 @@ def editar_funcionario(email):
         return redirect("/funcionarios")
 
     return render_template("editar_funcionario.html", usuario=usuario)
+
 
 
 @app.route("/funcionarios/excluir/<email>", methods=["POST"])
