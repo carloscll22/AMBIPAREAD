@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Editar Funcionário</title>
+<style>
+body{background:#c1f38e;font-family:Poppins,sans-serif;padding:40px}
+.card{background:#fff;padding:25px;border-radius:12px;max-width:500px;margin:auto}
+.field{margin-bottom:15px;display:flex;flex-direction:column}
+label{font-weight:600;margin-bottom:5px}
+input,select{padding:10px;border-radius:8px;border:1px solid #ccc}
+button{padding:12px;border:none;border-radius:10px;background:#a0e76d;font-weight:600;cursor:pointer}
+a{text-decoration:none;display:block;text-align:center;margin-top:15px}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>Editar Funcionário</h2>
+
+  <form method="post">
+    <div class="field">
+      <label>Nome</label>
+      <input type="text" name="nome" value="{{ usuario.nome }}" required>
+    </div>
+
+    <div class="field">
+      <label>Senha (opcional)</label>
+      <input type="text" name="senha">
+    </div>
+
+    <div class="field">
+      <label>Categoria</label>
+      <select name="categoria">
+        <option value="piloto" {% if usuario.categoria == 'piloto' %}selected{% endif %}>Piloto</option>
+        <option value="mecanico" {% if usuario.categoria == 'mecanico' %}selected{% endif %}>Mecânico</option>
+      </select>
+    </div>
+
+    <button type="submit">Salvar</button>
+  </form>
+
+  <a href="/funcionarios">← Voltar</a>
+</div>
+</body>
+</html>
