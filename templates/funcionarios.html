@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <title>Gerenciar Funcionários</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
 body{
   background:#c1f38e;
   font-family:Poppins,sans-serif;
   padding:30px;
 }
+
 .card{
   background:#fff;
   padding:25px;
@@ -18,28 +20,82 @@ body{
   margin:auto;
   box-shadow:0 10px 25px rgba(0,0,0,.1);
 }
-h2{text-align:center;margin-bottom:20px}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+h2{margin:0}
+
+.back{
+  text-decoration:none;
+  font-weight:600;
+  color:#000;
+}
+
+/* ===== FILTRO ===== */
+.filter{
+  display:flex;
+  gap:12px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+.filter input,
+.filter select{
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-family:Poppins;
+}
+
+.filter button{
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  background:#a0e76d;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.filter a{
+  align-self:center;
+  text-decoration:none;
+  font-weight:600;
+  color:#000;
+}
+
+/* ===== TABELA ===== */
 table{
   width:100%;
   border-collapse:collapse;
 }
+
 th,td{
   padding:12px;
   border-bottom:1px solid #ddd;
   text-align:left;
 }
+
 th{
   background:#f3f3f3;
 }
-.actions a, .actions form{
-  display:inline-block;
+
+.actions{
+  display:flex;
+  gap:10px;
 }
+
 .actions a{
-  margin-right:8px;
   text-decoration:none;
   font-weight:600;
 }
+
 .btn-edit{color:#2563eb}
+
 .btn-del{
   color:#b91c1c;
   background:none;
@@ -47,25 +103,41 @@ th{
   cursor:pointer;
   font-weight:600;
 }
-.top{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:15px;
-}
-.back{
-  text-decoration:none;
-  font-weight:600;
-}
 </style>
 </head>
 
 <body>
+
 <div class="card">
+
   <div class="top">
     <h2>Funcionários Cadastrados</h2>
     <a class="back" href="/">← Voltar</a>
   </div>
 
+  <!-- 🔍 FILTRO -->
+  <form method="get" class="filter">
+    <input
+      type="text"
+      name="nome"
+      placeholder="Buscar por nome"
+      value="{{ nome_filtro }}"
+    >
+
+    <select name="setor">
+      <option value="">Todos os setores</option>
+      <option value="Manutenção" {% if setor_filtro == 'manutenção' %}selected{% endif %}>Manutenção</option>
+      <option value="Operações" {% if setor_filtro == 'operações' %}selected{% endif %}>Operações</option>
+      <option value="SGSO" {% if setor_filtro == 'sgso' %}selected{% endif %}>SGSO</option>
+      <option value="Administrativo" {% if setor_filtro == 'administrativo' %}selected{% endif %}>Administrativo</option>
+      <option value="Outros" {% if setor_filtro == 'outros' %}selected{% endif %}>Outros</option>
+    </select>
+
+    <button type="submit">Filtrar</button>
+    <a href="/funcionarios">Limpar</a>
+  </form>
+
+  <!-- 📋 TABELA -->
   <table>
     <thead>
       <tr>
@@ -86,7 +158,10 @@ th{
           <td>{{ u.categoria or '-' }}</td>
           <td class="actions">
             <a class="btn-edit" href="/funcionarios/editar/{{ email }}">Editar</a>
-            <form method="post" action="/funcionarios/excluir/{{ email }}" onsubmit="return confirm('Excluir este funcionário?');">
+
+            <form method="post"
+                  action="/funcionarios/excluir/{{ email }}"
+                  onsubmit="return confirm('Excluir este funcionário?');">
               <button class="btn-del">Excluir</button>
             </form>
           </td>
@@ -95,6 +170,8 @@ th{
       {% endfor %}
     </tbody>
   </table>
+
 </div>
+
 </body>
 </html>
