@@ -807,18 +807,24 @@ def cadastrar_aluno():
             flash("Já existe um aluno com esse e-mail.", "erro")
             return render_template('cadastrar_aluno.html')
 
+        # 🔴 AQUI É A OPÇÃO 1
+        # Mapeia setor → categoria
+        categoria = "mecanico" if setor.lower() == "manutenção" else "piloto"
+
         usuarios[email] = {
             "nome": nome,
             "senha": senha,
             "tipo": "aluno",
-            "setor": setor
+            "setor": setor,
+            "categoria": categoria   # 🔴 ESSENCIAL
         }
 
-        salvar_usuarios()  # 🔴 ESSENCIAL
+        salvar_usuarios()
         flash("Aluno cadastrado com sucesso!", "success")
         return redirect("/")
 
     return render_template('cadastrar_aluno.html')
+
 
 
 @app.route("/cadastrar_curso", methods=["GET", "POST"])
