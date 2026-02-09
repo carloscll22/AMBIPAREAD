@@ -785,12 +785,34 @@ def vencimentos_restaurar():
 
 @app.route('/cadastrar_aluno', methods=['GET','POST'])
 def cadastrar_aluno():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
     if request.method == 'POST':
-        nome = request.form['nome']
-        login = request.form['login']
-        senha = request.form['senha']
-        setor = request.form['setor']
-        # salvar no banco ou estrutura
+        nome  = request.form.get('nome', '').strip()
+        email = request.form.get('login', '').strip().lower()
+        senha = request.form.get('senha', '').strip()
+        setor = request.form.get('setor', '').strip()
+
+        if not nome or not email or not senha or not setor:
+            flash("Preencha todos os campos.", "erro")
+            return render_template('cadastrar_aluno.html')
+
+        if email in usuarios:
+            flash("Já existe um aluno com esse e-mail.", "erro")
+            return render_template('cadastrar_aluno.html')
+
+        usuarios[email] = {
+            "nome": nome,
+            "senha": senha,
+            "tipo": "aluno",
+            "setor": setor
+        }
+
+        salvar_usuarios()  # 🔴 ESSENCIAL
+        flash("Aluno cadastrado com sucesso!", "success")
+        return redirect("/")
+
     return render_template('cadastrar_aluno.html')
 
 
