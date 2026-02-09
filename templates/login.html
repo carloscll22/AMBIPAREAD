@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <title>Login</title>
@@ -13,7 +13,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .box {
       background-color: white;
       padding: 30px;
@@ -21,30 +20,22 @@
       text-align: center;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
-
     .logo {
       width: 120px;
-      height: auto;
       margin-bottom: 10px;
     }
-
-    input[type="text"], input[type="password"] {
-      width: 200px;
+    input {
+      width: 220px;
       padding: 8px;
       margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-
     input[type="submit"] {
-      padding: 8px 16px;
-      border: none;
       background-color: #4CAF50;
       color: white;
-      border-radius: 4px;
       cursor: pointer;
     }
-
     input[type="submit"]:hover {
       background-color: #45a049;
     }
@@ -52,11 +43,15 @@
 </head>
 <body>
   <div class="box">
-    <img src="{{ url_for('static', filename='loggo.png') }}" alt="Logo" class="logo">
+    <img src="{{ url_for('static', filename='loggo.png') }}" class="logo">
     <h2>Login</h2>
+
     <form method="post">
-      <input type="text" name="nome" placeholder="E-mail"><br>
-      <input type="password" name="senha" placeholder="Senha"><br>
+      <!-- 🔴 NOME CORRETO DO CAMPO -->
+      <input type="email" name="login" placeholder="E-mail" required>
+
+      <input type="password" name="senha" placeholder="Senha" required>
+
       <input type="submit" value="Entrar">
     </form>
   </div>
