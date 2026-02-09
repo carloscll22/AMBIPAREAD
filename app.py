@@ -927,6 +927,62 @@ def editar_turma_list():
     return render_template("editar_turma.html", linhas=linhas)
 
 
+
+@app.route("/funcionarios")
+def funcionarios():
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+    return render_template("funcionarios.html", usuarios=usuarios)
+
+
+@app.route("/funcionarios/editar/<email>", methods=["GET", "POST"])
+def editar_funcionario(email):
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    email = email.lower()
+    usuario = usuarios.get(email)
+    if not usuario:
+        return "Funcionário não encontrado", 404
+
+    if request.method == "POST":
+        usuario["nome"] = request.form.get("nome")
+        senha = request.form.get("senha")
+        categoria = request.form.get("categoria")
+
+        if senha:
+            usuario["senha"] = senha
+        if categoria:
+            usuario["categoria"] = categoria
+
+        salvar_usuarios()
+        return redirect("/funcionarios")
+
+    return render_template("editar_funcionario.html", usuario=usuario)
+
+
+@app.route("/funcionarios/excluir/<email>", methods=["POST"])
+def excluir_funcionario(email):
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    email = email.lower()
+
+    global usuarios, matriculas
+    usuarios.pop(email, None)
+
+    # remove matrículas associadas
+    matriculas = [m for m in matriculas if m["aluno"] != email]
+
+    salvar_usuarios()
+    salvar_dados(CAMINHO_MATRICULAS, matriculas)
+
+    return redirect("/funcionarios")
+
+
+
+
+
 @app.route("/editar_turma/<path:curso>/<turma>", methods=["GET", "POST"])
 def editar_turma_detalhe(curso, turma):
     if session.get("tipo") != "professor":
