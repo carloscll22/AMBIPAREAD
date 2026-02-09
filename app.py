@@ -535,19 +535,24 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form["login"].strip().lower()
-        senha = request.form["senha"]
-        user  = usuarios.get(email)
+        email = request.form.get("login", "").strip().lower()
+        senha = request.form.get("senha", "")
 
-        if user and user["senha"] == senha:
+        if not email or not senha:
+            return "Dados de login inválidos", 400
+
+        user = usuarios.get(email)
+
+        if user and user.get("senha") == senha:
             session["usuario"] = email
-            session["tipo"]    = user["tipo"]
-            session["nome"]    = user["nome"]  # <- Aqui agora está corretamente indentado
+            session["tipo"]    = user.get("tipo")
+            session["nome"]    = user.get("nome")
             return redirect("/")
 
         return "Usuário ou senha incorretos"
 
     return render_template("login.html")
+
 
 
 
