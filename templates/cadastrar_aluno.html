@@ -12,7 +12,6 @@
   --sidebar:#c6ff00;
   --bg:#2f343c;
   --card:#e5e5e5;
-  --border:#ccc;
 }
 
 *{
@@ -28,7 +27,6 @@ body{
   min-height:100vh;
   background:var(--bg);
 }
-
 
 /* SIDEBAR */
 
@@ -52,6 +50,7 @@ body{
   border-radius:50%;
   background-size:cover;
   margin:auto;
+  background-image:url("/static/avatar_padrao.png");
 }
 
 .user-name{
@@ -71,7 +70,6 @@ body{
   font-weight:600;
 }
 
-
 /* CONTENT */
 
 .content{
@@ -89,7 +87,6 @@ body{
 h2{
   margin-bottom:20px;
 }
-
 
 /* FORM */
 
@@ -148,16 +145,10 @@ button{
 
 <div class="profile">
 
-<div class="avatar"
-style="
-background-image:
-url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
-url('{{ url_for('static', filename='avatar_padrao.png') }}');
-">
-</div>
+<div class="avatar"></div>
 
 <div class="user-name">
-{{ (session['nome'] or 'USUÁRIO') | upper }}
+{{ session.get('nome','USUARIO')|upper }}
 </div>
 
 </div>
