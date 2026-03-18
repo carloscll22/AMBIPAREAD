@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Gerenciar Funcionários</title>
+<title>Gerenciar Funcionarios</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
@@ -113,8 +113,8 @@ th{
 <div class="card">
 
   <div class="top">
-    <h2>Funcionários Cadastrados</h2>
-    <a class="back" href="/">← Voltar</a>
+    <h2>Funcionarios Cadastrados</h2>
+    <a class="back" href="/">Voltar</a>
   </div>
 
 
@@ -129,42 +129,68 @@ th{
       value="{{ nome_filtro }}"
     >
 
+
     <select name="setor">
 
       <option value="">Todos os setores</option>
 
       <option value="Manutenção"
-      {% if setor_filtro == 'manutenção' %}selected{% endif %}>
+      {% if setor_filtro == 'manutencao' %}
+      selected
+      {% endif %}
+      >
       Manutenção
       </option>
 
+
       <option value="Operações"
-      {% if setor_filtro == 'operações' %}selected{% endif %}>
+      {% if setor_filtro == 'operacoes' %}
+      selected
+      {% endif %}
+      >
       Operações
       </option>
 
+
       <option value="SGSO"
-      {% if setor_filtro == 'sgso' %}selected{% endif %}>
+      {% if setor_filtro == 'sgso' %}
+      selected
+      {% endif %}
+      >
       SGSO
       </option>
 
+
       <option value="Administrativo"
-      {% if setor_filtro == 'administrativo' %}selected{% endif %}>
+      {% if setor_filtro == 'administrativo' %}
+      selected
+      {% endif %}
+      >
       Administrativo
       </option>
 
+
       <option value="Outros"
-      {% if setor_filtro == 'outros' %}selected{% endif %}>
+      {% if setor_filtro == 'outros' %}
+      selected
+      {% endif %}
+      >
       Outros
       </option>
 
     </select>
 
-    <button type="submit">Filtrar</button>
 
-    <a href="/funcionarios">Limpar</a>
+    <button type="submit">
+      Filtrar
+    </button>
+
+    <a href="/funcionarios">
+      Limpar
+    </a>
 
   </form>
+
 
 
   <!-- TABELA -->
@@ -177,20 +203,24 @@ th{
         <th>Email</th>
         <th>Tipo</th>
         <th>Categoria</th>
-        <th>Ações</th>
+        <th>Acoes</th>
       </tr>
     </thead>
 
     <tbody>
 
       {% for email, u in usuarios.items() %}
+
       {% if u.tipo == "aluno" %}
 
       <tr>
 
         <td>{{ u.nome }}</td>
+
         <td>{{ email }}</td>
+
         <td>{{ u.tipo }}</td>
+
         <td>{{ u.categoria or '-' }}</td>
 
         <td class="actions">
@@ -200,12 +230,15 @@ th{
           Editar
           </a>
 
-          <form method="post"
+
+          <form
+          method="post"
           action="/funcionarios/excluir/{{ email }}"
-          onsubmit="return confirm('Excluir este funcionário?');">
+          onsubmit="return confirm('Excluir este funcionario?');"
+          >
 
             <button class="btn-del">
-            Excluir
+              Excluir
             </button>
 
           </form>
@@ -215,6 +248,7 @@ th{
       </tr>
 
       {% endif %}
+
       {% endfor %}
 
     </tbody>
