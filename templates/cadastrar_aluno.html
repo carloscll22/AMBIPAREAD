@@ -3,51 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <title>Cadastrar Aluno</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:Poppins;background:#c1f38e;padding:40px}
-.card{background:#fff;padding:25px;border-radius:12px;max-width:500px;margin:auto}
-.field{display:flex;flex-direction:column;margin-bottom:15px}
-label{font-weight:600;margin-bottom:5px}
-input,select{padding:10px;border-radius:6px;border:1px solid #ccc}
-.btn{background:#a0e76d;border:none;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;width:100%}
+
+:root{
+  --sidebar:#c6ff00;
+  --bg:#2f343c;
+  --card:#e5e5e5;
+  --border:#ccc;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:Poppins;
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height:100vh;
+  background:var(--bg);
+}
+
+
+/* SIDEBAR */
+
+.sidebar{
+  background:var(--sidebar);
+  padding:20px;
+}
+
+.brand img{
+  width:120px;
+}
+
+.profile{
+  text-align:center;
+  margin-top:20px;
+}
+
+.avatar{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background-size:cover;
+  margin:auto;
+}
+
+.user-name{
+  margin-top:8px;
+  font-weight:600;
+}
+
+.btn-side{
+  display:block;
+  margin-top:12px;
+  padding:10px;
+  background:#fff;
+  border-radius:8px;
+  text-align:center;
+  text-decoration:none;
+  color:#000;
+  font-weight:600;
+}
+
+
+/* CONTENT */
+
+.content{
+  padding:30px;
+}
+
+.card{
+  background:var(--card);
+  padding:25px;
+  border-radius:12px;
+  max-width:900px;
+  margin:auto;
+}
+
+h2{
+  margin-bottom:20px;
+}
+
+
+/* FORM */
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+}
+
+label{
+  font-weight:600;
+  margin-bottom:4px;
+}
+
+input,
+select{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #bbb;
+}
+
+.row-full{
+  grid-column:1/-1;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#d9d9d9;
+  font-weight:600;
+  cursor:pointer;
+}
+
 </style>
+
 </head>
+
+
 <body>
 
-<div class="card">
-  <h2>Cadastrar Aluno</h2>
-  <form method="post">
-    <div class="field">
-      <label>Nome do Aluno</label>
-      <input type="text" name="nome" required>
-    </div>
 
-    <div class="field">
-      <label>Login (email)</label>
-      <input type="email" name="login" required>
-    </div>
+<!-- SIDEBAR -->
 
-    <div class="field">
-      <label>Senha</label>
-      <input type="password" name="senha" required>
-    </div>
+<aside class="sidebar">
 
-    <div class="field">
-      <label>Setor</label>
-      <select name="setor" required>
-        <option value="">-- Selecione --</option>
-        <option>Operações</option>
-        <option>Manutenção</option>
-        <option>SGSO</option>
-        <option>Administrativo</option>
-        <option>Outros</option>
-      </select>
-    </div>
-
-    <button class="btn" type="submit">Salvar Aluno</button>
-  </form>
+<div class="brand">
+<img src="{{ url_for('static', filename='loggo.png') }}">
 </div>
+
+
+<div class="profile">
+
+<div class="avatar"
+style="
+background-image:
+url('{{ url_for('static', filename='avatars/' + session['usuario'].replace('@','_at_').replace('.','_') + '.png') }}'),
+url('{{ url_for('static', filename='avatar_padrao.png') }}');
+">
+</div>
+
+<div class="user-name">
+{{ (session['nome'] or 'USUÁRIO') | upper }}
+</div>
+
+</div>
+
+
+<a class="btn-side" href="/alterar_senha">Alterar Senha</a>
+<a class="btn-side" href="/">Home do Professor</a>
+
+</aside>
+
+
+
+<!-- CONTENT -->
+
+<main class="content">
+
+<div class="card">
+
+<h2>Cadastrar Aluno</h2>
+
+
+<form method="post">
+
+<div class="grid">
+
+
+<div class="field">
+
+<label>Nome do Aluno</label>
+<input type="text" name="nome" required>
+
+</div>
+
+
+<div class="field">
+
+<label>Login (email)</label>
+<input type="email" name="login" required>
+
+</div>
+
+
+<div class="field">
+
+<label>Senha</label>
+<input type="password" name="senha" required>
+
+</div>
+
+
+<div class="field">
+
+<label>Setor</label>
+
+<select name="setor" required>
+
+<option value="">-- Selecione --</option>
+<option>Operações</option>
+<option>Manutenção</option>
+<option>SGSO</option>
+<option>Administrativo</option>
+<option>Outros</option>
+
+</select>
+
+</div>
+
+
+<div class="row-full">
+
+<button type="submit">
+Salvar Aluno
+</button>
+
+</div>
+
+
+</div>
+
+</form>
+
+</div>
+
+</main>
+
 
 </body>
 </html>
