@@ -839,40 +839,47 @@ def vencimentos_restaurar():
 
 @app.route('/cadastrar_aluno', methods=['GET','POST'])
 def cadastrar_aluno():
+
     if session.get("tipo") != "professor":
         return redirect("/login")
 
     if request.method == 'POST':
-        nome  = request.form.get('nome', '').strip()
-        email = request.form.get('login', '').strip().lower()
-        senha = request.form.get('senha', '').strip()
-        setor = request.form.get('setor', '').strip()
 
-        if not nome or not email or not senha or not setor:
-            flash("Preencha todos os campos.", "erro")
-            return render_template('cadastrar_aluno.html')
+        nomes = request.form.getlist("nome[]")
+        emails = request.form.getlist("login[]")
+        senhas = request.form.getlist("senha[]")
+        setores = request.form.getlist("setor[]")
 
-        if email in usuarios:
-            flash("Já existe um aluno com esse e-mail.", "erro")
-            return render_template('cadastrar_aluno.html')
+        for i in range(len(nomes)):
 
-        # 🔴 AQUI É A OPÇÃO 1
-        # Mapeia setor → categoria
-        categoria = "mecanico" if setor.lower() == "manutenção" else "piloto"
+            nome = nomes[i].strip()
+            email = emails[i].strip().lower()
+            senha = senhas[i].strip()
+            setor = setores[i].strip()
 
-        usuarios[email] = {
-            "nome": nome,
-            "senha": senha,
-            "tipo": "aluno",
-            "setor": setor,
-            "categoria": categoria   # 🔴 ESSENCIAL
-        }
+            if not nome or not email:
+                continue
+
+            if email in usuarios:
+                continue
+
+            categoria = "mecanico" if setor.lower() == "manutenção" else "piloto"
+
+            usuarios[email] = {
+                "nome": nome,
+                "senha": senha,
+                "tipo": "aluno",
+                "setor": setor,
+                "categoria": categoria
+            }
 
         salvar_usuarios()
-        flash("Aluno cadastrado com sucesso!", "success")
+
+        flash("Alunos cadastrados!", "success")
+
         return redirect("/")
 
-    return render_template('cadastrar_aluno.html')
+    return render_template("cadastrar_aluno.html")
 
 
 
