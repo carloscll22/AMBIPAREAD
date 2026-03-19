@@ -365,6 +365,14 @@ def prof_categoria_atual():
     user = usuarios.get(session.get("usuario", ""), {})
     return user.get("ver_categoria")
 
+def setores_professor():
+
+    email = session.get("usuario")
+
+    user = usuarios.get(email, {})
+
+    return user.get("ver_setores", [])
+
 def _aluno_e_da_categoria(email, cat):
     """True se cat is None (sem filtro) ou se o aluno tem usuarios[email]['categoria'] == cat."""
     if not cat:
@@ -1546,139 +1554,129 @@ def indicadores():
 
 @app.route("/cadastrar_professor", methods=["GET", "POST"])
 def cadastrar_professor():
-    # Só professor pode acessar
+
     if session.get("tipo") != "professor":
         return redirect("/login")
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        nome  = request.form.get("nome", "").strip()
-        senha = request.form.get("senha", "")
 
-        # validações simples
-        if not email or not nome or not senha:
-            return render_template("cadastrar_professor.html", erro="Preencha todos os campos.")
+        email = request.form["email"].lower()
+        nome = request.form["nome"]
+        senha = request.form["senha"]
+
+        setores = request.form.getlist("setores")
 
         if email in usuarios:
-            return render_template("cadastrar_professor.html", erro="Já existe um usuário com esse e-mail.")
+            return render_template(
+                "cadastrar_professor.html",
+                erro="Já existe"
+            )
 
-        # cria o usuário professor
-        usuarios[email] = {"nome": nome, "senha": senha, "tipo": "professor"}
-        salvar_usuarios()  # você já tem essa função
+        usuarios[email] = {
+            "nome": nome,
+            "senha": senha,
+            "tipo": "professor",
+            "ver_setores": setores
+        }
 
-        # volta para home do professor
+        salvar_usuarios()
+
         return redirect("/")
 
-    # GET
-    return render_template("cadastrar_professor.html", erro=None)
+    return render_template("cadastrar_professor.html")
 
 
 @app.route("/matricular", methods=["GET", "POST"])
 def matricular():
-    if session.get("tipo") != "professor":
-        return redirect("/")
 
-    # Categoria visível para este professor: "piloto" | "mecanico" | None
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
     cat = prof_categoria_atual()
+    setores = setores_professor()
 
     if request.method == "POST":
-        alunos_email = request.form.getlist("alunos[]")  # lista de e-mails
-        curso_nome   = (request.form.get("curso") or "").strip()
-        professor    = (request.form.get("professor") or "").strip()
-        nrt_turma    = (request.form.get("nrt") or "").strip()
-        data_inicio  = (request.form.get("data_inicio") or "").strip()
-        data_fim     = (request.form.get("data_fim") or "").strip()
+
+        alunos_email = request.form.getlist("alunos[]")
+        curso_nome = request.form.get("curso")
+        professor = request.form.get("professor")
+        nrt_turma = request.form.get("nrt")
+        data_inicio = request.form.get("data_inicio")
+        data_fim = request.form.get("data_fim")
 
         try:
             periodicidade_anos = int(request.form.get("periodicidade", "1"))
-        except ValueError:
-            periodicidade_anos = 1
-        if periodicidade_anos not in (1, 2, 3, 5):
+        except:
             periodicidade_anos = 1
 
-        tipo_matricula = (request.form.get("tipo") or "").strip()
-        turma_form     = (request.form.get("turma") or "").strip()
-
-        # ---------- resolve número da turma ----------
-        turma_num = None
-        if turma_form:
-            if turma_form.isdigit():
-                turma_form = f"{int(turma_form):03d}"
-            if len(turma_form) == 3 and turma_form.isdigit():
-                turma_num = turma_form
-
-        # se já existir a turma para o curso, força criar automaticamente a próxima
-        if turma_num and any(m.get("curso") == curso_nome and m.get("turma") == turma_num for m in matriculas):
-            turma_num = None
+        tipo_matricula = request.form.get("tipo")
+        turma_num = request.form.get("turma")
 
         if not turma_num:
             last = int(turmas_ctrl.get(curso_nome, 0))
-            if last >= 250:
-                # volta para o form com erro e listas filtradas pela categoria
-                alunos_ctx = [
-                    {"email": e, "nome": d["nome"]}
-                    for e, d in usuarios.items()
-                    if d.get("tipo") == "aluno" and _aluno_e_da_categoria(e, cat)
-                ]
-                professores = _lista_instrutores_por_categoria(cat)
-                sugestoes_por_curso = {
-                    c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
-                }
-                return render_template(
-                    "matricular.html",
-                    alunos=alunos_ctx,
-                    cursos=cursos,
-                    professores=professores,
-                    sugestoes_por_curso=sugestoes_por_curso,
-                    erro="Limite máximo de 250 turmas atingido para este curso."
-                )
-
-            # cria próxima turma automaticamente (💡 ESTE BLOCO FICA DENTRO DO if not turma_num:)
-            nxt = last + 1
-            turmas_ctrl[curso_nome] = nxt
+            turma_num = f"{last+1:03d}"
+            turmas_ctrl[curso_nome] = last + 1
             salvar_dados(CAMINHO_TURMAS, turmas_ctrl)
-            turma_num = f"{nxt:03d}"
 
-        # ---------- matrícula (⚠️ este FOR precisa estar DESALINHADO UM NÍVEL para a ESQUERDA) ----------
-                # ---------- matrícula ----------
         for aluno_email in alunos_email:
-            aluno_email = (aluno_email or "").strip().lower()
-            if not _aluno_e_da_categoria(aluno_email, cat):
+
+            aluno_email = aluno_email.lower()
+
+            if aluno_email not in usuarios:
                 continue
 
-            # 🔴 Sempre zera rastro anterior desse aluno no curso (caso tenha sido teste)
-            reset_aluno_no_curso(aluno_email, curso_nome)
+            aluno_setor = usuarios[aluno_email].get("setor")
 
-            # evita duplicar matrícula no mesmo curso (mantém sua regra atual)
-            if not any(m["aluno"] == aluno_email and m["curso"] == curso_nome for m in matriculas):
+            if setores and aluno_setor not in setores:
+                continue
+
+            if not any(
+                m["aluno"] == aluno_email and m["curso"] == curso_nome
+                for m in matriculas
+            ):
+
                 matriculas.append({
-                    "aluno":         aluno_email,
-                    "curso":         curso_nome,
-                    "professor":     professor,
-                    "tipo":          tipo_matricula,
-                    "nrt":           nrt_turma,
-                    "turma":         turma_num,
-                    "data_inicio":   data_inicio,
-                    "data_fim":      data_fim,
+                    "aluno": aluno_email,
+                    "curso": curso_nome,
+                    "professor": professor,
+                    "tipo": tipo_matricula,
+                    "nrt": nrt_turma,
+                    "turma": turma_num,
+                    "data_inicio": data_inicio,
+                    "data_fim": data_fim,
                     "periodicidade": periodicidade_anos,
                 })
 
         salvar_dados(CAMINHO_MATRICULAS, matriculas)
-        flash("Matriculado com Sucesso!", "success")
-        return redirect(url_for("home"))
 
-    # --- GET ---
-    alunos = [
-        {"email": e, "nome": d["nome"]}
-        for e, d in usuarios.items()
-        if d.get("tipo") == "aluno" and _aluno_e_da_categoria(e, cat)
-    ]
+        flash("Matriculado com sucesso", "success")
 
-    # 🔽 nomes do <select> Professor, já filtrados pela categoria
+        return redirect("/")
+
+
+    # ---------- GET ----------
+
+    alunos = []
+
+    for email, d in usuarios.items():
+
+        if d.get("tipo") != "aluno":
+            continue
+
+        if setores:
+            if d.get("setor") not in setores:
+                continue
+
+        alunos.append({
+            "email": email,
+            "nome": d["nome"]
+        })
+
     professores = _lista_instrutores_por_categoria(cat)
 
     sugestoes_por_curso = {
-        c["nome"]: f"{min(int(turmas_ctrl.get(c['nome'], 0)) + 1, 250):03d}" for c in cursos
+        c["nome"]: f"{int(turmas_ctrl.get(c['nome'],0))+1:03d}"
+        for c in cursos
     }
 
     return render_template(
