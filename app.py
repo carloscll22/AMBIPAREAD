@@ -1013,19 +1013,29 @@ def editar_turma_list():
 
 @app.route("/funcionarios")
 def funcionarios():
+
     if session.get("tipo") != "professor":
         return redirect("/login")
 
     nome_filtro  = (request.args.get("nome") or "").lower()
     setor_filtro = (request.args.get("setor") or "").lower()
 
+    setores = setores_professor()
+
     usuarios_filtrados = {}
 
     for email, u in usuarios.items():
+
         if u.get("tipo") != "aluno":
             continue
 
+        # filtro por setor permitido do professor
+        if setores:
+            if u.get("setor") not in setores:
+                continue
+
         nome_ok = nome_filtro in u.get("nome", "").lower()
+
         setor_ok = True
 
         if setor_filtro:
@@ -1034,13 +1044,13 @@ def funcionarios():
         if nome_ok and setor_ok:
             usuarios_filtrados[email] = u
 
+
     return render_template(
         "funcionarios.html",
         usuarios=usuarios_filtrados,
         nome_filtro=nome_filtro,
         setor_filtro=setor_filtro
     )
-
 
 
 @app.route("/funcionarios/editar/<email>", methods=["GET", "POST"])
