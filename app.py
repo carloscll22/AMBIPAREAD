@@ -863,7 +863,25 @@ def cadastrar_aluno():
             if email in usuarios:
                 continue
 
-            categoria = "mecanico" if setor.lower() == "manutenção" else "piloto"
+
+            setor_lower = setor.lower()
+
+
+            if setor_lower == "manutenção":
+                categoria = "mecanico"
+
+            elif setor_lower == "operações":
+                categoria = "piloto"
+
+            elif setor_lower == "administrativo":
+                categoria = "administrativo"
+
+            elif setor_lower == "sgso":
+                categoria = "sgso"
+
+            else:
+                categoria = "outros"
+
 
             usuarios[email] = {
                 "nome": nome,
@@ -873,14 +891,15 @@ def cadastrar_aluno():
                 "categoria": categoria
             }
 
+
         salvar_usuarios()
 
         flash("Alunos cadastrados!", "success")
 
         return redirect("/")
 
-    return render_template("cadastrar_aluno.html")
 
+    return render_template("cadastrar_aluno.html")
 
 
 @app.route("/cadastrar_curso", methods=["GET", "POST"])
