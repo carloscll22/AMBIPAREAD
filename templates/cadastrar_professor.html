@@ -1,42 +1,166 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cadastrar Professor</title>
-  <style>
-    body { background:#c1f38e; margin:0; font-family:Arial, sans-serif; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; padding:40px 16px; }
-    .box { background:#fff; width:360px; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-    h2 { margin:0 0 16px; }
-    label { display:block; font-weight:bold; margin-top:12px; }
-    input { width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; margin-top:6px; box-sizing:border-box; }
-    .btn { margin-top:18px; width:100%; padding:12px; background:#a0e76d; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
-    .btn:hover { background:#8dd24a; }
-    .erro { margin-top:10px; background:#ffe9e9; color:#8a1f1f; border:1px solid #ffcbcb; padding:10px; border-radius:8px; }
-    .voltar { display:block; text-align:center; margin-top:12px; text-decoration:none; color:#333; font-weight:bold; }
-  </style>
+<meta charset="UTF-8">
+<title>Cadastrar Professor</title>
+
+<style>
+
+body{
+  background:#c1f38e;
+  margin:0;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  padding:40px 16px;
+}
+
+.box{
+  background:#fff;
+  width:380px;
+  padding:24px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+h2{
+  margin:0 0 16px;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin-top:12px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  margin-top:6px;
+  box-sizing:border-box;
+}
+
+.setores{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  background:#f9f9f9;
+}
+
+.setores label{
+  font-weight:normal;
+  display:block;
+  margin-top:6px;
+}
+
+.btn{
+  margin-top:18px;
+  width:100%;
+  padding:12px;
+  background:#a0e76d;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn:hover{
+  background:#8dd24a;
+}
+
+.erro{
+  margin-top:10px;
+  background:#ffe9e9;
+  color:#8a1f1f;
+  border:1px solid #ffcbcb;
+  padding:10px;
+  border-radius:8px;
+}
+
+.voltar{
+  display:block;
+  text-align:center;
+  margin-top:12px;
+  text-decoration:none;
+  color:#333;
+  font-weight:bold;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="box">
-    <h2>Cadastrar Professor</h2>
 
-    {% if erro %}
-      <div class="erro">{{ erro }}</div>
-    {% endif %}
+<div class="box">
 
-    <form method="post">
-      <label for="nome">Nome</label>
-      <input id="nome" name="nome" type="text" required>
+<h2>Cadastrar Professor</h2>
 
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" required>
+{% if erro %}
+<div class="erro">{{ erro }}</div>
+{% endif %}
 
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="text" required>
+<form method="post">
 
-      <button class="btn" type="submit">Salvar</button>
-    </form>
+<label>Nome</label>
+<input name="nome" type="text" required>
 
-    <a class="voltar" href="/">Voltar</a>
-  </div>
+
+<label>Email</label>
+<input name="email" type="email" required>
+
+
+<label>Senha</label>
+<input name="senha" type="text" required>
+
+
+<label>Setores que pode visualizar</label>
+
+<div class="setores">
+
+<label>
+<input type="checkbox" name="setores" value="Operações">
+Operações
+</label>
+
+<label>
+<input type="checkbox" name="setores" value="Manutenção">
+Manutenção
+</label>
+
+<label>
+<input type="checkbox" name="setores" value="Administrativo">
+Administrativo
+</label>
+
+<label>
+<input type="checkbox" name="setores" value="SGSO">
+SGSO
+</label>
+
+<label>
+<input type="checkbox" name="setores" value="Outros">
+Outros
+</label>
+
+</div>
+
+
+<button class="btn" type="submit">
+Salvar
+</button>
+
+</form>
+
+<a class="voltar" href="/">
+Voltar
+</a>
+
+</div>
+
 </body>
 </html>
