@@ -843,7 +843,7 @@ def cadastrar_aluno():
     if session.get("tipo") != "professor":
         return redirect("/login")
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
         nomes = request.form.getlist("nome[]")
         emails = request.form.getlist("login[]")
@@ -2531,8 +2531,7 @@ def fale_tutor():
     return redirect("/login")
 
 
-import os
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    import os
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
