@@ -1664,7 +1664,7 @@ def matricular():
         return redirect("/")
 
 
-    # ---------- GET ----------
+    # ✅ LISTA DE ALUNOS (GET)
 
     alunos = []
 
@@ -1681,6 +1681,38 @@ def matricular():
             "email": email,
             "nome": d["nome"]
         })
+
+
+    # ✅ ORDENA A-Z
+
+    alunos = sorted(
+        alunos,
+        key=lambda x: x["nome"].lower()
+    )
+
+
+    professores = _lista_instrutores_por_categoria(cat)
+
+    sugestoes_por_curso = {
+        c["nome"]: f"{int(turmas_ctrl.get(c['nome'],0))+1:03d}"
+        for c in cursos
+    }
+
+    return render_template(
+        "matricular.html",
+        alunos=alunos,
+        cursos=cursos,
+        professores=professores,
+        sugestoes_por_curso=sugestoes_por_curso
+    )
+
+
+# ✅ ORDENA ALFABETICAMENTE
+
+alunos = sorted(
+    alunos,
+    key=lambda x: x["nome"].lower()
+)
 
     professores = _lista_instrutores_por_categoria(cat)
 
