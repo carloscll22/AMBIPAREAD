@@ -5,11 +5,16 @@ from random import randint
 from werkzeug.utils import secure_filename
 from flask import flash, url_for, redirect
 from datetime import datetime, date
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from flask import send_file
+import io
 import pytz
 import shutil    
 import os
 import json
 import time
+
 
 TZ = pytz.timezone("America/Sao_Paulo")
 
@@ -592,6 +597,50 @@ def controle_vencimentos():
     if session.get("tipo") != "professor":
         return redirect("/login")
     return render_template("controle_vencimentos.html")
+
+
+@app.route("/funcionarios_pdf")
+def funcionarios_pdf():
+
+    if session.get("tipo") != "professor":
+        return redirect("/login")
+
+    buffer = io.BytesIO()
+
+    c = canvas.Canvas(buffer, pagesize=letter)
+
+    y = 750
+
+    c.setFont("Helvetica", 12)
+
+    c.drawString(50, y, "Lista de Funcionários")
+    y -= 30
+
+    for email, u in usuarios.items():
+
+        if u.get("tipo") == "aluno":
+
+            linha = f"{u.get('nome')} - {email} - {u.get('categoria')}"
+
+            c.drawString(50, y, linha)
+
+            y -= 20
+
+            if y < 50:
+                c.showPage()
+                y = 750
+
+    c.save()
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="funcionarios.pdf",
+        mimetype="application/pdf"
+    )
+
 
 
 @app.route("/vencimentos/adicionar", methods=["GET", "POST"])
